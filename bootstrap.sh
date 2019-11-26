@@ -48,7 +48,7 @@ if [ -z ${PKGINSTALLED+x} ]; then
   #rm /usr/bin/python3
   #ln -s /usr/bin/python3.7 /usr/bin/python3
 
-  python3 -m pip install pip
+  python3.7 -m pip install pip
 
 else
 
@@ -60,13 +60,14 @@ fi
 
 # Setup the python virtualenvironment
 
-sudo pip3 install virtualenv
-virtualenv "$HOME/venv"
+
+python3.7 -m pip install virtualenv
+python3.7 -m virtualenv "$HOME/venv"
 
 . "$HOME/venv/bin/activate"
 
-pip3 install -r requirements.txt
-pip3 install gunicorn
+python3.7 -m pip install -r requirements.txt
+python3.7 -m pip install gunicorn
 
 
 # Copy config files + adapt paths
