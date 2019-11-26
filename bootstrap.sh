@@ -19,6 +19,18 @@ if [ -d /vagrant ]; then
     USER=vagrant
 else
     VAGRANT=0
+    echo "Warning. You are about to install 5GENESIS system components on your system."
+    echo "It will upgrade system softare, set python3.7 as the default python version,"
+    echo "and remove your default apache configuration, among other things (inspect this script)"
+    echo ""
+    echo "Please press ctrl-c to abort or type yes + enter to continue"
+    read confirmation
+    if [ "${confirmation}" != "yes" ]; then
+        echo "Not confirmed. Exiting."
+        exit 1
+    else
+      echo "Confirmed. Proceeding."
+    fi
 fi
 
 
@@ -29,7 +41,12 @@ if [ -z ${PKGINSTALLED+x} ]; then
   sudo apt-get -y update
   sudo apt-get -y install python3.7 python3.7-venv python3.7-dev python3-pip
   sudo apt-get -y install supervisor nginx git
-  python3.7 -m pip install pip
+
+  # set python3.7 as the system default
+  rm /usr/bin/python3
+  ln -s /usr/bin/python3.7 /usr/bin/python3
+
+  python3 -m pip install pip
 
 else
 
