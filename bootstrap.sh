@@ -11,12 +11,14 @@ set -e  # Exit on error
 # Auto-detect user-name, used for setting paths in config files at end of this script.
 # Note that username is forced to vagrant if running in the vagrant environment
 USER=$(whoami)  
+HOME=$(echo $(getent passwd $USER )| cut -d : -f 6)
 
 # Detect if we are executing in a vagrant environment
 if [ -d /vagrant ]; then
     VAGRANT=1
     cd /vagrant
     USER=vagrant
+    HOME=/home/vagrant
 else
     VAGRANT=0
     echo "Warning. You are about to install 5GENESIS system components on your system."
@@ -59,9 +61,9 @@ fi
 # Setup the python virtualenvironment
 
 sudo pip3 install virtualenv
-virtualenv $USER/venv
+virtualenv "$HOME/venv"
 
-. $USER/venv/bin/activate
+. "$HOME/venv/bin/activate"
 
 pip3 install -r requirements.txt
 pip3 install gunicorn
