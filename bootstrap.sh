@@ -42,9 +42,9 @@ if [ -z ${PKGINSTALLED+x} ]; then
   sudo apt-get -y install python3.7 python3.7-venv python3.7-dev python3-pip
   sudo apt-get -y install supervisor nginx git
 
-  # set python3.7 as the system default
-  rm /usr/bin/python3
-  ln -s /usr/bin/python3.7 /usr/bin/python3
+  # set python3.7 as the system default - reverted - buggy as py3.7 is not module-complete w py3.6
+  #rm /usr/bin/python3
+  #ln -s /usr/bin/python3.7 /usr/bin/python3
 
   python3 -m pip install pip
 
