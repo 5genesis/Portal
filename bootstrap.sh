@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Script to bootstrap the installation of required components the 5GENESIS portal, 
 # automating the manual instructions at
@@ -6,42 +6,61 @@
 
 set -e  # Exit on error
 
+# CONFIGURATION
+
+# Auto-detect user-name, used for setting paths in config files at end of this script.
+# Note that username is forced to vagrant if running in the vagrant environment
+USER=$(whoami)  
+
+# Detect if we are executing in a vagrant environment
+if [ -d /vagrant ]; then
+    VAGRANT=1
+    cd /vagrant
+    USER=vagrant
+else
+    VAGRANT=0
+fi
+
+
 if [ -z ${PKGINSTALLED+x} ]; then
-  export PKGINSTALLED=1
+  export PKGINSTALLED=1  
  
   # Install required packages
   sudo apt-get -y update
   sudo apt-get -y install python3.7 python3.7-venv python3.7-dev python3-pip
   sudo apt-get -y install supervisor nginx git
   python3.7 -m pip install pip
+
 else
-  # Reload script in order to be able to use pip3.7 (the PKGINSTALLED flag will take care of script flow)
-  bash $0
+
+  # Reload script in order to be able to use pip3.7 (the PKGINSTALLED flag will
+  # take care of script flow aftex exec'd
+  exec bash $0
+
 fi
 
+# Setup the python virtualenvironment
+
+sudo pip3 install virtualenv
+virtualenv $USER/venv
+
+. $USER/venv/bin/activate
+
+pip3 install -r requirements.txt
+pip3 install gunicorn
 
 
-# Install requirements. Please consider using virtualenv when installing on a shared machine.
-# FIXME - implement venv
-#
+# Copy config files + adapt paths
+cwd=$(pwd)
 
-cd /vagrant
-
-# FIXME - handle non-vagrant cases. Maybe test for path existence? 
-# i.e.  [ -d /vagrant ] && cd /vagrant
-# Check that we are in the correct directory for non-vagrant installations
-# i.e. [ -d Vagrant ] && echo "Missing config files in Vagrant directory"
-
-
-pip3 install -r requirements.txt --user
-pip3 install gunicorn --user
-
-# Configure supervisor
-sudo cp Vagrant/supervisor.conf /etc/supervisor/conf.d/5gportal.conf
+sudo cp Vagrant/supervisor-template.conf /etc/supervisor/conf.d/5gportal.conf
+sed -ie "s#__INSTALLDIRECTORY__#${cwd}#" /etc/supervisor/conf.d/5gportal.conf
+sed -ie "s#__USER__#${USER}#" /etc/supervisor/conf.d/5gportal.conf
 sudo supervisorctl reload
 
-# Configure nginx (no ssl, see Vagrant/nginx_ssl.conf for an https configuration example)
+# Configure nginx (no ssl, see Vagrant/nginx_ssl-template.conf for an https configuration example)
 sudo rm /etc/nginx/sites-enabled/default
-sudo cp Vagrant/nginx.conf /etc/nginx/sites-enabled/5gportal
+sudo cp Vagrant/nginx-template.conf /etc/nginx/sites-enabled/5gportal
+sed -ie "s#__INSTALLDIRECTORY__#${cwd}#" /etc/nginx/sites-enabled/5gportal
 sudo service nginx reload
 
