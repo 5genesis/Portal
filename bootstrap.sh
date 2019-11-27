@@ -2,7 +2,8 @@
 
 # Script to bootstrap the installation of required components the 5GENESIS portal, 
 # automating the manual instructions at
-# https://gitlab.fokus.fraunhofer.de/5genesis/portal/blob/develop/README.md
+# https://gitlab.fokus.fraunhofer.de/5genesis/elcm/wikis/home
+# (formerly https://gitlab.fokus.fraunhofer.de/5genesis/portal/blob/develop/README.md )
 
 set -e  # Exit on error
 
