@@ -58,6 +58,12 @@ python3.7 -m pip install gunicorn
 # Copy config files + adapt paths
 cwd=$(pwd)
 
+# Set a secure password on the flask app
+PASSWORD=$(pwgen 32 1)
+sed -ie "s#__REPLACEWITHPASSWORD__#${PASSWORD}#" .flaskenv
+sed -ie "s#__REPLACEWITHPASSWORD__#${PASSWORD}#" config.py
+
+
 sudo cp Vagrant/supervisor-template.conf /etc/supervisor/conf.d/5gportal.conf
 sudo sed -ie "s#__INSTALLDIRECTORY__#${cwd}#" /etc/supervisor/conf.d/5gportal.conf
 sudo sed -ie "s#__USER__#${USER}#" /etc/supervisor/conf.d/5gportal.conf
@@ -68,4 +74,7 @@ sudo rm /etc/nginx/sites-enabled/default
 sudo cp Vagrant/nginx-template.conf /etc/nginx/sites-enabled/5gportal
 sudo sed -ie "s#__INSTALLDIRECTORY__#${cwd}#" /etc/nginx/sites-enabled/5gportal
 sudo service nginx reload
+
+
+
 
