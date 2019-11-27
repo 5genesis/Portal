@@ -40,7 +40,7 @@ fi
 export DEBIAN_FRONTEND=noninteractive
 sudo apt-get -y update
 sudo apt-get -y install python3.7 python3.7-dev python3-pip
-sudo apt-get -y install supervisor nginx git
+sudo apt-get -y install supervisor nginx git pwgen
 
 # Update pip, install virtualenvironment
 python3.7 -m pip install --user pip
