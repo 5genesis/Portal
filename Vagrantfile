@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
 
   # All bootstrapping command should be in this external shell file
   # so it can be used on stand-alone installations
-  config.vm.provision :shell, path: "bootstrap.sh"
+  config.vm.provision :shell, privileged: false, path: "bootstrap.sh"
 
   config.vm.post_up_message = <<-MESSAGE
     5Genesis Portal should be accessible at localhost (port 80)

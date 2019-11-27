@@ -36,35 +36,20 @@ else
 fi
 
 
-if [ -z ${PKGINSTALLED+x} ]; then
-  export PKGINSTALLED=1  
- 
-  # Install required packages
-  sudo apt-get -y update
-  sudo apt-get -y install python3.7 python3.7-venv python3.7-dev python3-pip
-  sudo apt-get -y install supervisor nginx git
+# Install required packages
+export DEBIAN_FRONTEND=noninteractive
+sudo apt-get -y update
+sudo apt-get -y install python3.7 python3.7-dev python3-pip
+sudo apt-get -y install supervisor nginx git
 
-  # set python3.7 as the system default - reverted - buggy as py3.7 is not module-complete w py3.6
-  #rm /usr/bin/python3
-  #ln -s /usr/bin/python3.7 /usr/bin/python3
-
-  python3.7 -m pip install pip
-
-else
-
-  # Reload script in order to be able to use pip3.7 (the PKGINSTALLED flag will
-  # take care of script flow aftex exec'd
-  exec bash $0
-
-fi
+# Update pip, install virtualenvironment
+python3.7 -m pip install --user pip
+python3.7 -m pip install --user virtualenv
 
 # Setup the python virtualenvironment
 
-
-python3.7 -m pip install virtualenv
 python3.7 -m virtualenv "$HOME/venv"
-
-. "$HOME/venv/bin/activate"
+source "$HOME/venv/bin/activate"
 
 python3.7 -m pip install -r requirements.txt
 python3.7 -m pip install gunicorn
@@ -74,13 +59,13 @@ python3.7 -m pip install gunicorn
 cwd=$(pwd)
 
 sudo cp Vagrant/supervisor-template.conf /etc/supervisor/conf.d/5gportal.conf
-sed -ie "s#__INSTALLDIRECTORY__#${cwd}#" /etc/supervisor/conf.d/5gportal.conf
-sed -ie "s#__USER__#${USER}#" /etc/supervisor/conf.d/5gportal.conf
+sudo sed -ie "s#__INSTALLDIRECTORY__#${cwd}#" /etc/supervisor/conf.d/5gportal.conf
+sudo sed -ie "s#__USER__#${USER}#" /etc/supervisor/conf.d/5gportal.conf
 sudo supervisorctl reload
 
 # Configure nginx (no ssl, see Vagrant/nginx_ssl-template.conf for an https configuration example)
 sudo rm /etc/nginx/sites-enabled/default
 sudo cp Vagrant/nginx-template.conf /etc/nginx/sites-enabled/5gportal
-sed -ie "s#__INSTALLDIRECTORY__#${cwd}#" /etc/nginx/sites-enabled/5gportal
+sudo sed -ie "s#__INSTALLDIRECTORY__#${cwd}#" /etc/nginx/sites-enabled/5gportal
 sudo service nginx reload
 
