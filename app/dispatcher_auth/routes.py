@@ -71,6 +71,21 @@ def login():
         nextPage = request.args.get('next')
         if not nextPage or url_parse(nextPage).netloc != '':
             nextPage = url_for('main.index')
+
+        try:
+            api = AuthApi('127.0.0.1', 2000, '')
+            response = api.GetToken(user)
+            maybeToken = response["result"]
+            if "No user" in maybeToken or "not activated" in maybeToken:
+                raise Exception(maybeToken)
+            user.token = maybeToken
+        except Exception as e:
+            user.token = None
+            flash(f"Could not retrieve authentication token: {e}", "error")
+
+        db.session.add(user)
+        db.session.commit()
+
         return redirect(nextPage)
 
     return render_template('dispatcher_auth/login.html', title='Sign In', form=form,

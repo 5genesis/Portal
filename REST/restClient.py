@@ -31,9 +31,11 @@ class RestClient:
             return result.group(1)
         return "unknown_filename"
 
-    def HttpGet(self, url):
+    def HttpGet(self, url, extra_headers=None):
+        extra_headers = {} if extra_headers is None else extra_headers
         return self.pool.request('GET',
                                  url,
+                                 headers=extra_headers,
                                  retries=self.RETRIES)
 
     def HttpPost(self, url, extra_headers=None, body=''):
