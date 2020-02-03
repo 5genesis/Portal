@@ -36,10 +36,10 @@
                 <span class="icon-bar"></span>
             </button>
             {% if current_user.is_anonymous %}
-            <a href="{{ url_for('authentication.login') }}"><img
+            <a href="{{ url_for('auth.login') }}"><img
                     src=" {{ url_for('static', filename='images/5genesisTransparent.png') }} " alt="5Genesis"
                     height="50" width="39" style="float: left; padding: 5px"></a>
-            <a class="navbar-brand" href="{{ url_for('authentication.login') }}">5Genesis</a>
+            <a class="navbar-brand" href="{{ url_for('auth.login') }}">5Genesis</a>
             {% else %}
             <a href="{{ url_for('main.index') }}"><img
                     src="{{ url_for('static', filename='images/5genesisTransparent.png') }}" alt="5Genesis" height="50"
@@ -50,8 +50,8 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             {% if current_user.is_anonymous %}
             <ul class="nav navbar-nav">
-                <li><a id="navbar-login" href="{{ url_for('authentication.login') }}">Login</a></li>
-                <li><a id="navbar-register" href="{{ url_for('authentication.register') }}">Register</a></li>
+                <li><a id="navbar-login" href="{{ url_for('auth.login') }}">Login</a></li>
+                <li><a id="navbar-register" href="{{ url_for('auth.register') }}">Register</a></li>
             </ul>
             {% else %}
             <ul class="nav navbar-nav">
@@ -60,7 +60,7 @@
                 <li><a id="navbar-vnf" href="{{ url_for('NsManagement.repository') }}">VNF/NS Management</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="{{ url_for('authentication.logout') }}">{{ current_user.username }} - Logout</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">{{ current_user.username }} - Logout</a></li>
             </ul>
             {% endif %}
         </div>

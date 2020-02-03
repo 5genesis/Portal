@@ -39,7 +39,7 @@ def register():
         db.session.commit()
         flash('You have been registered', 'info')
         Log.I(f'Registered user: {user.username}')
-        return redirect(url_for('authentication.login'))
+        return redirect(url_for('auth.login'))
 
     return render_template('authentication/register.html', title='Register', form=form,
                            description=Config().Description)
@@ -57,7 +57,7 @@ def login():
         if user is None or not user.checkPassword(form.password.data):
             Log.I(f'Invalid username or password')
             flash('Invalid username or password', 'error')
-            return redirect(url_for('authentication.login'))
+            return redirect(url_for('auth.login'))
 
         login_user(user, remember=form.rememberMe.data)
         Log.I(f'User {user.username} logged in')
@@ -89,7 +89,7 @@ def resetPasswordRequest():
             sendPasswordResetEmail(user)
 
         flash('Check your email for the instructions to reset your password', 'info')
-        return redirect(url_for('authentication.login'))
+        return redirect(url_for('auth.login'))
 
     return render_template('authentication/resetPasswordRequest.html',
                            title='Reset Password', form=form, description=Config().Description)
@@ -112,6 +112,6 @@ def resetPassword(token: str):
         db.session.commit()
         flash('Your password has been reset.', 'info')
         Log.I(f'Password reset for {user.name}')
-        return redirect(url_for('authentication.login'))
+        return redirect(url_for('auth.login'))
 
     return render_template('authentication/resetPassword.html', form=form, description=Config().Description)
