@@ -5,7 +5,7 @@ from flask import render_template, flash, redirect, url_for, request, send_from_
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 from config import Config as UploaderConfig
-from REST import DispatcherApi
+from REST import ElcmApi
 from app import db
 from app.experiment import bp
 from app.models import Experiment, Execution, Action, NS
@@ -121,8 +121,7 @@ def downloadNSD(experimentId: int):
 
 def runExperiment(config: Config):
     try:
-        api = DispatcherApi(config.Dispatcher.Host, config.Dispatcher.Port, "/api/v0")  # //api/v0
-        jsonResponse: Dict = api.Post(request.form['id'])
+        jsonResponse: Dict = ElcmApi().Post(request.form['id'])
         Log.D(f'Ran experiment response {jsonResponse}')
         Log.I(f'Ran experiment {request.form["id"]}')
         flash(f'Success: {jsonResponse["Success"]} - Execution Id: '

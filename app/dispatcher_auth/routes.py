@@ -5,7 +5,7 @@ from app import db
 from app.models import User
 from app.dispatcher_auth import bp
 from app.dispatcher_auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm
-from REST import AuthApi
+from REST import DispatcherApi
 from Helper import Config, Log
 
 
@@ -34,8 +34,7 @@ def register():
         user.setPassword(form.password.data)
 
         try:
-            api = AuthApi('127.0.0.1', 2000, '')
-            response = api.Register(user)
+            response = DispatcherApi().Register(user)
             result = response["result"]
         except Exception as e:
             result = f"Exception while accessing authentication: {e}"
@@ -60,28 +59,31 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
+        # Check that the user exists in the Portal database
         user: User = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.checkPassword(form.password.data):
             Log.I(f'Invalid username or password')
             flash('Invalid username or password', 'error')
             return redirect(url_for('auth.login'))
 
+        # Check that the user exist in the dispatcher DB and has been activated
+        try:
+            response = DispatcherApi().GetToken(user)
+            maybeToken = response["result"]
+            if "No user" in maybeToken or "not activated" in maybeToken:
+                raise Exception(maybeToken)
+        except Exception as e:
+            user.token = None
+            flash(f"Could not retrieve authentication token: {e}", "error")
+            return redirect(url_for('auth.login'))
+
+        user.token = maybeToken
+
         login_user(user, remember=form.rememberMe.data)
         Log.I(f'User {user.username} logged in')
         nextPage = request.args.get('next')
         if not nextPage or url_parse(nextPage).netloc != '':
             nextPage = url_for('main.index')
-
-        try:
-            api = AuthApi('127.0.0.1', 2000, '')
-            response = api.GetToken(user)
-            maybeToken = response["result"]
-            if "No user" in maybeToken or "not activated" in maybeToken:
-                raise Exception(maybeToken)
-            user.token = maybeToken
-        except Exception as e:
-            user.token = None
-            flash(f"Could not retrieve authentication token: {e}", "error")
 
         db.session.add(user)
         db.session.commit()

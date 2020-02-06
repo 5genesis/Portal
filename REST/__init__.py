@@ -1,3 +1,3 @@
 from .restClient import RestClient
+from .elcmApi import ElcmApi
 from .dispatcherApi import DispatcherApi
-from .authApi import AuthApi

@@ -5,9 +5,9 @@ from shutil import copy
 from os.path import exists, abspath
 
 
-class Dispatcher:
-    def __init__(self, data: Dict):
-        self.data = data['Dispatcher']
+class hostPort:
+    def __init__(self, data: Dict, key: str):
+        self.data = data[key]
 
     @property
     def Host(self):
@@ -16,6 +16,16 @@ class Dispatcher:
     @property
     def Port(self):
         return self.data['Port']
+
+
+class Dispatcher(hostPort):
+    def __init__(self, data: Dict):
+        super().__init__(data, 'Dispatcher')
+
+
+class ELCM(hostPort):
+    def __init__(self, data: Dict):
+        super().__init__(data, 'ELCM')
 
 
 class Logging:
@@ -71,6 +81,10 @@ class Config:
     @property
     def Dispatcher(self) -> Dispatcher:
         return Dispatcher(self.data)
+
+    @property
+    def ELCM(self) -> Dispatcher:
+        return ELCM(self.data)
 
     @property
     def TestCases(self):

@@ -5,7 +5,7 @@ from app import db
 from app.execution import bp
 from app.models import Experiment, Execution
 from Helper import Config, LogInfo, Log
-from REST import DispatcherApi
+from REST import ElcmApi
 
 
 @bp.route('/<executionId>/reloadLog', methods=['GET'])
@@ -24,8 +24,7 @@ def execution(executionId: int):
             try:
                 # Get Execution logs information
                 config = Config()
-                api = DispatcherApi(config.Dispatcher.Host, config.Dispatcher.Port, "/execution")
-                jsonResponse: Dict = api.Get(executionId)
+                jsonResponse: Dict = ElcmApi().GetLogs(executionId)
                 Log.D(f'Access execution logs response {jsonResponse}')
                 status = jsonResponse["Status"]
                 if status == 'Not Found':
