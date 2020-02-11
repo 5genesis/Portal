@@ -57,7 +57,7 @@
             <ul class="nav navbar-nav">
                 <li><a id="navbar-home" href="{{ url_for('main.index') }}">Home</a></li>
                 <li><a id="navbar-createExperiment" href="{{ url_for('experiment.create') }}">Create Experiment</a></li>
-                <li><a id="navbar-vnf" href="{{ url_for('NsManagement.repository') }}">VNF/NS Management</a></li>
+                <!--<li><a id="navbar-vnf" href="{{ url_for('NsManagement.repository') }}">VNF/NS Management</a></li>-->
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="{{ url_for('authentication.logout') }}">{{ current_user.username }} - Logout</a></li>
