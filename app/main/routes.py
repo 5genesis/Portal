@@ -24,3 +24,8 @@ def index():
 
     return render_template('index.html', title='Home', formRun=formRun, experiments=experiments, notices=notices,
                            actions=actions)
+
+
+@bp.route('/info')
+def info():
+    return render_template('info.html', title="Testbed Info")
