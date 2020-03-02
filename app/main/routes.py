@@ -28,4 +28,4 @@ def index():
 
 @bp.route('/info')
 def info():
-    return render_template('info.html', title="Testbed Info")
+    return render_template('info.html', title="Testbed Info", html=Config().PlatformDescriptionHtml)
