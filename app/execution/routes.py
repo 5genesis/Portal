@@ -39,7 +39,8 @@ def execution(executionId: int):
                     preRun = LogInfo(jsonResponse["PreRun"])
                     return render_template('execution/execution.html', title='execution', execution=exe,
                                            executor=executor, postRun=postRun, preRun=preRun, experiment=exp,
-                                           grafanaUrl=config.GrafanaUrl, executionId=getLastExecution() + 1)
+                                           grafanaUrl=config.GrafanaUrl, executionId=getLastExecution() + 1,
+                                           dispatcherUrl=config.Dispatcher.Url)
             except Exception as e:
                 Log.E(f'Error accessing execution{exe.experiment_id}: {e}')
                 flash(f'Exception while trying to connect with dispatcher: {e}', 'error')

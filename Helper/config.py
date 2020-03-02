@@ -17,6 +17,10 @@ class Dispatcher:
     def Port(self):
         return self.data['Port']
 
+    @property
+    def Url(self):
+        return f"{self.Host}:{self.Port}/"
+
 
 class Logging:
     def __init__(self, data: Dict):
