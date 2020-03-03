@@ -67,26 +67,16 @@ def login():
             return redirect(url_for('auth.login'))
 
         # Check that the user exist in the dispatcher DB and has been activated
-        try:
-            response = DispatcherApi().GetToken(user)
-            maybeToken = response["result"]
-            if "No user" in maybeToken or "not activated" in maybeToken:
-                raise Exception(maybeToken)
-        except Exception as e:
-            user.token = None
-            flash(f"Could not retrieve authentication token: {e}", "error")
+        DispatcherApi().RenewUserToken(user)
+        if user.token is None:
+            flash(f"Could not retrieve authentication token", "error")
             return redirect(url_for('auth.login'))
-
-        user.token = maybeToken
 
         login_user(user, remember=form.rememberMe.data)
         Log.I(f'User {user.username} logged in')
         nextPage = request.args.get('next')
         if not nextPage or url_parse(nextPage).netloc != '':
             nextPage = url_for('main.index')
-
-        db.session.add(user)
-        db.session.commit()
 
         return redirect(nextPage)
 

@@ -3,15 +3,8 @@
 
 {% block scripts %}
 {{ super() }}
-<script src="{{url_for('static', filename='js/loading.js')}}"></script>
-<script>
-(function() {
-    document.getElementById('navbar-home').classList.add('menuSelected');
-    document.getElementById('navbar-createExperiment').classList.remove('menuSelected');
-    document.getElementById('navbar-vnf').classList.remove('menuSelected');
-})();
-
-</script>
+    <script src="{{url_for('static', filename='js/loading.js')}}"></script>
+    <script>setTab('navbar-home')</script>
 {% endblock %}
 
 {% block app_content %}

@@ -2,13 +2,8 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block scripts %}
-<script>
-(function() {
-    document.getElementById('navbar-login').classList.add('menuSelected');
-    document.getElementById('navbar-register').classList.remove('menuSelected');
-})();
-
-</script>
+    {{ super() }}
+    <script>setTab('navbar-login')</script>
 {% endblock %}
 
 {% block app_content %}

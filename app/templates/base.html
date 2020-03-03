@@ -1,9 +1,25 @@
 {% extends 'bootstrap/base.html' %}
 
 {% block scripts %}
-{{ super() }}
-{{ moment.include_jquery() }}
-{{ moment.include_moment() }}
+    {{ super() }}
+    {{ moment.include_jquery() }}
+    {{ moment.include_moment() }}
+    <script src="{{ url_for('static', filename='js/nanobar.min.js') }}"></script>
+    <script>
+        window.setTimeout(function() {
+            $(".alert_message").fadeTo(500, 0).slideUp(500, function(){ $(this).remove(); });
+        }, 4000);
+    </script>
+    <script>
+        function setTab(tabName){
+            tabs = document.querySelectorAll(".navbar-item");
+            for (var i=0; i<tabs.length; i++) {
+                tab = tabs[i];
+                tab.classList.remove("menuSelected");
+            }
+            document.getElementById(tabName).classList.add("menuSelected");
+        }
+    </script>
 {% endblock %}
 
 <html>
@@ -12,17 +28,11 @@
 {% endblock %}
 
 {% block styles %}
-{{ super() }}
-<link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-<script src="{{ url_for('static', filename='js/nanobar.min.js') }}"></script>
-<script>
-    window.setTimeout(function() {
-        $(".alert_message").fadeTo(500, 0).slideUp(500, function(){ $(this).remove(); });
-    }, 4000);
-
-</script>
+    {{ super() }}
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 {% endblock %}
+
 
 {% block navbar %}
 <nav class="navbar navbar-default">
@@ -50,14 +60,15 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             {% if current_user.is_anonymous %}
             <ul class="nav navbar-nav">
-                <li><a id="navbar-login" href="{{ url_for('auth.login') }}">Login</a></li>
-                <li><a id="navbar-register" href="{{ url_for('auth.register') }}">Register</a></li>
+                <li><a class="navbar-item" id="navbar-login" href="{{ url_for('auth.login') }}">Login</a></li>
+                <li><a class="navbar-item" id="navbar-register" href="{{ url_for('auth.register') }}">Register</a></li>
+                <li><a class="navbar-item" id="navbar-info" href="{{ url_for('main.info') }}">Info</a></li>
             </ul>
             {% else %}
             <ul class="nav navbar-nav">
-                <li><a id="navbar-home" href="{{ url_for('main.index') }}">Home</a></li>
-                <li><a id="navbar-createExperiment" href="{{ url_for('experiment.create') }}">Create Experiment</a></li>
-                <li><a id="navbar-vnf" href="{{ url_for('NsManagement.repository') }}">VNF/NS Management</a></li>
+                <li><a class="navbar-item" id="navbar-home" href="{{ url_for('main.index') }}">Home</a></li>
+                <li><a class="navbar-item" id="navbar-createExperiment" href="{{ url_for('experiment.create') }}">Create Experiment</a></li>
+                <li><a class="navbar-item" id="navbar-info" href="{{ url_for('main.info') }}">Info</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="{{ url_for('auth.logout') }}">{{ current_user.username }} - Logout</a></li>

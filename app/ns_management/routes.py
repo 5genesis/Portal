@@ -92,8 +92,10 @@ def upload_VNF():
             db.session.commit()
             Log.I(f'Saved VNF: {str(newVnf)}')
 
-            action: Action = Action(timestamp=datetime.utcnow(), author=current_user,
-                                    message=f'<a href="/VNF/repository">Uploaded VNF: {newVnf.name}</a>')
+            action: Action = Action(
+                timestamp=datetime.utcnow(), author=current_user,
+                message=f'<a href="{url_for("NsManagement.repository")}">Uploaded VNF: {newVnf.name}</a>'
+            )
             Log.I(f'Added action - Uploaded VNF')
             db.session.add(action)
             db.session.commit()

@@ -113,6 +113,8 @@ Facility Registry).
 > This information is not currently used by the ELCM (as of 3/6/2019)
 * Grafana URL: Base URL of Grafana Dashboard to display Execution results.
 * Description: Description of the platform.
+* PlatformDescriptionPage: HTML file that contains the description of the platform. The HTML written in this file 
+will be inserted in the 'Info' page of the Portal 
 * Logging: Parameters for storing application logs.
 
 ### Portal Notices
