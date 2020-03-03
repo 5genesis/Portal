@@ -98,7 +98,7 @@ def experiment(experimentId: int):
             else:
                 return render_template('experiment/experiment.html', title='experiment', experiment=exp,
                                        executions=executions, formRun=formRun, grafanaUrl=config.GrafanaUrl,
-                                       executionId=getLastExecution() + 1)
+                                       executionId=getLastExecution() + 1, dispatcherUrl=config.Dispatcher.Url)
         else:
             Log.I(f'Forbidden - User {current_user.name} don\'t have permission to access experiment {experimentId}')
             flash(f'Forbidden - You don\'t have permission to access this experiment', 'error')
@@ -140,5 +140,5 @@ def runExperiment(config: Config):
         Log.I(f'Added action - Ran experiment')
 
     except Exception as e:
-        Log.E(f'Error running expermient: {e}')
+        Log.E(f'Error running experiment: {e}')
         flash(f'Exception while trying to connect with dispatcher: {e}', 'error')

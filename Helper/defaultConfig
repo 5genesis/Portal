@@ -23,6 +23,9 @@ Grafana URL:
 Platform:
   Málaga [UMA]
 
+PlatformDescriptionPage:
+  platform.html
+
 Description:
   5th Generation End-to-end Network, Experimentation, System Integration, and Showcasing
 

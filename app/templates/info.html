@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{url_for('static', filename='js/loading.js')}}"></script>
+<script>
+(function() {
+    document.getElementById('navbar-home').classList.remove('menuSelected');
+    document.getElementById('navbar-createExperiment').classList.remove('menuSelected');
+    document.getElementById('navbar-vnf').classList.add('menuSelected');
+})();
+
+</script>
+{% endblock %}
+
+{% block app_content %}
+<div class="opaque" hidden></div>
+<div class="loader" hidden></div>
+    <div class="col-md-2"></div>
+<div class="col-md-8" style="padding-right: 25px">
+    {{ html | safe }}
+</div>
+{% endblock %}

@@ -29,17 +29,16 @@
         {% endif %}
     </td>
     <td class="col-md-3">
-        {% if execution.status not in ['Finished', 'Cancelled', 'Errored'] %}
-        <a class="btn btn-darkBlue btn-sm" href="/execution/{{ execution.id }}/reloadLog" role="button">Execution
-            Logs</a>
-        {% else %}
-        <a class="btn btn-darkBlue btn-sm" href="/execution/{{ execution.id }}" role="button">Execution Logs</a>
-        {% endif %}
-        {% if grafanaUrl == None or not execution.dashboard_url %}
-        <a class="btn btn-primary btn-sm disabled" href="#" role="button">Results</a>
-        {% else %}
-        <a class="btn btn-blue btn-sm" href="{{ grafanaUrl }}{{ execution.dashboard_url }}" role="button"
-           target="_blank">Results</a>
-        {% endif %}
+        {% set finished = execution.status in ['Finished', 'Cancelled', 'Errored'] %}
+        {% set hasDashboard = (grafanaUrl != None and execution.dashboard_url) %}
+
+        <a class="btn btn-darkBlue btn-sm" role="button"
+                href="/execution/{{ execution.id }}{{ "" if finished else "/reloadLog" }}">📄</a>
+
+        <a class="btn btn-blue btn-sm {{ "" if hasDashboard else "disabled"}}"
+           href="{{ grafanaUrl }}{{ execution.dashboard_url }}" role="button" target="_blank">📊</a>
+
+        <a class="btn btn-blue btn-sm {{ "" if finished else "disabled"}}"
+           href="http://{{ dispatcherUrl }}execution/{{ execution.id }}/results" role="button">💾</a>
     </td>
 </tr>

@@ -52,12 +52,13 @@
             <ul class="nav navbar-nav">
                 <li><a id="navbar-login" href="{{ url_for('auth.login') }}">Login</a></li>
                 <li><a id="navbar-register" href="{{ url_for('auth.register') }}">Register</a></li>
+                <li><a id="navbar-info" href="{{ url_for('main.info') }}">Info</a></li>
             </ul>
             {% else %}
             <ul class="nav navbar-nav">
                 <li><a id="navbar-home" href="{{ url_for('main.index') }}">Home</a></li>
                 <li><a id="navbar-createExperiment" href="{{ url_for('experiment.create') }}">Create Experiment</a></li>
-                <li><a id="navbar-vnf" href="{{ url_for('NsManagement.repository') }}">VNF/NS Management</a></li>
+                <li><a id="navbar-info" href="{{ url_for('main.info') }}">Info</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="{{ url_for('auth.logout') }}">{{ current_user.username }} - Logout</a></li>
