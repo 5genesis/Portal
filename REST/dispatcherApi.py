@@ -1,6 +1,6 @@
 import json
 from typing import Dict, Tuple
-from app.models import User
+from app.models import User, Experiment
 from .restClient import RestClient
 from base64 import b64encode
 from Helper import Config, Log
@@ -56,8 +56,15 @@ class DispatcherApi(RestClient):
         db.session.add(user)
         db.session.commit()
 
-    def RunCampaign(self, experimentId: int, user_id: int) -> Dict:
-        user = User.query.get(user_id)
+    def RunCampaign(self, experimentId: int, user: User) -> Dict:
+        self.RenewUserToken(user)
         token = user.getCurrentDispatcherToken()
-        return {}
+
+        descriptor = json.dumps(Experiment.query.get(experimentId).serialization())
+
+        url = f'/elcmapi/v0/run'  # TODO: See if this can be improved
+        response = self.HttpPost(url, {'Content-Type': 'application/json', **self.bearerAuthHeader(token)}, descriptor)
+        return RestClient.ResponseToJson(response)
+
+
 
