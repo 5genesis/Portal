@@ -1,6 +1,7 @@
 Dispatcher:
   Host: '127.0.0.1'
   Port: 8082
+  TokenExpiry: 240
 
 ELCM:
   Host: '127.0.0.1'

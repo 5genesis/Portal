@@ -41,6 +41,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     organization = db.Column(db.String(32))
     token = db.Column(db.String(512))
+    tokenTimestamp = db.Column(db.DATETIME)
     experiments = db.relationship('Experiment', backref='author', lazy='dynamic')
     actions = db.relationship('Action', backref='author', lazy='dynamic')
     VNFs = db.relationship('VNF', backref='author', lazy='dynamic')

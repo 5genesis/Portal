@@ -1,16 +1,18 @@
 import json
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional
 from app.models import User, Experiment
 from .restClient import RestClient
 from base64 import b64encode
 from Helper import Config, Log
 from app import db
+from datetime import datetime
 
 
 class DispatcherApi(RestClient):
     def __init__(self):
         config = Config().Dispatcher
         super().__init__(config.Host, config.Port, "")
+        self.tokenExpiry = config.TokenExpiry
 
     @staticmethod
     def basicAuthHeader(user: str, password: str) -> Dict:
@@ -50,18 +52,31 @@ class DispatcherApi(RestClient):
             Log.E(message)
             return message, False
 
-    def RenewUserToken(self, user: User):
+    def RenewUserToken(self, user: User) -> Optional[str]:
+        """Returns None if no error, an error message otherwise"""
         token, success = self.GetToken(user)
         user.token = token if success else None
+        user.tokenTimestamp = datetime.utcnow() if success else None
         db.session.add(user)
         db.session.commit()
+        return token if not success else None
+
+    def RenewUserTokenIfExpired(self, user) -> Optional[str]:
+        """Returns None if no error, an error message otherwise"""
+        tokenTimestamp = user.tokenTimestamp if user.tokenTimestamp is not None else datetime.min
+        timespan = datetime.utcnow() - tokenTimestamp
+        if timespan.total_seconds() >= self.tokenExpiry:
+            return self.RenewUserToken(user)
+        else:
+            return None
 
     def RunCampaign(self, experimentId: int, user: User) -> Dict:
-        self.RenewUserToken(user)
+        maybeError = self.RenewUserTokenIfExpired(user)
+        if maybeError is not None:
+            return {"ExecutionId": None, "Success": False, "Message": maybeError}
+
         token = user.getCurrentDispatcherToken()
-
         descriptor = json.dumps(Experiment.query.get(experimentId).serialization())
-
         url = f'/elcmapi/v0/run'  # TODO: See if this can be improved
         response = self.HttpPost(url, {'Content-Type': 'application/json', **self.bearerAuthHeader(token)}, descriptor)
         return RestClient.ResponseToJson(response)

@@ -78,8 +78,8 @@ def experiment(experimentId: int):
     exp: Experiment = Experiment.query.get(experimentId)
     formRun = RunExperimentForm()
     if formRun.validate_on_submit():
-        runExperiment(config)
-        return redirect(f"{request.url}/reload")
+        success = runExperiment()
+        return redirect(f"{request.url}/reload") if success else redirect(request.url)
 
     if exp is None:
         Log.I(f'Experiment not found')
@@ -118,29 +118,36 @@ def downloadNSD(experimentId: int):
     return send_from_directory(directory=baseFolder, filename=filename, as_attachment=True)
 
 
-def runExperiment(config: Config):
+def runExperiment() -> bool:
+    """Returns true if no issue has been detected"""
     try:
         jsonResponse: Dict = DispatcherApi().RunCampaign(request.form['id'], current_user)
-        Log.D(f'Ran experiment response {jsonResponse}')
-        Log.I(f'Ran experiment {request.form["id"]}')
-        flash(f'Success: {jsonResponse["Success"]} - Execution Id: '
-              f'{jsonResponse["ExecutionId"]} - Message: {jsonResponse["Message"]}', 'info')
-        execution: Execution = Execution(id=jsonResponse["ExecutionId"], experiment_id=request.form['id'],
-                                         status='Init')
-        db.session.add(execution)
-        db.session.commit()
+        success = jsonResponse["Success"]
+        message = jsonResponse["Message"]
+        executionId = jsonResponse["ExecutionId"]
+        if not success:
+            raise Exception(message)
+        else:
+            Log.I(f'Ran experiment {request.form["id"]}')
+            Log.D(f'Ran experiment response {jsonResponse}')
+            flash(f'Experiment started with Execution Id: {executionId}', 'info')
+            execution: Execution = Execution(id=executionId, experiment_id=request.form['id'], status='Init')
+            db.session.add(execution)
+            db.session.commit()
 
-        Log.I(f'Added execution {jsonResponse["ExecutionId"]}')
-        exp: Experiment = Experiment.query.get(execution.experiment_id)
-        action = Action(timestamp=datetime.utcnow(), author=current_user,
-                        message=f'<a href="/execution/{execution.id}">Ran experiment: {exp.name}</a>')
-        db.session.add(action)
-        db.session.commit()
-        Log.I(f'Added action - Ran experiment')
+            Log.I(f'Added execution {jsonResponse["ExecutionId"]}')
+            exp: Experiment = Experiment.query.get(execution.experiment_id)
+            action = Action(timestamp=datetime.utcnow(), author=current_user,
+                            message=f'<a href="/execution/{execution.id}">Ran experiment: {exp.name}</a>')
+            db.session.add(action)
+            db.session.commit()
+            Log.I(f'Added action - Ran experiment')
+            return True
 
     except Exception as e:
         Log.E(f'Error running experiment: {e}')
         flash(f'Exception while trying to connect with dispatcher: {e}', 'error')
+        return False
 
 
 @bp.route('/kickstart/<experimentId>', methods=["GET"])

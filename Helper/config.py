@@ -25,6 +25,7 @@ class hostPort:
 class Dispatcher(hostPort):
     def __init__(self, data: Dict):
         super().__init__(data, 'Dispatcher')
+        self.TokenExpiry = data['Dispatcher'].get('TokenExpiry', 240)
 
 
 class ELCM(hostPort):
