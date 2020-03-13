@@ -48,6 +48,13 @@ class LogInfo:
         self.Log = dictionary["Log"]
         self.Count = dictionary["Count"]
 
+    @staticmethod
+    def Empty():
+        return {
+            "Count": {"Debug": 0, "Info": 0, "Warning": 0, "Error": 0, "Critical": 0},
+            "Log": []
+        }
+
 
 class Log:
     CONSOLE_FORMAT = '%(asctime)s %(levelname)s: %(message)s'

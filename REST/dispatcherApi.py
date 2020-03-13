@@ -3,7 +3,7 @@ from typing import Dict, Tuple, Optional
 from app.models import User, Experiment
 from .restClient import RestClient
 from base64 import b64encode
-from Helper import Config, Log
+from Helper import Config, Log, LogInfo
 from app import db
 from datetime import datetime
 
@@ -81,5 +81,14 @@ class DispatcherApi(RestClient):
         response = self.HttpPost(url, {'Content-Type': 'application/json', **self.bearerAuthHeader(token)}, descriptor)
         return RestClient.ResponseToJson(response)
 
+    def GetExecutionLogs(self, executionId: int, user: User) -> Dict:
+        maybeError = self.RenewUserTokenIfExpired(user)
+        if maybeError is not None:
+            empty = LogInfo.Empty()
+            return {'PreRun': empty, 'Executor': empty, 'PostRun': empty, 'Status': maybeError}
 
+        token = user.getCurrentDispatcherToken()
+        url = f'/elcmexecution/{executionId}/logs'
+        response = self.HttpGet(url, extra_headers=self.bearerAuthHeader(token))
+        return RestClient.ResponseToJson(response)
 
