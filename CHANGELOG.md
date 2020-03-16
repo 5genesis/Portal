@@ -1,3 +1,10 @@
+**16/03/2020** [Version 2.0.0]
+
+ - Use Dispatcher for user authentication
+ - Added customizable platform information page
+ - Added experiment result download
+ - Hide VNF/NS functionality
+
 **31/10/2019** [Version 1.1.1]
 
  - Avoid exception when creating duplicated users

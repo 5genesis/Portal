@@ -101,7 +101,12 @@ The values that can be configured on `config.yml` are:
 * Dispatcher:
     * Host: Location of the machine where the Dispatcher is running (localhost by default).
     * Port: Port where the Dispatcher is listening for connections (5001 by default).
-> The Dispatcher does not currently exist as a separate entity, so this information refers to the ELCM during Release A.
+    * TokenExpiry: Time (in seconds) to consider that an authentication token has expired, should be slightly shorter
+    (30/60 seconds) than the real expiration time on the Dispatcher.
+* ELCM:
+    * Host: Location of the machine where the ELCM is running (localhost by default).
+    * Port: Port where the ELCM is listening for connections (5001 by default).
+> Direct communication with the ELCM is still needed
 * Platform: Platform name/location.
 * TestCases: List of TestCases supported by the platform.
 * UEs: Dictionary that contains information about the UEs available in the platform. Each element key defines the unique
