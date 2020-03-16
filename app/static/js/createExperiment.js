@@ -1,9 +1,3 @@
-(function() {
-  document.getElementById('navbar-createExperiment').classList.add('menuSelected');
-  document.getElementById('navbar-home').classList.remove('menuSelected');
-  document.getElementById('navbar-vnf').classList.remove('menuSelected');
-})();
-
 $(document).ready(
   function() {
     $('#checkBtn').click(function() {

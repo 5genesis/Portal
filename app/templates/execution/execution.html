@@ -105,12 +105,14 @@ update{{ execution.id }}(nanobar);
             {{ experiment.name }}
         </td>
         <td class="col-md-2">
-            {% if grafanaUrl == None or not execution.dashboard_url %}
-            <a class="btn btn-primary btn-sm disabled" href="#" role="button">Results</a>
-            {% else %}
-            <a class="btn btn-blue btn-sm" href="{{ grafanaUrl }}{{ execution.dashboard_url }}" role="button"
-               target="_blank">Results</a>
-            {% endif %}
+            {% set finished = execution.status in ['Finished', 'Cancelled', 'Errored'] %}
+            {% set hasDashboard = (grafanaUrl != None and execution.dashboard_url) %}
+
+            <a class="btn btn-blue btn-sm {{ "" if hasDashboard else "disabled"}}"
+               href="{{ grafanaUrl }}{{ execution.dashboard_url }}" role="button" target="_blank">📊</a>
+
+            <a class="btn btn-blue btn-sm {{ "" if finished else "disabled"}}"
+               href="http://{{ dispatcherUrl }}execution/{{ execution.id }}/results" role="button">💾</a>
         </td>
     </tr>
     </tbody>

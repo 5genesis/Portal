@@ -40,6 +40,8 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     organization = db.Column(db.String(32))
+    token = db.Column(db.String(512))
+    tokenTimestamp = db.Column(db.DATETIME)
     experiments = db.relationship('Experiment', backref='author', lazy='dynamic')
     actions = db.relationship('Action', backref='author', lazy='dynamic')
     VNFs = db.relationship('VNF', backref='author', lazy='dynamic')
@@ -58,6 +60,9 @@ class User(UserMixin, db.Model):
         return jwt.encode(
             {'reset_password': self.id, 'exp': time() + expires_in},
             current_app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
+
+    def getCurrentDispatcherToken(self):
+        return self.token
 
     def userExperiments(self) -> List:
         exp: List = Experiment.query.filter_by(user_id=self.id)

@@ -19,8 +19,13 @@ def index():
     experiments: List[Experiment] = current_user.userExperiments()
     formRun = RunExperimentForm()
     if formRun.validate_on_submit():
-        runExperiment(config)
-        return redirect(f"{request.url}/reload")
+        success = runExperiment()
+        return redirect(f"{request.url}/reload") if success else redirect(request.url)
 
     return render_template('index.html', title='Home', formRun=formRun, experiments=experiments, notices=notices,
                            actions=actions)
+
+
+@bp.route('/info')
+def info():
+    return render_template('info.html', title="Testbed Info", html=Config().PlatformDescriptionHtml)

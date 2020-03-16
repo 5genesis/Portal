@@ -101,7 +101,12 @@ The values that can be configured on `config.yml` are:
 * Dispatcher:
     * Host: Location of the machine where the Dispatcher is running (localhost by default).
     * Port: Port where the Dispatcher is listening for connections (5001 by default).
-> The Dispatcher does not currently exist as a separate entity, so this information refers to the ELCM during Release A.
+    * TokenExpiry: Time (in seconds) to consider that an authentication token has expired, should be slightly shorter
+    (30/60 seconds) than the real expiration time on the Dispatcher.
+* ELCM:
+    * Host: Location of the machine where the ELCM is running (localhost by default).
+    * Port: Port where the ELCM is listening for connections (5001 by default).
+> Direct communication with the ELCM is still needed
 * Platform: Platform name/location.
 * TestCases: List of TestCases supported by the platform.
 * UEs: Dictionary that contains information about the UEs available in the platform. Each element key defines the unique
@@ -113,6 +118,8 @@ Facility Registry).
 > This information is not currently used by the ELCM (as of 3/6/2019)
 * Grafana URL: Base URL of Grafana Dashboard to display Execution results.
 * Description: Description of the platform.
+* PlatformDescriptionPage: HTML file that contains the description of the platform. The HTML written in this file 
+will be inserted in the 'Info' page of the Portal 
 * Logging: Parameters for storing application logs.
 
 ### Portal Notices
@@ -138,5 +145,16 @@ Information about the current REST API of the Portal (and ELCM) can be seen [in 
 
 ## License
 
-TBD
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   > <http://www.apache.org/licenses/LICENSE-2.0>
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
 

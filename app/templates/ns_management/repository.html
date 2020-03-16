@@ -2,28 +2,21 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block scripts %}
-{{ super() }}
-<script>
-(function() {
-    document.getElementById('navbar-vnf').classList.add('menuSelected');
-    document.getElementById('navbar-home').classList.remove('menuSelected');
-    document.getElementById('navbar-createExperiment').classList.remove('menuSelected');
-})();
+    {{ super() }}
+    <script>setTab('navbar-vnf')</script>
+    <script>
+        function confirmDeleteVnf(VNFId){
+            if (window.confirm("Do you really want to remove the VNF?")) {
+                window.location.replace("/NS/deleteVnf/"+VNFId);
+            }
+        }
 
-function confirmDeleteVnf(VNFId){
-    if (window.confirm("Do you really want to remove the VNF?")) {
-        window.location.replace("/NS/deleteVnf/"+VNFId);
-    }
-}
-
-function confirmDeleteNs(VNFId){
-    if (window.confirm("Do you really want to remove the NS?")) {
-        window.location.replace("/NS/deleteNs/"+VNFId);
-    }
-}
-
-
-</script>
+        function confirmDeleteNs(VNFId){
+            if (window.confirm("Do you really want to remove the NS?")) {
+                window.location.replace("/NS/deleteNs/"+VNFId);
+            }
+        }
+    </script>
 {% endblock %}
 
 {% macro accordionCard(accordion, card, entity, type) %}

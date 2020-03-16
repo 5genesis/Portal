@@ -5,9 +5,9 @@ from shutil import copy
 from os.path import exists, abspath
 
 
-class Dispatcher:
-    def __init__(self, data: Dict):
-        self.data = data['Dispatcher']
+class hostPort:
+    def __init__(self, data: Dict, key: str):
+        self.data = data[key]
 
     @property
     def Host(self):
@@ -16,6 +16,21 @@ class Dispatcher:
     @property
     def Port(self):
         return self.data['Port']
+
+    @property
+    def Url(self):
+        return f"{self.Host}:{self.Port}/"
+
+
+class Dispatcher(hostPort):
+    def __init__(self, data: Dict):
+        super().__init__(data, 'Dispatcher')
+        self.TokenExpiry = data['Dispatcher'].get('TokenExpiry', 240)
+
+
+class ELCM(hostPort):
+    def __init__(self, data: Dict):
+        super().__init__(data, 'ELCM')
 
 
 class Logging:
@@ -59,6 +74,16 @@ class Config:
         with open(self.FILENAME, 'r', encoding='utf-8') as file:
             self.data = yaml.safe_load(file)
 
+            description = "No 'PlatformDescriptionPage' value set on config.yml"
+            htmlFile = self.data.get("PlatformDescriptionPage", None)
+            if htmlFile is not None:
+                try:
+                    with open(abspath(htmlFile), 'r', encoding="utf8") as stream:
+                         description = stream.read()
+                except Exception as e:
+                    description = f"Exception while reading description html from {htmlFile}: {e}"
+            self.data["PlatformDescriptionHtml"] = description
+
     @property
     def Notices(self) -> List[str]:
         if not exists(self.FILENAME_NOTICES):
@@ -71,6 +96,10 @@ class Config:
     @property
     def Dispatcher(self) -> Dispatcher:
         return Dispatcher(self.data)
+
+    @property
+    def ELCM(self) -> Dispatcher:
+        return ELCM(self.data)
 
     @property
     def TestCases(self):
@@ -95,6 +124,10 @@ class Config:
     @property
     def GrafanaUrl(self):
         return self.data['Grafana URL']
+
+    @property
+    def PlatformDescriptionHtml(self):
+        return self.data.get("PlatformDescriptionHtml", self.Description)
 
     @property
     def Logging(self) -> Logging:

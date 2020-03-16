@@ -1,5 +1,10 @@
 Dispatcher:
   Host: '127.0.0.1'
+  Port: 8082
+  TokenExpiry: 240
+
+ELCM:
+  Host: '127.0.0.1'
   Port: 5001
 
 TestCases:
@@ -18,6 +23,9 @@ Grafana URL:
 
 Platform:
   Málaga [UMA]
+
+PlatformDescriptionPage:
+  platform.html
 
 Description:
   5th Generation End-to-end Network, Experimentation, System Integration, and Showcasing

@@ -12,7 +12,7 @@ from Helper import Log
 db = SQLAlchemy()
 migrate = Migrate()
 login = LoginManager()
-login.login_view = 'authentication.login'
+login.login_view = 'auth.login'
 login.login_message = 'Please log in to access this page.'
 bootstrap = Bootstrap()
 mail = Mail()
@@ -38,8 +38,11 @@ def create_app(config_class=Config):
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
 
-    from app.authentication import bp as auth_bp
-    app.register_blueprint(auth_bp, url_prefix='/authentication')
+#    from app.authentication import bp as auth_bp
+#    app.register_blueprint(auth_bp, url_prefix='/authentication')
+
+    from app.dispatcher_auth import bp as dispatcher_auth_bp
+    app.register_blueprint(dispatcher_auth_bp, url_prefix='/auth')
 
     from app.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')

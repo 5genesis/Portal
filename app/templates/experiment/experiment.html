@@ -2,58 +2,58 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block scripts %}
-{{ super() }}
-<script src="{{url_for('static', filename='js/loading.js')}}"></script>
-<script src="{{url_for('static', filename='js/updateExecutionStatus.js')}}"></script>
-<script>
-function checkNewExecutions(){
-    let current = $('#hiddenNextId').text();
-    $.get("{{ url_for('api.nextExecutionId') }}")
-        .done(function (response){
-            if (response['NextId'].toString() !== current){
-                location.reload();
+    {{ super() }}
+    <script src="{{url_for('static', filename='js/loading.js')}}"></script>
+    <script src="{{url_for('static', filename='js/updateExecutionStatus.js')}}"></script>
+    <script>
+    function checkNewExecutions(){
+        let current = $('#hiddenNextId').text();
+        $.get("{{ url_for('api.nextExecutionId') }}")
+            .done(function (response){
+                if (response['NextId'].toString() !== current){
+                    location.reload();
+                }
             }
-        }
-    );
-}
-setInterval(checkNewExecutions, 5000)
+        );
+    }
+    setInterval(checkNewExecutions, 5000)
 
-</script>
-{% for exe in executions %}
-{% if exe.status not in ['Finished', 'Cancelled', 'Errored'] %}
-<script>
-function update{{ exe.id }}(nanobar) {
-    $.get("{{ url_for('api.executionJson', executionId=exe.id) }}")
-        .done(function (response) {
-            if (response['Status'] === 'Finished'){
-                updateOne($("#table_status{{ exe.id }}"), response['Status']);
-                $("#table_status{{ exe.id }}").addClass("label-success");
-                $("#table_status{{ exe.id }}").removeClass("label-primary");
-                $("#progress{{ exe.id }}").fadeTo(500, 0).slideUp(500, function(){ $(this).remove(); });
-            } else {
-                updateOne($("#table_status{{ exe.id }}"), response['Status']);
-                updatePerCent(nanobar, response['PerCent'], $('#percent{{ exe.id }}'));
-                updateMessage($('#message{{ exe.id }}'), response['Message']);
-                setTimeout(function() { update{{ exe.id }}(nanobar); }, 5000);
+    </script>
+    {% for exe in executions %}
+        {% if exe.status not in ['Finished', 'Cancelled', 'Errored'] %}
+            <script>
+            function update{{ exe.id }}(nanobar) {
+                $.get("{{ url_for('api.executionJson', executionId=exe.id) }}")
+                    .done(function (response) {
+                        if (response['Status'] === 'Finished'){
+                            updateOne($("#table_status{{ exe.id }}"), response['Status']);
+                            $("#table_status{{ exe.id }}").addClass("label-success");
+                            $("#table_status{{ exe.id }}").removeClass("label-primary");
+                            $("#progress{{ exe.id }}").fadeTo(500, 0).slideUp(500, function(){ $(this).remove(); });
+                        } else {
+                            updateOne($("#table_status{{ exe.id }}"), response['Status']);
+                            updatePerCent(nanobar, response['PerCent'], $('#percent{{ exe.id }}'));
+                            updateMessage($('#message{{ exe.id }}'), response['Message']);
+                            setTimeout(function() { update{{ exe.id }}(nanobar); }, 5000);
+                        }
+                    }
+                );
             }
-        }
-    );
-}
 
-</script>
-<script>
-div = $(
-    "<span class='message' id='message{{ exe.id }}'></span>" +
-    "<span class='progress'></span>" +
-    "<span id='percent{{ exe.id }}' style='display: none;'></span>"
-);
-$('#progress{{ exe.id }}').append(div);
-var nanobar = Nanobar({ target: div[1] });
-update{{ exe.id }}(nanobar);
+            </script>
+            <script>
+            div = $(
+                "<span class='message' id='message{{ exe.id }}'></span>" +
+                "<span class='progress'></span>" +
+                "<span id='percent{{ exe.id }}' style='display: none;'></span>"
+            );
+            $('#progress{{ exe.id }}').append(div);
+            var nanobar = Nanobar({ target: div[1] });
+            update{{ exe.id }}(nanobar);
 
-</script>
-{% endif %}
-{% endfor %}
+            </script>
+        {% endif %}
+    {% endfor %}
 {% endblock %}
 
 {% block app_content %}

@@ -12,38 +12,42 @@ from REST import DispatcherApi
 @bp.route('/<executionId>', methods=['GET'])
 @login_required
 def execution(executionId: int):
-    exe: Execution = Execution.query.get(executionId)
-    if exe is None:
+    execution: Execution = Execution.query.get(executionId)
+    if execution is None:
         Log.I(f'Execution not found')
         flash(f'Execution not found', 'error')
         return redirect(url_for('main.index'))
 
     else:
-        exp: Experiment = Experiment.query.get(exe.experiment_id)
-        if exp.user_id is current_user.id:
+        experiment: Experiment = Experiment.query.get(execution.experiment_id)
+        if experiment.user_id is current_user.id:
             try:
                 # Get Execution logs information
                 config = Config()
-                api = DispatcherApi(config.Dispatcher.Host, config.Dispatcher.Port, "/execution")
-                jsonResponse: Dict = api.Get(executionId)
+                jsonResponse: Dict = DispatcherApi().GetExecutionLogs(executionId, current_user)
                 Log.D(f'Access execution logs response {jsonResponse}')
                 status = jsonResponse["Status"]
-                if status == 'Not Found':
-                    Log.I(f'Execution not found')
-                    flash(f'Execution not found', 'error')
-                    return redirect(url_for('main.index'))
-
-                else:
+                if status == 'Success':
                     executor = LogInfo(jsonResponse["Executor"])
                     postRun = LogInfo(jsonResponse["PostRun"])
                     preRun = LogInfo(jsonResponse["PreRun"])
-                    return render_template('execution/execution.html', title='execution', execution=exe,
-                                           executor=executor, postRun=postRun, preRun=preRun, experiment=exp,
-                                           grafanaUrl=config.GrafanaUrl, executionId=getLastExecution() + 1)
+                    return render_template('execution/execution.html', title='execution', execution=execution,
+                                           executor=executor, postRun=postRun, preRun=preRun, experiment=experiment,
+                                           grafanaUrl=config.GrafanaUrl, executionId=getLastExecution() + 1,
+                                           dispatcherUrl=config.ELCM.Url)  # TODO: Use dispatcher
+                else:
+                    if status == 'Not Found':
+                        message = "Execution not found"
+                    else:
+                        message = f"Could not connect with log repository: {status}"
+                    Log.I(message)
+                    flash(message, 'error')
+                    return redirect(url_for('experiment.experiment', experimentId=experiment.id))
+
             except Exception as e:
-                Log.E(f'Error accessing execution{exe.experiment_id}: {e}')
+                Log.E(f'Error accessing execution{execution.experiment_id}: {e}')
                 flash(f'Exception while trying to connect with dispatcher: {e}', 'error')
-                return redirect(f"experiment/{exe.experiment_id}")
+                return redirect(url_for('experiment.experiment', experimentId=experiment.id))
         else:
             Log.I(f'Forbidden - User {current_user.name} don\'t have permission to access execution{executionId}')
             flash(f'Forbidden - You don\'t have permission to access this execution', 'error')
