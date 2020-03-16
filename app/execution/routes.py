@@ -34,7 +34,7 @@ def execution(executionId: int):
                     return render_template('execution/execution.html', title='execution', execution=execution,
                                            executor=executor, postRun=postRun, preRun=preRun, experiment=experiment,
                                            grafanaUrl=config.GrafanaUrl, executionId=getLastExecution() + 1,
-                                           dispatcherUrl=config.Dispatcher.Url)
+                                           dispatcherUrl=config.ELCM.Url)  # TODO: Use dispatcher
                 else:
                     if status == 'Not Found':
                         message = "Execution not found"

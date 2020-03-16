@@ -97,7 +97,8 @@ def experiment(experimentId: int):
             else:
                 return render_template('experiment/experiment.html', title='experiment', experiment=exp,
                                        executions=executions, formRun=formRun, grafanaUrl=config.GrafanaUrl,
-                                       executionId=getLastExecution() + 1, dispatcherUrl=config.Dispatcher.Url)
+                                       executionId=getLastExecution() + 1,
+                                       dispatcherUrl=config.ELCM.Url)  # TODO: Use dispatcher
         else:
             Log.I(f'Forbidden - User {current_user.name} don\'t have permission to access experiment {experimentId}')
             flash(f'Forbidden - You don\'t have permission to access this experiment', 'error')
