@@ -75,7 +75,7 @@ class DispatcherApi(RestClient):
         if maybeError is not None:
             return {"ExecutionId": None, "Success": False, "Message": maybeError}
 
-        token = user.getCurrentDispatcherToken()
+        token = user.CurrentDispatcherToken
         descriptor = json.dumps(Experiment.query.get(experimentId).serialization())
         url = f'/elcmapi/v0/run'  # TODO: See if this can be improved
         response = self.HttpPost(url, {'Content-Type': 'application/json', **self.bearerAuthHeader(token)}, descriptor)
@@ -87,7 +87,7 @@ class DispatcherApi(RestClient):
             empty = LogInfo.Empty()
             return {'PreRun': empty, 'Executor': empty, 'PostRun': empty, 'Status': maybeError}
 
-        token = user.getCurrentDispatcherToken()
+        token = user.CurrentDispatcherToken
         url = f'/elcmexecution/{executionId}/logs'
         response = self.HttpGet(url, extra_headers=self.bearerAuthHeader(token))
         return RestClient.ResponseToJson(response)

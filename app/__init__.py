@@ -38,17 +38,14 @@ def create_app(config_class=Config):
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
 
-#    from app.authentication import bp as auth_bp
-#    app.register_blueprint(auth_bp, url_prefix='/authentication')
-
     from app.dispatcher_auth import bp as dispatcher_auth_bp
     app.register_blueprint(dispatcher_auth_bp, url_prefix='/auth')
 
     from app.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
 
-    from app.ns_management import bp as ns_bp
-    app.register_blueprint(ns_bp, url_prefix='/NS')
+    from app.network_services import bp as ns_bp
+    app.register_blueprint(ns_bp, url_prefix='/services')
 
     from app.experiment import bp as experiment_bp
     app.register_blueprint(experiment_bp, url_prefix='/experiment')

@@ -59,20 +59,21 @@
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             {% if current_user.is_anonymous %}
-            <ul class="nav navbar-nav">
-                <li><a class="navbar-item" id="navbar-login" href="{{ url_for('auth.login') }}">Login</a></li>
-                <li><a class="navbar-item" id="navbar-register" href="{{ url_for('auth.register') }}">Register</a></li>
-                <li><a class="navbar-item" id="navbar-info" href="{{ url_for('main.info') }}">Info</a></li>
-            </ul>
+                <ul class="nav navbar-nav">
+                    <li><a class="navbar-item" id="navbar-login" href="{{ url_for('auth.login') }}">Login</a></li>
+                    <li><a class="navbar-item" id="navbar-register" href="{{ url_for('auth.register') }}">Register</a></li>
+                    <li><a class="navbar-item" id="navbar-info" href="{{ url_for('main.info') }}">Info</a></li>
+                </ul>
             {% else %}
-            <ul class="nav navbar-nav">
-                <li><a class="navbar-item" id="navbar-home" href="{{ url_for('main.index') }}">Home</a></li>
-                <li><a class="navbar-item" id="navbar-createExperiment" href="{{ url_for('experiment.create') }}">Create Experiment</a></li>
-                <li><a class="navbar-item" id="navbar-info" href="{{ url_for('main.info') }}">Info</a></li>
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="{{ url_for('auth.logout') }}">{{ current_user.username }} - Logout</a></li>
-            </ul>
+                <ul class="nav navbar-nav">
+                    <li><a class="navbar-item" id="navbar-home" href="{{ url_for('main.index') }}">Home</a></li>
+                    <li><a class="navbar-item" id="navbar-createExperiment" href="{{ url_for('experiment.create') }}">Create Experiment</a></li>
+                    <li><a class="navbar-item" id="navbar-networkServices" href="{{ url_for('NetworkServices.repository') }}">Network Services</a></li>
+                    <li><a class="navbar-item" id="navbar-info" href="{{ url_for('main.info') }}">Info</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="{{ url_for('auth.logout') }}">{{ current_user.username }} - Logout</a></li>
+                </ul>
             {% endif %}
         </div>
     </div>

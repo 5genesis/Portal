@@ -61,22 +61,29 @@ class User(UserMixin, db.Model):
             {'reset_password': self.id, 'exp': time() + expires_in},
             current_app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
 
-    def getCurrentDispatcherToken(self):
+    @property
+    def CurrentDispatcherToken(self):
         return self.token
 
-    def userExperiments(self) -> List:
+    @property
+    def Experiments(self) -> List:
         exp: List = Experiment.query.filter_by(user_id=self.id)
         return exp.order_by(Experiment.id.desc())
 
-    def userActions(self) -> List:
+    @property
+    def Actions(self) -> List:
         acts: List = Action.query.filter_by(user_id=self.id).order_by(Action.id.desc()).limit(10)
         return acts
 
-    def userVNFs(self) -> List:
+    @property
+    def NetworkServices(self) -> List:
+        return NetworkService.query.filter_by(user_id=self.id).order_by(NetworkService.name.asc())
+
+    def userVNFs(self) -> List:  # OLD
         VNFs: List = VNF.query.filter_by(user_id=self.id).order_by(VNF.id)
         return VNFs
 
-    def userNSs(self) -> List:
+    def userNSs(self) -> List:  # OLD
         NSs: List = NS.query.filter_by(user_id=self.id).order_by(NS.id)
         return NSs
 
@@ -90,7 +97,7 @@ class User(UserMixin, db.Model):
         return User.query.get(id)
 
     def serialization(self) -> Dict[str, object]:
-        experimentIds: List[int] = [exp.id for exp in self.userExperiments()]
+        experimentIds: List[int] = [exp.id for exp in self.Experiments]
         dictionary = {'Id': self.id, 'UserName': self.username, 'Email': self.email, 'Organization': self.organization,
                       'Experiments': experimentIds}
         return dictionary
