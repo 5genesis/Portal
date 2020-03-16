@@ -176,7 +176,7 @@ class Action(db.Model):
             f'User_id: {self.user_id}>'
 
 
-class VNF(db.Model):
+class VNF(db.Model):  # OLD
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
     description = db.Column(db.String(256))
@@ -194,7 +194,7 @@ class VNF(db.Model):
         return dictionary
 
 
-class NS(db.Model):
+class NS(db.Model):  # OLD
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
     description = db.Column(db.String(256))
@@ -209,3 +209,22 @@ class NS(db.Model):
         dictionary = {'Id': self.id, 'Name': self.name, 'Description': self.description, 'NSD': self.NSD,
                       "User": self.user_id}
         return dictionary
+
+
+class NetworkService(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    name = db.Column(db.String(64))
+    description = db.Column(db.String(256))
+    is_public = db.Column(db.Boolean)
+    vim_image = db.Column(db.String(256))
+    vim_location = db.Column(db.String(64))
+    nsd_file = db.Column(db.String(256))
+    nsd_id = db.Column(db.String(256))
+
+
+class VnfdPackage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    service_id = db.Column(db.Integer, db.ForeignKey('network_service.id'))
+    vnfd_file = db.Column(db.String(256))
+    vnfd_id = db.Column(db.String(256))
