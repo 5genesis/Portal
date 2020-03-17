@@ -14,7 +14,7 @@
             <div style="text-align: center">
                 <h2>Network Services Repository</h2>
             </div>
-            <a class="btn btn-blue" href="{{ url_for('NetworkServices.repository') }}" role="button">New Network Service</a>
+            <a class="btn btn-blue" href="{{ url_for('NetworkServices.create') }}" role="button">New Network Service</a>
             <br>
             {% for ns in nss %}
                 <p>{{ ns.name }} - {{ ns.description }}</p>

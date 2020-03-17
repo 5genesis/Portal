@@ -42,10 +42,12 @@ class User(UserMixin, db.Model):
     organization = db.Column(db.String(32))
     token = db.Column(db.String(512))
     tokenTimestamp = db.Column(db.DATETIME)
-    experiments = db.relationship('Experiment', backref='author', lazy='dynamic')
-    actions = db.relationship('Action', backref='author', lazy='dynamic')
-    VNFs = db.relationship('VNF', backref='author', lazy='dynamic')
-    NSs = db.relationship('NS', backref='author', lazy='dynamic')
+    experimentsRelation = db.relationship('Experiment', backref='author', lazy='dynamic')
+    actionsRelation = db.relationship('Action', backref='author', lazy='dynamic')
+    networkServiceRelation = db.relationship('NetworkService', backref='author', lazy='dynamic')
+
+    VNFs = db.relationship('VNF', backref='author', lazy='dynamic')  # OLD
+    NSs = db.relationship('NS', backref='author', lazy='dynamic')  # OLD
 
     def __repr__(self):
         return f'<Id: {self.id}, Username: {self.username}, Email: {self.email}, Organization: {self.organization}'
@@ -67,13 +69,11 @@ class User(UserMixin, db.Model):
 
     @property
     def Experiments(self) -> List:
-        exp: List = Experiment.query.filter_by(user_id=self.id)
-        return exp.order_by(Experiment.id.desc())
+        return Experiment.query.filter_by(user_id=self.id).order_by(Experiment.id.desc())
 
     @property
     def Actions(self) -> List:
-        acts: List = Action.query.filter_by(user_id=self.id).order_by(Action.id.desc()).limit(10)
-        return acts
+        return Action.query.filter_by(user_id=self.id).order_by(Action.id.desc()).limit(10)
 
     @property
     def NetworkServices(self) -> List:
@@ -90,11 +90,10 @@ class User(UserMixin, db.Model):
     @staticmethod
     def verifyResetPasswordToken(token):
         try:
-            id = jwt.decode(token, current_app.config['SECRET_KEY'],
-                            algorithms=['HS256'])['reset_password']
+            id = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])['reset_password']
+            return User.query.get(id)
         except:
-            return
-        return User.query.get(id)
+            return None
 
     def serialization(self) -> Dict[str, object]:
         experimentIds: List[int] = [exp.id for exp in self.Experiments]
@@ -228,6 +227,7 @@ class NetworkService(db.Model):
     vim_location = db.Column(db.String(64))
     nsd_file = db.Column(db.String(256))
     nsd_id = db.Column(db.String(256))
+    vnfdRelation = db.relationship('VnfdPackage', backref='network_service', lazy='dynamic')
 
 
 class VnfdPackage(db.Model):

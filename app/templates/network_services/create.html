@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>setTab('navbar-networkServices')</script>
+{% endblock %}
+
+{% block app_content %}
+<div style="text-align: center">
+    <h2>New Network Service</h2>
+</div>
+<br>
+<div>
+    <form id="form" method="post" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="col-sm-8 col-sm-offset-2" style="padding: 0 !important;">
+            <div class="col-sm-8">
+                <h4>Name</h4>
+                <input class="form-control" type="text" name="name" maxlength="64" required/>
+            </div>
+
+            <div class="col-sm-4">
+                <h4>Visibility</h4>
+                <select class="form-control" name="public">
+                    <option value="Public" >Public</option>
+                    <option value="Private" selected>Private</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="col-sm-8 col-sm-offset-2">
+            <h4>Description</h4>
+            <textarea class="form-control" rows="5" name="description" maxlength="256" required></textarea>
+        </div>
+
+        <div class="col-sm-8 col-sm-offset-2">
+            <hr>
+            <button type="submit" name="submit" class="btn btn-darkBlue">Create</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
