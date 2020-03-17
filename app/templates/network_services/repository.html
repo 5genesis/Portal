@@ -6,6 +6,17 @@
     <script>setTab('navbar-networkServices')</script>
 {% endblock %}
 
+{% macro networkServiceRow(ns) %}
+    <div class="col-sm-2">
+        {{ ns.name }}
+    </div>
+    <div class="col-sm-8" style="overflow: hidden">
+        {{ ns.description }}
+    </div>
+    <div class="col-sm-2">
+        <a class="btn btn-blue" href="{{ url_for('NetworkServices.edit', nsid=ns.id) }}" role="button">Edit</a>
+    </div>
+{% endmacro %}
 
 {% block app_content %}
     <div class="row">
@@ -17,7 +28,7 @@
             <a class="btn btn-blue" href="{{ url_for('NetworkServices.create') }}" role="button">New Network Service</a>
             <br>
             {% for ns in nss %}
-                <p>{{ ns.name }} - {{ ns.description }}</p>
+                {{ networkServiceRow(ns) }}
             {% endfor %}
         </div>
         <div class="col-sm-2"></div>

@@ -21,10 +21,10 @@ def create():
     nsIds: List[int] = []
 
     # Get User's VNFs
-
-    for ns in current_user.userNSs():
-        nss.append(ns.name)
-        nsIds.append(ns.id)
+    # TODO: Update
+    # for ns in current_user.userNSs():
+    #     nss.append(ns.name)
+    #     nsIds.append(ns.id)
 
     form = ExperimentForm()
     if form.validate_on_submit():
@@ -67,7 +67,7 @@ def create():
         flash('Your experiment has been successfully created', 'info')
         return redirect(url_for('main.index'))
 
-    return render_template('experiment/create.html', title='Home', form=form, testCaseList=Config().TestCases,
+    return render_template('experiment/create.html', title='New Experiment', form=form, testCaseList=Config().TestCases,
                            ueList=listUEs, sliceList=Config().Slices, nss=nss, nsIds=nsIds)
 
 
@@ -96,7 +96,7 @@ def experiment(experimentId: int):
                 flash(f'The experiment {exp.name} doesn\'t have any executions yet', 'info')
                 return redirect(url_for('main.index'))
             else:
-                return render_template('experiment/experiment.html', title='experiment', experiment=exp,
+                return render_template('experiment/experiment.html', title=f'Experiment: {exp.name}', experiment=exp,
                                        executions=executions, formRun=formRun, grafanaUrl=config.GrafanaUrl,
                                        executionId=getLastExecution() + 1,
                                        dispatcherUrl=config.ELCM.Url)  # TODO: Use dispatcher

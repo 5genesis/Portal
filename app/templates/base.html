@@ -24,7 +24,11 @@
 
 <html>
 {% block title %}
-5GENESIS Portal
+    {% if title %}
+        {{ title }} - 5GENESIS Portal
+    {% else %}
+        5GENESIS Portal
+    {% endif %}
 {% endblock %}
 
 {% block styles %}

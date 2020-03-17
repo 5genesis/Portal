@@ -22,7 +22,7 @@ def index():
         success = runExperiment()
         return redirect(f"{request.url}/reload") if success else redirect(request.url)
 
-    return render_template('index.html', title='Home', formRun=formRun, experiments=experiments, notices=notices,
+    return render_template('index.html', formRun=formRun, experiments=experiments, notices=notices,
                            actions=actions)
 
 
