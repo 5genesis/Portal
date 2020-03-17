@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_required
 from app.network_services import bp
 from .forms import NewNsForm
-from app.models import NetworkService, NS
+from app.models import NetworkService
 from app import db
 
 

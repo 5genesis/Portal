@@ -7,7 +7,7 @@ from config import Config as UploaderConfig
 from REST import ElcmApi, DispatcherApi
 from app import db
 from app.experiment import bp
-from app.models import Experiment, Execution, Action, NS
+from app.models import Experiment, Execution, Action
 from app.experiment.forms import ExperimentForm, RunExperimentForm
 from app.execution.routes import getLastExecution
 from Helper import Config, Log
@@ -44,15 +44,16 @@ def create():
         if formSlice is not None:
             experiment.slice = formSlice
 
+        # TODO: Update
         # Manage multiple VNF-Location selection
-        count = int(request.form.get('nsCount', '0'))
-        for i in range(count):
-            ns_i = 'NS' + str(i + 1)
-            ns = NS.query.get(request.form[ns_i])
-            if ns:
-                if i == 0:  # TODO: Remove experiment.NSD and use only network_services
-                    experiment.NSD = ns.NSD
-                experiment.network_services.append(ns)
+        # count = int(request.form.get('nsCount', '0'))
+        # for i in range(count):
+        #     ns_i = 'NS' + str(i + 1)
+        #     ns = NS.query.get(request.form[ns_i])
+        #     if ns:
+        #         if i == 0:
+        #             experiment.NSD = ns.NSD
+        #         experiment.network_services.append(ns)
 
         db.session.add(experiment)
         db.session.commit()
