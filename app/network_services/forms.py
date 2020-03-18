@@ -15,4 +15,11 @@ class NewNsForm(BaseNsForm):
 
 class EditNsForm(BaseNsForm):
     update = SubmitField('Update')
-    other = SubmitField('Other')
+    preloadVnfd = SubmitField('Pre-load')
+
+    location = SelectField('VIM Location', choices=[('Main DC', 'Main DC'), ('Edge DC', 'Edge DC')])
+    updateLocation = SubmitField('Update')
+    preloadVim = SubmitField('Pre-load')
+
+    preloadNsd = SubmitField('Pre-load')
+

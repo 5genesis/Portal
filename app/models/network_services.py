@@ -13,6 +13,10 @@ class NetworkService(db.Model):
     nsd_id = db.Column(db.String(256))
     vnfdRelation = db.relationship('VnfdPackage', backref='network_service', lazy='dynamic')
 
+    @property
+    def VNFDs(self):
+        return list(VnfdPackage.query.filter_by(service_id=self.id).order_by(VnfdPackage.id.desc()))
+
 
 class VnfdPackage(db.Model):
     id = db.Column(db.Integer, primary_key=True)

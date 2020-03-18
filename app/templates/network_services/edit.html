@@ -1,32 +1,106 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 
-{% block scripts %}
-{{ super() }}
-    <script>setTab('navbar-networkServices')</script>
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/browseFiles.css') }}">
 {% endblock %}
 
+{% block scripts %}
+    {{ super() }}
+    <script>setTab('navbar-networkServices')</script>
+    <script src="{{url_for('static', filename='js/browseFiles.js')}}"></script>
+{% endblock %}
+
+{% macro basicInfo() %}
+    <h4 style="text-align: center">Basic Information</h4>
+    <br>
+    {% include 'network_services/_baseNsForm.html' %}
+
+    <div class="col-sm-8 col-sm-offset-2">
+        {{ wtf.form_field(form.update) }}
+    </div>
+{% endmacro %}
+
+{% macro fileSelector(message, tag, actionButton) %}
+    <div class="col-sm-3"><strong>{{ message }}</strong></div>
+    <div class="col-sm-7">
+        <div class="input-file-container">
+            <input type="file" id="file{{ tag }}" name="file{{ tag }}" class="input-file input-file{{ tag }}"/>
+            <label for="file{{ tag }}" class="input-file-trigger input-file-trigger{{ tag }}">Browse</label>
+            <span class="file-return file-return{{ tag }}"></span>
+        </div>
+    </div>
+    <div class="col-sm-2 text-center">{{ actionButton }}</div>
+{% endmacro %}
+
+{% macro vndfs() %}
+    <div class="col-sm-8 col-sm-offset-2">
+        <hr>
+        <h4 style="text-align: center">VNFD Packages</h4>
+        <br>
+        {% if service.VNFDs | length == 0 %}
+            <p style="text-align: center">No VNFD packages defined</p>
+        {% else %}
+            {% for vnfd in service.VNFDs %}
+                <p>{{ vnfd.vnfd_file }}</p>
+            {% endfor %}
+        {% endif %}
+
+        {{ fileSelector("Add VNFD package", "Vnfd", wtf.form_field(form.preloadVnfd)) }}
+    </div>
+{% endmacro %}
+
+{% macro vim() %}
+    <div class="col-sm-8 col-sm-offset-2">
+        <hr>
+        <h4 style="text-align: center">Virtualized Infrastructure Manager</h4>
+        <br>
+        <div class="col-sm-12" style="padding: 0 !important;">
+            <div class="col-sm-10">{{ wtf.form_field(form.location) }}</div>
+            <div class="col-sm-2 text-center"><br>{{ wtf.form_field(form.updateLocation) }}</div>
+        </div>
+        {% if service.vim_image is none %}
+            {{ fileSelector("Add VIM image", "Vim", wtf.form_field(form.preloadVim)) }}
+        {% else %}
+            <div class="col-sm-8 col-sm-offset-2">
+                <p><strong>VIM image: </strong>{{ service.vim_image }}</p>
+            </div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro nsd() %}
+    <div class="col-sm-8 col-sm-offset-2">
+        <hr>
+        <h4 style="text-align: center">Network Service Descriptor</h4>
+        <br>
+        {% if service.nsd_file is none %}
+            {{ fileSelector("Add NSD file", "Nsd", wtf.form_field(form.preloadNsd)) }}
+        {% else %}
+            <div class="col-sm-8 col-sm-offset-2">
+                <p><strong>NSD file: </strong>{{ service.nsd_file }}</p>
+            </div>
+        {% endif %}
+        <hr>
+    </div>
+{% endmacro %}
 
 {% block app_content %}
-    <div style="text-align: center">
-    <h2>New Network Service</h2>
-    </div>
-    <br>
     <div>
         <form id="form" method="post" enctype="multipart/form-data">
             {{ form.hidden_tag() }}
-            {% include 'network_services/_baseNsForm.html' %}
 
+            {{ basicInfo() }}
+            {{ vndfs() }}
+            {{ vim() }}
+            {{ nsd() }}
+
+            {# Bottom padding #}
             <div class="col-sm-8 col-sm-offset-2">
                 <hr>
-                {{ wtf.form_field(form.update) }}
-            </div>
-
-            <div class="col-sm-8 col-sm-offset-2">
-                <hr>
-                {{ wtf.form_field(form.other) }}
+                <div style="height: 50vh"></div>
             </div>
         </form>
     </div>
-
 {% endblock %}

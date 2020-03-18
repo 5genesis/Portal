@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request, abort
 from flask_login import current_user, login_required
 from app.network_services import bp
 from .forms import NewNsForm, EditNsForm, BaseNsForm
-from app.models import NetworkService
+from app.models import NetworkService, VnfdPackage
 from app import db
 
 
@@ -51,8 +51,14 @@ def edit(nsid: int):
             if form.data['update']:
                 _assignBaseFormData(form, service)
                 flash("Network Service information updated.")
-            elif form.data['other']:
-                flash("Jaja, other", 'info')
+            elif form.data['preloadVnfd']:
+                flash("Preload VNFD")
+            elif form.data['updateLocation']:
+                flash("Update Location")
+            elif form.data['preloadVim']:
+                flash("Preload VIM")
+            elif form.data['preloadNsd']:
+                flash("Preload NSD")
 
     form = EditNsForm(
         name=service.name,
@@ -60,4 +66,5 @@ def edit(nsid: int):
         public='Public' if service.is_public else 'Private'
     )
 
-    return render_template('network_services/edit.html', Title=f'Network Service: {service.name}', form=form)
+    return render_template('network_services/edit.html', Title=f'Network Service: {service.name}',
+                           form=form, service=service)
