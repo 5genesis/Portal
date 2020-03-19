@@ -34,6 +34,23 @@
     <div class="col-sm-2 text-center">{{ actionButton }}</div>
 {% endmacro %}
 
+{% macro vnfd_row(vnfd) %}
+    <div class="col-sm-3">
+        <p><strong>{{ vnfd.vnfd_file }}</strong></p>
+    </div>
+    <div class="col-sm-5">
+        <p><strong>ID: </strong>{{ vnfd.vnfd_id }}</p>
+    </div>
+    <div class="col-sm-4 text-right">
+        {% if vnfd.vnfd_id is none %}
+            <button type="submit" id="onboardVnf{{ vnfd.id }}" name="onboardVnf{{ vnfd.id }}" class="btn btn-default">
+                Onboard</button>
+        {% endif %}
+        <button type="submit" id="deleteVnf{{ vnfd.id }}" name="deleteVnf{{ vnfd.id }}" class="btn btn-default">
+            Delete</button>
+    </div>
+{% endmacro %}
+
 {% macro vndfs() %}
     <div class="col-sm-8 col-sm-offset-2">
         <hr>
@@ -43,7 +60,7 @@
             <p style="text-align: center">No VNFD packages defined</p>
         {% else %}
             {% for vnfd in service.VNFDs %}
-                <p>{{ vnfd.vnfd_file }}</p>
+                {{ vnfd_row(vnfd) }}
             {% endfor %}
         {% endif %}
 
@@ -63,8 +80,14 @@
         {% if service.vim_image is none %}
             {{ fileSelector("Add VIM image", "Vim", wtf.form_field(form.preloadVim)) }}
         {% else %}
-            <div class="col-sm-8 col-sm-offset-2">
-                <p><strong>VIM image: </strong>{{ service.vim_image }}</p>
+            <div class="col-sm-8">
+                <p><strong>{{ service.vim_image }}</strong></p>
+            </div>
+            <div class="col-sm-4 text-right">
+                {% if service.vim_id is none %}
+                    {{ wtf.form_field(form.onboardVim) }}
+                {% endif %}
+                {{ wtf.form_field(form.deleteVim) }}
             </div>
         {% endif %}
     </div>
@@ -78,8 +101,17 @@
         {% if service.nsd_file is none %}
             {{ fileSelector("Add NSD file", "Nsd", wtf.form_field(form.preloadNsd)) }}
         {% else %}
-            <div class="col-sm-8 col-sm-offset-2">
-                <p><strong>NSD file: </strong>{{ service.nsd_file }}</p>
+            <div class="col-sm-3">
+                <p><strong>{{ service.nsd_file }}</strong></p>
+            </div>
+            <div class="col-sm-5">
+                <p><strong>ID: </strong>{{ service.nsd_id }}</p>
+            </div>
+            <div class="col-sm-4 text-right">
+                {% if service.nsd_id is none %}
+                    {{ wtf.form_field(form.onboardNsd) }}
+                {% endif %}
+                {{ wtf.form_field(form.deleteNsd) }}
             </div>
         {% endif %}
         <hr>

@@ -66,6 +66,15 @@ def edit(nsid: int):
             return None
         return file
 
+    def _checkDynamicButtons(request):
+        choices = ['onboardVnf', 'deleteVnf']
+        for key in request.form.keys():
+            for choice in choices:
+                if choice in key:
+                    return choice, int(key.replace(choice, ''))
+        return None, None
+
+
     service = NetworkService.query.get(nsid)
     if service is None:
         abort(404)
@@ -107,6 +116,13 @@ def edit(nsid: int):
                     service.nsd_file = _store(file, 'network_services', 'nsd', str(service.id))
                     _applyChanges(service)
                     flash(f"Pre-loaded NSD file: {service.nsd_file}")
+
+            else:  # Check VNFD buttons
+                action, vnfdId = _checkDynamicButtons(request)
+                if action is 'onboardVnf':
+                    flash(f'Onboard {vnfdId}')
+                elif action is 'deleteVnf':
+                    flash(f'Delete {vnfdId}')
 
     form = EditNsForm(
         name=service.name,

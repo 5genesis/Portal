@@ -20,6 +20,10 @@ class EditNsForm(BaseNsForm):
     location = SelectField('VIM Location', choices=[('Main DC', 'Main DC'), ('Edge DC', 'Edge DC')])
     updateLocation = SubmitField('Update')
     preloadVim = SubmitField('Pre-load')
+    onboardVim = SubmitField('Onboard')
+    deleteVim = SubmitField('Delete')
 
     preloadNsd = SubmitField('Pre-load')
+    onboardNsd = SubmitField('Onboard')
+    deleteNsd = SubmitField('Delete')
 
