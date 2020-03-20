@@ -33,7 +33,7 @@ def upgrade():
     op.get_bind().execute(text("""
         create table network_service_dg_tmp (
             id INTEGER not null primary key,
-            user_id INTEGER references user,
+            user_id INTEGER references user(id),
             name VARCHAR(64),
             description VARCHAR(256),
             is_public BOOLEAN,
@@ -42,13 +42,12 @@ def upgrade():
             nsd_file VARCHAR(256),
             nsd_id VARCHAR(256),
             vim_id VARCHAR(256),
-            current_onboard INTEGER
-                constraint network_service_onboard_status_id_fk references onboard_status,
+            current_onboard INTEGER references onboard_status(id),
             check (is_public IN (0, 1))
         );
     """))
 
-    op.get_bind().execute(text("insert into network_service_dg_tmp(id, user_id, name, description, is_public, vim_image, vim_location, nsd_file, nsd_id, vim_id, current_onboard) select id, user_id, name, description, is_public, vim_image, vim_location, nsd_file, nsd_id, vim_id, current_onboard from network_service;"))
+    op.get_bind().execute(text("insert into network_service_dg_tmp(id, user_id, name, description, is_public, vim_image, vim_location, nsd_file, nsd_id, vim_id) select id, user_id, name, description, is_public, vim_image, vim_location, nsd_file, nsd_id, vim_id from network_service;"))
     op.get_bind().execute(text("drop table network_service;"))
     op.get_bind().execute(text("alter table network_service_dg_tmp rename to network_service;"))
 
