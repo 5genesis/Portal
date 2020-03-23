@@ -5,10 +5,11 @@ from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required
 from app.network_services import bp
 from .forms import NewNsForm, EditNsForm, BaseNsForm
-from app.models import NetworkService, VnfdPackage
+from app.models import NetworkService, VnfdPackage, OnboardStatus
 from app import db
 from Helper import Log
 from config import Config
+from typing import Optional
 
 
 def _applyChanges(entity):
@@ -66,7 +67,15 @@ def edit(nsid: int):
             return None
         return file
 
-    def _checkDynamicButtons(request):
+    def _getButton(request, form):
+        buttonNames = ['update', 'updateLocation', 'preloadVnfd',
+                       'preloadVim', 'onboardVim', 'deleteVim',
+                       'preloadNsd', 'onboardNsd', 'deleteNsd']
+
+        for name in buttonNames:
+            if form.data[name]:
+                return name, None
+
         choices = ['onboardVnf', 'deleteVnf']
         for key in request.form.keys():
             for choice in choices:
@@ -74,6 +83,11 @@ def edit(nsid: int):
                     return choice, int(key.replace(choice, ''))
         return None, None
 
+    def _checkNotBusy():
+        if service.current_onboard is not None:
+            flash("Cannot perform multiple actions", 'error')
+            return False
+        return True
 
     service = NetworkService.query.get(nsid)
     if service is None:
@@ -85,11 +99,13 @@ def edit(nsid: int):
     if request.method == "POST":
         form = EditNsForm()
         if form.validate_on_submit():
-            if form.data['update']:
+            button, identifier = _getButton(request, form)
+
+            if button == 'update':
                 _assignBaseFormData(form, service)
                 flash("Network Service information updated.")
 
-            elif form.data['preloadVnfd']:
+            elif button == 'preloadVnfd':
                 file = _checkFile('fileVnfd', "VNFD file is missing")
                 if file is not None:
                     newVnfd = VnfdPackage(network_service=service)
@@ -98,31 +114,42 @@ def edit(nsid: int):
                     _applyChanges(newVnfd)
                     flash(f"Pre-loaded new VNFD package: {newVnfd.vnfd_file}")
 
-            elif form.data['updateLocation']:
+            elif button == 'updateLocation':
                 service.vim_location = form.location.data
                 _applyChanges(service)
                 flash(f"VIM location set to {service.vim_location}.")
 
-            elif form.data['preloadVim']:
+            elif button == 'preloadVim':
                 file = _checkFile('fileVim', "VIM image file is missing")
                 if file is not None:
                     service.vim_image = _store(file, 'network_services', 'vim', str(service.id))
                     _applyChanges(service)
                     flash(f"Pre-loaded VIM image: {service.vim_image}")
 
-            elif form.data['preloadNsd']:
+            elif button == 'preloadNsd':
                 file = _checkFile('fileNsd', "NSD file is missing")
                 if file is not None:
                     service.nsd_file = _store(file, 'network_services', 'nsd', str(service.id))
                     _applyChanges(service)
                     flash(f"Pre-loaded NSD file: {service.nsd_file}")
 
-            else:  # Check VNFD buttons
-                action, vnfdId = _checkDynamicButtons(request)
-                if action is 'onboardVnf':
-                    flash(f'Onboard {vnfdId}')
-                elif action is 'deleteVnf':
-                    flash(f'Delete {vnfdId}')
+            # Asynchronous actions
+            elif button in ['onboardVim', 'deleteVim', 'onboardNsd', 'deleteNsd'] or identifier is not None:
+                action = button
+                if _checkNotBusy():
+                    status = OnboardStatus(entity_type=action, entity_id=identifier, status='Init', finished=False)
+                    _applyChanges(status)
+                    service.current_onboard = status.id
+                    _applyChanges(service)
+
+                    if identifier is not None:
+                        vnfd = VnfdPackage.query.get(identifier)
+                        if vnfd is not None:
+                            _handleActions(action, service, vnfd)
+                        else:
+                            flash(f"Vnfd package (Id: {identifier}) not found", "error")
+                    else:
+                        _handleActions(action, service, None)
 
     form = EditNsForm(
         name=service.name,
@@ -133,3 +160,55 @@ def edit(nsid: int):
 
     return render_template('network_services/edit.html', Title=f'Network Service: {service.name}',
                            form=form, service=service)
+
+
+def _handleActions(action: str, service: NetworkService, vnfd: Optional[VnfdPackage]):
+    def _alreadyExist(type, value):
+        if value is not None:
+            flash(f'{type} already onboarded with Id: {value}', "error")
+            return True
+        return False
+
+    def _notify(action, type, value):
+        flash(f'{action} {type} with Id: {value}', "info")
+
+    if 'onboard' in action:
+        if 'Vnf' in action:
+            if not _alreadyExist("VNFD package", vnfd.vnfd_id):
+                vnfd.vnfd_id = 'placeholder'  # TODO
+                _applyChanges(vnfd)
+                _notify("Onboarded", "VNFD package", vnfd.vnfd_id)
+        else:
+            if 'Vim' in action:
+                if not _alreadyExist("VIM image", service.vim_id):
+                    service.vim_id = 'placeholder'  # TODO
+            elif 'Nsd' in action:
+                if not _alreadyExist("NSD file", service.nsd_id):
+                    service.nsd_id = 'placeholder'  # TODO
+
+            _applyChanges(service)
+            _notify("Onboarded", "VIM image" if 'Vim' in action else "NSD file",
+                    service.vim_id if 'Vim' in action else service.nsd_id)
+
+    elif 'delete' in action:
+        if 'Vnf' in action:
+            db.session.delete(vnfd)
+            db.session.commit()
+            if vnfd.vnfd_id is not None:
+                flash(f'Deleted {vnfd.id} from MANO')  # TODO
+            else:
+                flash(f'Deleted {vnfd.id} from LOCAL')  # TODO
+        else:
+            if 'Vim' in action:
+                if service.vim_id is not None:
+                    flash(f'Deleted VIM from MANO')  # TODO
+                else:
+                    flash(f'Deleted VIM from LOCAL')  # TODO
+                service.vim_id = service.vim_image = None
+            elif 'Nsd' in action:
+                if service.vim_id is not None:
+                    flash(f'Deleted NSD from MANO')  # TODO
+                else:
+                    flash(f'Deleted NSD from LOCAL')  # TODO
+                service.nsd_id = service.nsd_file = None
+            _applyChanges(service)
