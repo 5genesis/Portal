@@ -27,3 +27,5 @@ class EditNsForm(BaseNsForm):
     onboardNsd = SubmitField('Onboard')
     deleteNsd = SubmitField('Delete')
 
+    closeAction = SubmitField('Close')
+    cancelAction = SubmitField('Cancel')

@@ -70,7 +70,8 @@ def edit(nsid: int):
     def _getButton(request, form):
         buttonNames = ['update', 'updateLocation', 'preloadVnfd',
                        'preloadVim', 'onboardVim', 'deleteVim',
-                       'preloadNsd', 'onboardNsd', 'deleteNsd']
+                       'preloadNsd', 'onboardNsd', 'deleteNsd',
+                       'closeAction', 'cancelAction']
 
         for name in buttonNames:
             if form.data[name]:
@@ -134,6 +135,17 @@ def edit(nsid: int):
                     flash(f"Pre-loaded NSD file: {service.nsd_file}")
 
             # Asynchronous actions
+            elif button in ['closeAction', 'cancelAction']:
+                status = None if service.current_onboard is None else OnboardStatus.query.get(service.current_onboard)
+                if status is not None:
+                    if not status.finished:
+                        # TODO: Handle cancel
+                        flash("Cancelled action")
+                    service.current_onboard = None
+                    _applyChanges(service)
+                    db.session.delete(status)
+                    db.session.commit()
+
             elif button in ['onboardVim', 'deleteVim', 'onboardNsd', 'deleteNsd'] or identifier is not None:
                 action = button
                 if _checkNotBusy():
@@ -158,8 +170,10 @@ def edit(nsid: int):
         location=service.vim_location
     )
 
+    action = None if service.current_onboard is None else OnboardStatus.query.get(service.current_onboard)
+
     return render_template('network_services/edit.html', Title=f'Network Service: {service.name}',
-                           form=form, service=service)
+                           form=form, service=service, action=action)
 
 
 def _handleActions(action: str, service: NetworkService, vnfd: Optional[VnfdPackage]):
