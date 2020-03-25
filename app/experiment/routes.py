@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
 from flask_login import current_user, login_required
@@ -59,7 +59,7 @@ def create():
         db.session.commit()
         Log.I(f'Added experiment {experiment.id}')
 
-        action: Action = Action(timestamp=datetime.utcnow(), author=current_user,
+        action: Action = Action(timestamp=datetime.now(timezone.utc), author=current_user,
                                 message=f'<a href="/experiment/{experiment.id}">Created experiment: {form.name.data}</a>')
         db.session.add(action)
         db.session.commit()
@@ -139,7 +139,7 @@ def runExperiment() -> bool:
 
             Log.I(f'Added execution {jsonResponse["ExecutionId"]}')
             exp: Experiment = Experiment.query.get(execution.experiment_id)
-            action = Action(timestamp=datetime.utcnow(), author=current_user,
+            action = Action(timestamp=datetime.now(timezone.utc), author=current_user,
                             message=f'<a href="/execution/{execution.id}">Ran experiment: {exp.name}</a>')
             db.session.add(action)
             db.session.commit()

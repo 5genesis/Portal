@@ -5,7 +5,7 @@ from .restClient import RestClient
 from base64 import b64encode
 from Helper import Config, Log, LogInfo
 from app import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class DispatcherApi(RestClient):
@@ -56,7 +56,7 @@ class DispatcherApi(RestClient):
         """Returns None if no error, an error message otherwise"""
         token, success = self.GetToken(user)
         user.token = token if success else None
-        user.tokenTimestamp = datetime.utcnow() if success else None
+        user.tokenTimestamp = datetime.now(timezone.utc) if success else None
         db.session.add(user)
         db.session.commit()
         return token if not success else None
@@ -64,7 +64,7 @@ class DispatcherApi(RestClient):
     def RenewUserTokenIfExpired(self, user) -> Optional[str]:
         """Returns None if no error, an error message otherwise"""
         tokenTimestamp = user.tokenTimestamp if user.tokenTimestamp is not None else datetime.min
-        timespan = datetime.utcnow() - tokenTimestamp
+        timespan = datetime.now(timezone.utc) - tokenTimestamp
         if timespan.total_seconds() >= self.tokenExpiry:
             return self.RenewUserToken(user)
         else:
