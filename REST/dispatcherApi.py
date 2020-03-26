@@ -64,6 +64,7 @@ class DispatcherApi(RestClient):
     def RenewUserTokenIfExpired(self, user) -> Optional[str]:
         """Returns None if no error, an error message otherwise"""
         tokenTimestamp = user.tokenTimestamp if user.tokenTimestamp is not None else datetime.min
+        tokenTimestamp = tokenTimestamp.replace(tzinfo=timezone.utc)
         timespan = datetime.now(timezone.utc) - tokenTimestamp
         if timespan.total_seconds() >= self.tokenExpiry:
             return self.RenewUserToken(user)
