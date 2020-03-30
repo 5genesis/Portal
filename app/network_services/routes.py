@@ -5,9 +5,9 @@ from werkzeug.utils import secure_filename
 from flask_login import current_user, login_required
 from app.network_services import bp
 from .forms import NewNsForm, EditNsForm, BaseNsForm
-from app.models import NetworkService, VnfdPackage, OnboardStatus
+from app.models import NetworkService, VnfdPackage
 from app import db
-from Helper import Log
+from Helper import Log, Action, ActionHandler
 from config import Config
 from typing import Optional
 
@@ -85,7 +85,7 @@ def edit(nsid: int):
         return None, None
 
     def _checkNotBusy():
-        if service.current_onboard is not None:
+        if ActionHandler.Get(service.id) is not None:
             flash("Cannot perform multiple actions", 'error')
             return False
         return True
@@ -136,23 +136,16 @@ def edit(nsid: int):
 
             # Asynchronous actions
             elif button in ['closeAction', 'cancelAction']:
-                status = None if service.current_onboard is None else OnboardStatus.query.get(service.current_onboard)
+                status = ActionHandler.Get(service.id)
                 if status is not None:
-                    if not status.finished:
+                    if not status.hasFinished:
                         # TODO: Handle cancel
                         flash("Cancelled action")
-                    service.current_onboard = None
-                    _applyChanges(service)
-                    db.session.delete(status)
-                    db.session.commit()
+                    ActionHandler.Delete(service.id)
 
             elif button in ['onboardVim', 'deleteVim', 'onboardNsd', 'deleteNsd'] or identifier is not None:
                 action = button
                 if _checkNotBusy():
-                    status = OnboardStatus(entity_type=action, entity_id=identifier, status='Init', finished=False)
-                    _applyChanges(status)
-                    service.current_onboard = status.id
-                    _applyChanges(service)
 
                     if identifier is not None:
                         vnfd = VnfdPackage.query.get(identifier)
@@ -170,7 +163,7 @@ def edit(nsid: int):
         location=service.vim_location
     )
 
-    action = None if service.current_onboard is None else OnboardStatus.query.get(service.current_onboard)
+    action = ActionHandler.Get(service.id)
 
     return render_template('network_services/edit.html', Title=f'Network Service: {service.name}',
                            form=form, service=service, action=action)
@@ -190,6 +183,9 @@ def _handleActions(action: str, service: NetworkService, vnfd: Optional[VnfdPack
         if 'Vnf' in action:
             if not _alreadyExist("VNFD package", vnfd.vnfd_id):
                 vnfd.vnfd_id = 'placeholder'  # TODO
+                action = Action(service.id, "onboardVnf")
+                ActionHandler.Set(service.id, action)
+                action.Start()
                 _applyChanges(vnfd)
                 _notify("Onboarded", "VNFD package", vnfd.vnfd_id)
         else:

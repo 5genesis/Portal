@@ -2,11 +2,11 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% set busy = action is not none %}
-{% set vimAction = busy and 'Vim' in action.entity_type %}
-{% set nsdAction = busy and 'Nsd' in action.entity_type %}
-{% set vnfAction = busy and 'Vnf' in action.entity_type %}
-{% set onboardAction = busy and 'onboard' in action.entity_type %}
-{% set deleteAction = busy and 'delete' in action.entity_type %}
+{% set vimAction = busy and 'Vim' in action.type %}
+{% set nsdAction = busy and 'Nsd' in action.type %}
+{% set vnfAction = busy and 'Vnf' in action.type %}
+{% set onboardAction = busy and 'onboard' in action.type %}
+{% set deleteAction = busy and 'delete' in action.type %}
 
 {% block styles %}
     {{ super() }}
@@ -148,10 +148,10 @@
             </strong>
         </div>
         <div class="col-sm-7">
-            {{ action.status }}
+            {{ action.message }}
         </div>
         <div class="col-sm-2">
-            {% if action.finished %}
+            {% if action.hasFinished %}
                 {{ wtf.form_field(form.closeAction) }}
             {% else %}
                 {{ wtf.form_field(form.cancelAction) }}
