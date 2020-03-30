@@ -59,7 +59,7 @@
 {% endmacro %}
 
 {% macro vndfs() %}
-    <div class="col-sm-8 col-sm-offset-2">
+    <div class="col-sm-8 col-sm-offset-2 {{ "disabled" if service.vim_id is none else "" }}">
         <hr>
         <h4 style="text-align: center">VNFD Packages</h4>
         <br>
@@ -80,9 +80,11 @@
         <hr>
         <h4 style="text-align: center">Virtualized Infrastructure Manager</h4>
         <br>
-        <div class="col-sm-12" style="padding: 0 !important;">
+        <div class="col-sm-12 {{ "disabled" if service.vim_id is not none else "" }}" style="padding: 0 !important;">
             <div class="col-sm-10">{{ wtf.form_field(form.location) }}</div>
-            <div class="col-sm-2 text-center"><br>{{ wtf.form_field(form.updateLocation) }}</div>
+            <div class="col-sm-2 text-center">
+                <br>{{ wtf.form_field(form.updateLocation) }}
+            </div>
         </div>
         {% if service.vim_image is none %}
             {{ fileSelector("Add VIM image", "Vim", wtf.form_field(form.preloadVim)) }}
@@ -93,15 +95,15 @@
             <div class="col-sm-4 text-right">
                 {% if service.vim_id is none %}
                     {{ wtf.form_field(form.onboardVim) }}
+                    {{ wtf.form_field(form.deleteVim) }}
                 {% endif %}
-                {{ wtf.form_field(form.deleteVim) }}
             </div>
         {% endif %}
     </div>
 {% endmacro %}
 
 {% macro nsd() %}
-    <div class="col-sm-8 col-sm-offset-2">
+    <div class="col-sm-8 col-sm-offset-2 {{ "disabled" if service.vim_id is none else "" }}">
         <hr>
         <h4 style="text-align: center">Network Service Descriptor</h4>
         <br>
@@ -164,11 +166,12 @@
             {{ form.hidden_tag() }}
 
             {{ basicInfo() }}
-            {{ vndfs() }}
-            {% if vnfAction %} {{ _action() }} {% endif %}
 
             {{ vim() }}
             {% if vimAction %} {{ _action() }} {% endif %}
+
+            {{ vndfs() }}
+            {% if vnfAction %} {{ _action() }} {% endif %}
 
             {{ nsd() }}
             {% if nsdAction %} {{ _action() }} {% endif %}

@@ -150,3 +150,10 @@ a.disable {
 * html .opaque {
     position: absolute;
 }
+
+div.disabled
+{
+  pointer-events: none;
+  opacity: 0.3;
+  background: #FFFFFF;
+}
