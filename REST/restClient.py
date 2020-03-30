@@ -10,9 +10,14 @@ class RestClient:
     RETRIES = 10
     FILENAME_PATTERN = re.compile(r".*filename=\"(.*)\"")
 
-    def __init__(self, api_host, api_port, suffix):
-        self.api_url = f'http://{api_host}:{api_port}{suffix}'
-        self.pool = connection_from_url(self.api_url, maxsize=1, headers=self.HEADERS)
+    def __init__(self, api_host, api_port, suffix, https=False, insecure=False):
+        self.api_url = f'http{"s" if https else ""}://{api_host}:{api_port}{suffix}'
+
+        kw = {'maxsize': 1, 'headers': self.HEADERS}
+        if https and insecure:
+           kw['cert_reqs'] = 'CERT_NONE'
+
+        self.pool = connection_from_url(self.api_url, **kw)
 
     def DownloadFile(self, url, output_folder):
         response = self.HttpGet(url)
@@ -56,4 +61,7 @@ class RestClient:
 
     @staticmethod
     def ResponseToJson(response) -> Dict:
-        return json.loads(response.data.decode('utf-8'))
+        try:
+            return json.loads(response.data.decode('utf-8'))
+        except Exception as e:
+            raise RuntimeError(f'JSON parse exception: {e}. data={response.data}')

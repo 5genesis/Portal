@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 class DispatcherApi(RestClient):
     def __init__(self):
         config = Config().Dispatcher
-        super().__init__(config.Host, config.Port, "")
+        super().__init__(config.Host, config.Port, "", https=True, insecure=True)
         self.tokenExpiry = config.TokenExpiry
 
     @staticmethod
