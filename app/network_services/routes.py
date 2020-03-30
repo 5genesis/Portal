@@ -136,17 +136,38 @@ def edit(nsid: int):
 
             # Asynchronous actions
             elif button in ['closeAction', 'cancelAction']:
-                status = ActionHandler.Get(service.id)
-                if status is not None:
-                    if not status.hasFinished:
+                action = ActionHandler.Get(service.id)
+                if action is not None:
+                    if not action.hasFinished:
                         # TODO: Handle cancel
                         flash("Cancelled action")
+                    else:
+                        result = action.result
+                        if 'Nsd' in action.type:
+                            if 'onboard' in action.type:
+                                service.nsd_id = result
+                            else:
+                                service.nsd_id = service.nsd_file = None
+                        elif 'Vim' in action.type:
+                            if 'onboard' in action.type:
+                                service.vim_id = result
+                            else:
+                                service.vim_id = service.vim_image = None
+                        else:
+                            vnfd = action.vnfd
+                            if vnfd is not None:
+                                if 'onboard' in action.type:
+                                    vnfd.vnfd_id = result
+                                    _applyChanges(vnfd)
+                                else:
+                                    db.session.delete(vnfd)
+                                    db.session.commit()
+                        _applyChanges(service)
                     ActionHandler.Delete(service.id)
 
             elif button in ['onboardVim', 'deleteVim', 'onboardNsd', 'deleteNsd'] or identifier is not None:
                 action = button
                 if _checkNotBusy():
-
                     if identifier is not None:
                         vnfd = VnfdPackage.query.get(identifier)
                         if vnfd is not None:
@@ -179,46 +200,29 @@ def _handleActions(action: str, service: NetworkService, vnfd: Optional[VnfdPack
     def _notify(action, type, value):
         flash(f'{action} {type} with Id: {value}', "info")
 
+    def _launchInBackground(s, t, v):
+        bgAction = Action(s, t, v)
+        ActionHandler.Set(s.id, bgAction)
+        bgAction.Start()
+
     if 'onboard' in action:
         if 'Vnf' in action:
             if not _alreadyExist("VNFD package", vnfd.vnfd_id):
-                vnfd.vnfd_id = 'placeholder'  # TODO
-                action = Action(service.id, "onboardVnf")
-                ActionHandler.Set(service.id, action)
-                action.Start()
-                _applyChanges(vnfd)
-                _notify("Onboarded", "VNFD package", vnfd.vnfd_id)
+                _launchInBackground(service, "onboardVnf", vnfd)
+                _notify("Onboarding", "VNFD package", vnfd.vnfd_id)
         else:
-            if 'Vim' in action:
-                if not _alreadyExist("VIM image", service.vim_id):
-                    service.vim_id = 'placeholder'  # TODO
-            elif 'Nsd' in action:
-                if not _alreadyExist("NSD file", service.nsd_id):
-                    service.nsd_id = 'placeholder'  # TODO
-
-            _applyChanges(service)
-            _notify("Onboarded", "VIM image" if 'Vim' in action else "NSD file",
+            _launchInBackground(service, action, None)
+            _notify("Onboarding", "VIM image" if 'Vim' in action else "NSD file",
                     service.vim_id if 'Vim' in action else service.nsd_id)
 
     elif 'delete' in action:
+        _launchInBackground(service, action, None)
         if 'Vnf' in action:
-            db.session.delete(vnfd)
-            db.session.commit()
-            if vnfd.vnfd_id is not None:
-                flash(f'Deleted {vnfd.id} from MANO')  # TODO
-            else:
-                flash(f'Deleted {vnfd.id} from LOCAL')  # TODO
+            _launchInBackground(service, action, vnfd)
+            flash(f'Deleting VNFD {vnfd.id}: {vnfd.vnfd_file} ({vnfd.vnfd_id or "No ID"})')
         else:
+            _launchInBackground(service, action, None)
             if 'Vim' in action:
-                if service.vim_id is not None:
-                    flash(f'Deleted VIM from MANO')  # TODO
-                else:
-                    flash(f'Deleted VIM from LOCAL')  # TODO
-                service.vim_id = service.vim_image = None
-            elif 'Nsd' in action:
-                if service.vim_id is not None:
-                    flash(f'Deleted NSD from MANO')  # TODO
-                else:
-                    flash(f'Deleted NSD from LOCAL')  # TODO
-                service.nsd_id = service.nsd_file = None
-            _applyChanges(service)
+                flash(f'Deleting VIM image: {service.vim_image}')
+            else:
+                flash(f'Deleting NSD file: {service.nsd_file} ({service.nsd_id or "No ID"})')

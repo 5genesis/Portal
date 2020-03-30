@@ -5,18 +5,20 @@ from .log import Level
 
 
 class Action(Child):
-    def __init__(self, serviceId: int , type: str):
-        super().__init__(f"{serviceId}_{type}")
-        self.serviceId = serviceId
+    def __init__(self, service, type: str, vnfd):
+        self.service = service  # type: "NetworkService"
+        self.vnfd = vnfd  # type: "VnfdPackage"
         self.type = type
+        super().__init__(f"{self.service.id}_{self.type}")
         self.message = "Init"
+        self.result = None
 
     def Run(self):
         for i in range(10):
             self.Log(Level.INFO, f"{self.name} -> {i}")
             self.message = str(i)
-            sleep(2)
-        pass
+            sleep(1)
+        self.result = "placeholder"
 
     def __str__(self):
         return f"Action: {self.name} (St:{self.hasStarted}, Ed:{self.hasFinished}, Fail:{self.hasFailed})"

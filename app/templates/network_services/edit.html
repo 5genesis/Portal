@@ -129,7 +129,7 @@
 
 {% macro _action() %}
     <div class="col-sm-8 col-sm-offset-2 table-bordered"
-         style="background: lemonchiffon; margin-top: 1em; margin-bottom: 1em;">
+         style="background: {{"lightgreen" if action.hasFinished else "lemonchiffon"}}; margin-top: 1em; margin-bottom: 1em;">
         <div class="col-sm-3">
             <strong>
                 {% if onboardAction %}
