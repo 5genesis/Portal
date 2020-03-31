@@ -18,9 +18,21 @@ class NetworkService(db.Model):
     def VNFDs(self):
         return list(VnfdPackage.query.filter_by(service_id=self.id).order_by(VnfdPackage.id.desc()))
 
+    @property
+    def VimLocalPath(self):
+        return ['network_services', 'vim', str(self.id)]
+
+    @property
+    def NsdLocalPath(self):
+        return ['network_services', 'nsd', str(self.id)]
+
 
 class VnfdPackage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     service_id = db.Column(db.Integer, db.ForeignKey('network_service.id'))
     vnfd_file = db.Column(db.String(256))
     vnfd_id = db.Column(db.String(256))
+
+    @property
+    def VnfdLocalPath(self):
+        return ['network_services', 'vnfd', str(self.id)]

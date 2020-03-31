@@ -128,8 +128,10 @@
 {% endmacro %}
 
 {% macro _action() %}
+    {% set color = "lemonchiffon" if not action.hasFinished else ("indianred" if action.hasFailed else "lightgreen") %}
+
     <div class="col-sm-8 col-sm-offset-2 table-bordered"
-         style="background: {{"lightgreen" if action.hasFinished else "lemonchiffon"}}; margin-top: 1em; margin-bottom: 1em;">
+         style="background: {{ color }}; margin-top: 1em; margin-bottom: 1em;">
         <div class="col-sm-3">
             <strong>
                 {% if onboardAction %}
@@ -151,7 +153,7 @@
             {{ action.message }}
         </div>
         <div class="col-sm-2">
-            {% if action.hasFinished %}
+            {% if action.hasFinished and not action.hasFailed %}
                 {{ wtf.form_field(form.closeAction) }}
             {% else %}
                 {{ wtf.form_field(form.cancelAction) }}

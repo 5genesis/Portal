@@ -9,7 +9,7 @@ from app.models import NetworkService, VnfdPackage
 from app import db
 from Helper import Log, Action, ActionHandler
 from config import Config
-from typing import Optional
+from typing import Optional, List
 
 
 def _applyChanges(entity):
@@ -26,11 +26,12 @@ def _assignBaseFormData(form: BaseNsForm, service: NetworkService, vimLocation: 
     _applyChanges(service)
 
 
-def _store(file, baseFolder, subfolder, entityId) -> str:
+def _store(file, path: List[str]) -> str:
+    baseFolder, subFolder, entityId = path
     filename = secure_filename(file.filename)
-    baseFolder = join(Config.UPLOAD_FOLDER, baseFolder, entityId)
-    makedirs(join(baseFolder, subfolder), mode=0o755, exist_ok=True)
-    savePath = join(baseFolder, subfolder, filename)
+    baseFolder = join(Config.UPLOAD_FOLDER, baseFolder, subFolder)
+    makedirs(join(baseFolder, entityId), mode=0o755, exist_ok=True)
+    savePath = join(baseFolder, entityId, filename)
     file.save(savePath)
     Log.D(f'Saved file {file.filename} in {savePath}')
     return filename
@@ -111,7 +112,7 @@ def edit(nsid: int):
                 if file is not None:
                     newVnfd = VnfdPackage(network_service=service)
                     _applyChanges(newVnfd)
-                    newVnfd.vnfd_file = _store(file, 'network_services', 'vnfd', str(newVnfd.id))
+                    newVnfd.vnfd_file = _store(file, newVnfd.VnfdLocalPath)
                     _applyChanges(newVnfd)
                     flash(f"Pre-loaded new VNFD package: {newVnfd.vnfd_file}")
 
@@ -123,14 +124,14 @@ def edit(nsid: int):
             elif button == 'preloadVim':
                 file = _checkFile('fileVim', "VIM image file is missing")
                 if file is not None:
-                    service.vim_image = _store(file, 'network_services', 'vim', str(service.id))
+                    service.vim_image = _store(file, service.VimLocalPath)
                     _applyChanges(service)
                     flash(f"Pre-loaded VIM image: {service.vim_image}")
 
             elif button == 'preloadNsd':
                 file = _checkFile('fileNsd', "NSD file is missing")
                 if file is not None:
-                    service.nsd_file = _store(file, 'network_services', 'nsd', str(service.id))
+                    service.nsd_file = _store(file, service.NsdLocalPath)
                     _applyChanges(service)
                     flash(f"Pre-loaded NSD file: {service.nsd_file}")
 
@@ -141,7 +142,7 @@ def edit(nsid: int):
                     if not action.hasFinished:
                         # TODO: Handle cancel
                         flash("Cancelled action")
-                    else:
+                    elif not action.hasFailed:  # In case of error simply remove the action
                         result = action.result
                         if 'Nsd' in action.type:
                             if 'onboard' in action.type:
