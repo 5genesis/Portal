@@ -80,17 +80,27 @@
         <hr>
         <h4 style="text-align: center">Virtualized Infrastructure Manager</h4>
         <br>
-        <div class="col-sm-12 {{ "disabled" if service.vim_id is not none else "" }}" style="padding: 0 !important;">
-            <div class="col-sm-10">{{ wtf.form_field(form.location) }}</div>
-            <div class="col-sm-2 text-center">
-                <br>{{ wtf.form_field(form.updateLocation) }}
-            </div>
+        <div class="col-sm-12">
+            {% if service.vim_location is none %}
+                <strong>VIM Location: </strong>
+                <select class="form-control" name="location">
+                {% for location in locations %}
+                    <option value="{{location.Name}}" selected>{{location}}</option>
+                {% endfor %}
+                </select>
+            {% else %}
+                <p><strong>VIM Location: </strong>{{ service.vim_location }} 🔒</p>
+            {% endif %}
+            <br>
         </div>
         {% if service.vim_image is none %}
             {{ fileSelector("Add VIM image", "Vim", wtf.form_field(form.preloadVim)) }}
         {% else %}
             <div class="col-sm-8">
-                <p><strong>{{ service.vim_image }}</strong></p>
+                <p>
+                    <strong>Vim Image: </strong>{{ service.vim_image }}
+                    {{ "🔒" if service.vim_id is not none else "🔓" }}
+                </p>
             </div>
             <div class="col-sm-4 text-right">
                 {% if service.vim_id is none %}

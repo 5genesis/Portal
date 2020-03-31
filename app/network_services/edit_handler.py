@@ -10,7 +10,7 @@ from app.models import NetworkService, VnfdPackage
 
 
 class EditHandler:
-    buttonNames = ['update', 'updateLocation', 'preloadVnfd',
+    buttonNames = ['update', 'preloadVnfd',
                    'preloadVim', 'onboardVim', 'deleteVim',
                    'preloadNsd', 'onboardNsd', 'deleteNsd',
                    'closeAction', 'cancelAction']
@@ -27,12 +27,10 @@ class EditHandler:
         db.session.commit()
 
     @classmethod
-    def AssignBaseFormData(cls, db, form: BaseNsForm, service: NetworkService, vimLocation: str = None):
+    def AssignBaseFormData(cls, db, form: BaseNsForm, service: NetworkService):
         service.name = form.name.data
         service.description = form.description.data
         service.is_public = (form.public.data == 'Public')
-        if vimLocation is not None:
-            service.vim_location = vimLocation
         cls.ApplyChanges(db, service)
 
     @classmethod
@@ -86,11 +84,6 @@ class EditHandler:
                 newVnfd.vnfd_file = self.Store(file, newVnfd.VnfdLocalPath)
                 self.ApplyChanges(self.db, newVnfd)
                 flash(f"Pre-loaded new VNFD package: {newVnfd.vnfd_file}")
-
-        elif button == 'updateLocation':
-            self.service.vim_location = self.form.location.data
-            self.ApplyChanges(self.db, self.service)
-            flash(f"VIM location set to {self.service.vim_location}.")
 
         elif button == 'preloadVim':
             file = self.CheckFile('fileVim', "VIM image file is missing")
@@ -173,6 +166,9 @@ class EditHandler:
                 _launchInBackground(action, None)
                 _notify("Onboarding", "VIM image" if 'Vim' in action else "NSD file",
                         self.service.vim_id if 'Vim' in action else self.service.nsd_id)
+                if "Vim" in action:
+                    self.service.vim_location = self.request.form['location']
+                    self.ApplyChanges(self.db, self.service)
 
         elif 'delete' in action:
             _launchInBackground(action, None)

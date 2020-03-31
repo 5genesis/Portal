@@ -6,6 +6,8 @@ from app.models import NetworkService
 from app import db
 from Helper import ActionHandler
 from .edit_handler import EditHandler
+from REST import DispatcherApi, VimInfo
+from typing import List
 
 
 @bp.route('/', methods=['GET', 'POST'])
@@ -22,7 +24,7 @@ def create():
     form = NewNsForm()
     if form.validate_on_submit():
         newNs = NetworkService(author=current_user)
-        EditHandler.AssignBaseFormData(db, form, newNs, vimLocation="Main DC")  # Assign using default location
+        EditHandler.AssignBaseFormData(db, form, newNs)  # Assign using default location
         return redirect(url_for('NetworkServices.edit', nsid=newNs.id))
 
     return render_template('network_services/create.html', title='New Network Service', form=form)
@@ -54,7 +56,13 @@ def edit(nsid: int):
 
     action = ActionHandler.Get(service.id)
 
+    locations: List[VimInfo] = []
+    if service.vim_id is None:
+        locations, error = DispatcherApi().GetVimLocations(current_user)
+        if error is not None:
+            flash(error, 'error')
+
     return render_template('network_services/edit.html', Title=f'Network Service: {service.name}',
-                           form=form, service=service, action=action)
+                           form=form, service=service, action=action, locations=locations)
 
 

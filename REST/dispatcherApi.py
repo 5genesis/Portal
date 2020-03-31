@@ -1,11 +1,21 @@
 import json
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple, Optional, List
 from app.models import User, Experiment
 from .restClient import RestClient
 from base64 import b64encode
 from Helper import Config, Log, LogInfo
 from app import db
 from datetime import datetime, timezone
+
+
+class VimInfo:
+    def __init__(self, data):
+        self.Name = data['name']
+        self.Type = data['type']
+        self.Location = data['location']
+
+    def __str__(self):
+        return f'{self.Name} ({self.Type} - {self.Location})'
 
 
 class DispatcherApi(RestClient):
@@ -93,3 +103,15 @@ class DispatcherApi(RestClient):
         response = self.HttpGet(url, extra_headers=self.bearerAuthHeader(token))
         return RestClient.ResponseToJson(response)
 
+    def GetVimLocations(self, user: User) -> Tuple[List[VimInfo], Optional[str]]:
+        result = []
+        maybeError = self.RenewUserTokenIfExpired(user)
+        if maybeError is not None:
+            return result, maybeError
+
+        token = user.CurrentDispatcherToken
+        url = '/mano/vims'
+        response = self.HttpGet(url, extra_headers=self.bearerAuthHeader(token))
+        result = [VimInfo(vim) for vim in self.ResponseToJson(response)]
+
+        return result, None
