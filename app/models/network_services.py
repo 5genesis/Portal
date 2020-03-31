@@ -1,4 +1,5 @@
 from app import db
+from Helper import ActionHandler
 
 
 class NetworkService(db.Model):
@@ -13,6 +14,10 @@ class NetworkService(db.Model):
     nsd_file = db.Column(db.String(256))
     nsd_id = db.Column(db.String(256))
     vnfdRelation = db.relationship('VnfdPackage', backref='network_service', lazy='dynamic')
+
+    @property
+    def Busy(self):
+        return ActionHandler.Get(self.id) is not None
 
     @property
     def VNFDs(self):

@@ -28,7 +28,7 @@ class Action(Child):
     def onboardNsd(self):
         self.result = "placeholder"
 
-    def onboardVnfd(self):
+    def onboardVnf(self):
         self.result = "placeholder"
 
     def deleteVim(self):
