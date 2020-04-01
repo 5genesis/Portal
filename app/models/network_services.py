@@ -31,6 +31,12 @@ class NetworkService(db.Model):
     def NsdLocalPath(self):
         return ['network_services', 'nsd', str(self.id)]
 
+    @property
+    def Ready(self):
+        return self.vim_location is not None and self.vim_id is not None and \
+            self.nsd_id is not None and \
+            len(self.VNFDs) != 0 and all([vnf.Ready for vnf in self.VNFDs])
+
 
 class VnfdPackage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -41,3 +47,7 @@ class VnfdPackage(db.Model):
     @property
     def VnfdLocalPath(self):
         return ['network_services', 'vnfd', str(self.id)]
+
+    @property
+    def Ready(self):
+        return self.vnfd_id is not None

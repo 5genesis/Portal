@@ -24,9 +24,18 @@
     <br>
     {% include 'network_services/_baseNsForm.html' %}
 
+
     <div class="col-sm-8 col-sm-offset-2">
-        {{ wtf.form_field(form.update) }}
+        <div class="col-sm-12"></div>
+            <div class="col-sm-6">
+                {{ wtf.form_field(form.update) }}
+            </div>
+            <div class="col-sm-6 text-right">
+                <strong>Network service ready: </strong>{{ "✔️" if service.Ready else "❌" }}
+            </div>
+        </div>
     </div>
+
 {% endmacro %}
 
 {% macro fileSelector(message, tag, actionButton) %}
