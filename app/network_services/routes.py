@@ -44,7 +44,7 @@ def edit(nsid: int):
         form = EditNsForm()
 
         if form.validate_on_submit():
-            handler = EditHandler(request, form, service, db)
+            handler = EditHandler(request, form, service, db, current_user.id)
             handler.Handle()
 
     form = EditNsForm(

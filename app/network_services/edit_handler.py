@@ -3,10 +3,12 @@ from os.path import join
 from werkzeug.utils import secure_filename
 from config import Config
 from flask import flash
+from flask_login import current_user
 from Helper import ActionHandler, Action
 from typing import Optional, List
 from .forms import BaseNsForm
 from app.models import NetworkService, VnfdPackage
+from REST import DispatcherApi
 
 
 class EditHandler:
@@ -15,11 +17,12 @@ class EditHandler:
                    'preloadNsd', 'onboardNsd', 'deleteNsd',
                    'closeAction', 'cancelAction']
 
-    def __init__(self, request, form, service, db):
+    def __init__(self, request, form, service, db, userId):
         self.request = request
         self.service = service
         self.form = form
         self.db = db
+        self.userId = userId
 
     @classmethod
     def ApplyChanges(cls, db, entity):
@@ -153,7 +156,12 @@ class EditHandler:
             flash(f'{action} {type} with Id: {value}', "info")
 
         def _launchInBackground(t, v):
-            bgAction = Action(self.service, t, v)
+            token = None
+            if 'onboard' in t:
+                DispatcherApi().RenewUserTokenIfExpired(current_user)
+                token = current_user.CurrentDispatcherToken
+
+            bgAction = Action(self.service, t, v, token)
             ActionHandler.Set(self.service.id, bgAction)
             bgAction.Start()
 

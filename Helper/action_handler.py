@@ -6,11 +6,12 @@ from os import remove
 
 
 class Action(Child):
-    def __init__(self, service, type: str, vnfd):
+    def __init__(self, service, type: str, vnfd, token):
+        super().__init__(f"{service.id}_{type}")
         self.service = service  # type: "NetworkService"
-        self.vnfd = vnfd  # type: "VnfdPackage"
         self.type = type
-        super().__init__(f"{self.service.id}_{self.type}")
+        self.vnfd = vnfd  # type: "VnfdPackage"
+        self.token = token
         self.message = "Init"
         self.result = None
 
@@ -29,7 +30,16 @@ class Action(Child):
         self.result = "placeholder"
 
     def onboardVnf(self):
-        self.result = "placeholder"
+        from REST import DispatcherApi
+
+        filePath = abspath(join(Config.UPLOAD_FOLDER, *self.vnfd.VnfdLocalPath, self.vnfd.vnfd_file))
+        maybeId, success = DispatcherApi().OnboardVnfd(filePath, self.token)
+
+        if success:
+            self.result = maybeId
+            self.message = f"Onboarded VNFD with id: {maybeId}"
+        else:
+            raise RuntimeError(f"Exception during onboarding process: {maybeId}")
 
     def deleteVim(self):
         if self.service.vim_id is not None:

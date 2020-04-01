@@ -115,3 +115,22 @@ class DispatcherApi(RestClient):
         result = [VimInfo(vim) for vim in self.ResponseToJson(response)]
 
         return result, None
+
+    def OnboardVnfd(self, path: str, token: str) -> Tuple[str, bool]:
+        """Returns a pair of str (id or error message) and bool (success)"""
+
+        url = '/mano/vnfd'
+        with open(path, "br") as file:
+            response = self.HttpPost(url, extra_headers=self.bearerAuthHeader(token), files={'vnfd': file})
+            code = response.status_code
+            data = self.ResponseToJson(response)
+            if code == 200:
+                return data["id"], True
+            elif code in [400, 409, 422]:
+                error = "Invalid Input" if code == 400 else \
+                    "Conflict - VNFD already present" if code == 409 else "Unprocessable entity"
+                return f"{error} (Status: {data['status']}, Code: {data['code']}, Detail: {data['detail']})", False
+            elif code == 401:
+                return "Invalid permission", False
+            else:
+                return f"Internal server error (Code {code})", False
