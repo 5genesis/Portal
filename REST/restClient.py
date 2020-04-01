@@ -66,6 +66,17 @@ class RestClient:
                                  headers={**self.HEADERS, **extra_headers},
                                  retries=self.RETRIES)
 
+    def HttpDelete(self, url, extra_headers=None):
+        extra_headers = {} if extra_headers is None else extra_headers
+        return self.pool.request('DELETE', url, headers={**self.HEADERS, **extra_headers}, retries=self.RETRIES)
+
+    @staticmethod
+    def ResponseStatusCode(response) -> int:
+        try:
+            return response.status
+        except AttributeError:
+            return response.status_code
+
     @staticmethod
     def ResponseToJson(response) -> Dict:
         try:

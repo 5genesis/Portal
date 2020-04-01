@@ -51,19 +51,21 @@
 {% endmacro %}
 
 {% macro vnfd_row(vnfd) %}
-    <div class="col-sm-3">
-        <p><strong>{{ vnfd.vnfd_file }}</strong></p>
-    </div>
-    <div class="col-sm-5">
-        <p><strong>ID: </strong>{{ vnfd.vnfd_id }}</p>
-    </div>
-    <div class="col-sm-4 text-right">
-        {% if vnfd.vnfd_id is none %}
-            <button type="submit" id="onboardVnf{{ vnfd.id }}" name="onboardVnf{{ vnfd.id }}" class="btn btn-default">
-                Onboard</button>
-        {% endif %}
-        <button type="submit" id="deleteVnf{{ vnfd.id }}" name="deleteVnf{{ vnfd.id }}" class="btn btn-default">
-            Delete</button>
+    <div class="col-sm-12" style="padding: 0 !important;">
+        <div class="col-sm-3">
+            <p><strong>{{ vnfd.vnfd_file }}</strong></p>
+        </div>
+        <div class="col-sm-5">
+            <p><strong>ID: </strong>{{ vnfd.vnfd_id }}</p>
+        </div>
+        <div class="col-sm-4 text-right">
+            {% if vnfd.vnfd_id is none %}
+                <button type="submit" id="onboardVnf{{ vnfd.id }}" name="onboardVnf{{ vnfd.id }}" class="btn btn-default">
+                    Onboard</button>
+            {% endif %}
+            <button type="submit" id="deleteVnf{{ vnfd.id }}" name="deleteVnf{{ vnfd.id }}" class="btn btn-default">
+                Delete</button>
+        </div>
     </div>
 {% endmacro %}
 

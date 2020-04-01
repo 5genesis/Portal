@@ -116,21 +116,50 @@ class DispatcherApi(RestClient):
 
         return result, None
 
+    def handleErrorcodes(self, code: int, data: Dict, overrides: Dict[int, str] = None) -> str:
+        defaults = {
+            400: "Invalid Input",
+            401: "Invalid permission",
+            404: "Not found",
+            406: "File not valid",
+            409: "Conflict",
+            413: "File too large",
+            422: "Unprocessable entity",
+            500: "Internal server error"  # Or an unknown error code
+        }
+        overrides = {} if overrides is None else overrides
+        error = overrides.get(code, defaults.get(code, defaults[500]))
+        if code in [400, 404, 409, 422]:
+            extra = f" (Status: {data['status']}, Code: {data['code']}, Detail: {data['detail']})"
+        elif code == 401:
+            extra = ""
+        else:
+            extra = f" (Code {code})"
+        return error + extra
+
     def OnboardVnfd(self, path: str, token: str) -> Tuple[str, bool]:
         """Returns a pair of str (id or error message) and bool (success)"""
 
         url = '/mano/vnfd'
         with open(path, "br") as file:
             response = self.HttpPost(url, extra_headers=self.bearerAuthHeader(token), files={'vnfd': file})
-            code = response.status_code
+            code = self.ResponseStatusCode(response)
             data = self.ResponseToJson(response)
             if code == 200:
                 return data["id"], True
-            elif code in [400, 409, 422]:
-                error = "Invalid Input" if code == 400 else \
-                    "Conflict - VNFD already present" if code == 409 else "Unprocessable entity"
-                return f"{error} (Status: {data['status']}, Code: {data['code']}, Detail: {data['detail']})", False
-            elif code == 401:
-                return "Invalid permission", False
             else:
-                return f"Internal server error (Code {code})", False
+                overrides = {409: "Conflict - VNFD already present"}
+                return self.handleErrorcodes(code, data, overrides), False
+
+    def DeleteVnfd(self, vnfdId: str, token: str) -> Optional[str]:
+        """Returns an error message, or None on success"""
+
+        url = f'/mano/vnfd/{vnfdId}'
+        response = self.HttpDelete(url, extra_headers=self.bearerAuthHeader(token))
+        code = self.ResponseStatusCode(response)
+        if code != 204:
+            data = self.ResponseToJson(response)
+            overrides = {404: "VNFD not found", 409: "Conflict - VNFD referenced by at least one NSD"}
+            return self.handleErrorcodes(code, data, overrides)
+        else:
+            return None

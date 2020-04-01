@@ -57,7 +57,13 @@ class Action(Child):
 
     def deleteVnf(self):
         if self.vnfd.vnfd_id is not None:
-            pass  # TODO
+            from REST import DispatcherApi
+            maybeError = DispatcherApi().DeleteVnfd(self.vnfd.vnfd_id, self.token)
+
+            if maybeError is None:
+                self.message = f"Deleted VNFD with id: {self.vnfd.vnfd_id}"
+            else:
+                raise RuntimeError(f"Exception during deletion process: {maybeError}")
         else:
             self._deleteLocalFile(self.vnfd.VnfdLocalPath, self.vnfd.vnfd_file)
             self.message = "Deleted VNFD package file from temporal storage"

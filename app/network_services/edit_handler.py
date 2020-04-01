@@ -156,10 +156,8 @@ class EditHandler:
             flash(f'{action} {type} with Id: {value}', "info")
 
         def _launchInBackground(t, v):
-            token = None
-            if 'onboard' in t:
-                DispatcherApi().RenewUserTokenIfExpired(current_user)
-                token = current_user.CurrentDispatcherToken
+            DispatcherApi().RenewUserTokenIfExpired(current_user)
+            token = current_user.CurrentDispatcherToken
 
             bgAction = Action(self.service, t, v, token)
             ActionHandler.Set(self.service.id, bgAction)
