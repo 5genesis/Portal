@@ -6,6 +6,7 @@ from base64 import b64encode
 from Helper import Config, Log, LogInfo
 from app import db
 from datetime import datetime, timezone
+from os.path import splitext
 
 
 class VimInfo:
@@ -160,6 +161,24 @@ class DispatcherApi(RestClient):
         if code != 204:
             data = self.ResponseToJson(response)
             overrides = {404: "VNFD not found", 409: "Conflict - VNFD referenced by at least one NSD"}
+            return self.handleErrorcodes(code, data, overrides)
+        else:
+            return None
+
+    def OnboardVim(self, path: str, location: str, token: str) -> Optional[str]:
+        """Returns an error message, or None on success"""
+
+        with open(path, "br") as file:
+            _, diskFormat = splitext(path)
+            diskFormat = diskFormat[1:]
+            containerFormat = "bare"
+            url = f'/mano/image/{location}?disk_format={diskFormat}&container_format={containerFormat}'
+            response = self.HttpPost(url, extra_headers=self.bearerAuthHeader(token), files={'image': file})
+            code = self.ResponseStatusCode(response)
+
+        if code != 201:
+            data = self.ResponseToJson(response)
+            overrides = {422: "Image file not in request or request badly formed"}
             return self.handleErrorcodes(code, data, overrides)
         else:
             return None

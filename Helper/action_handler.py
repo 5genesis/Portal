@@ -24,7 +24,17 @@ class Action(Child):
             self.message = f"Error: {e}"
 
     def onboardVim(self):
-        self.result = "placeholder"
+        from REST import DispatcherApi
+
+        filePath = abspath(join(Config.UPLOAD_FOLDER, *self.service.VimLocalPath, self.service.vim_image))
+        location = self.service.vim_location
+        maybeError = DispatcherApi().OnboardVim(filePath, location, self.token)
+
+        if maybeError is None:
+            self.result = "<onboarded>"  # Not a known ID but a value to signal it's been onboarded
+            self.message = f"VIM Image successfully onboarded"
+        else:
+            raise RuntimeError(f"Exception during onboarding process: {maybeError}")
 
     def onboardNsd(self):
         self.result = "placeholder"
@@ -43,7 +53,7 @@ class Action(Child):
 
     def deleteVim(self):
         if self.service.vim_id is not None:
-            pass  # TODO
+            pass  # No endpoints for deleting VIM images
         else:
             self._deleteLocalFile(self.service.VimLocalPath, self.service.vim_image)
             self.message = "Deleted VIM image from temporal storage"
