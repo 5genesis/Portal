@@ -4,6 +4,8 @@ function configureButton(input, trigger, ret)
         button = document.querySelector( trigger ),
         the_return = document.querySelector( ret);
 
+    if (fileInput == null || button == null || the_return == null){ return; }
+
     button.addEventListener( "click", function(event) {
         fileInput.focus();
         return false;
