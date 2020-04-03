@@ -46,6 +46,9 @@ class NetworkService(db.Model):
         ]
         return sum(values)
 
+    @staticmethod
+    def PublicServices():
+        return NetworkService.query.filter_by(is_public=True).order_by(NetworkService.name.asc())
 
 class VnfdPackage(db.Model):
     id = db.Column(db.Integer, primary_key=True)

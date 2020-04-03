@@ -1,5 +1,5 @@
 import jwt
-from typing import Dict, List
+from typing import Dict, List, Set
 from time import time
 from flask import current_app
 from flask_login import UserMixin
@@ -50,6 +50,12 @@ class User(UserMixin, db.Model):
     @property
     def NetworkServices(self) -> List:
         return NetworkService.query.filter_by(user_id=self.id).order_by(NetworkService.name.asc())
+
+    @property
+    def UsableNetworkServices(self) -> Set:
+        own = [service for service in self.NetworkServices if service.Ready]
+        public = [service for service in NetworkService.PublicServices() if service.Ready]
+        return {*own, *public}
 
     @staticmethod
     def verifyResetPasswordToken(token):
