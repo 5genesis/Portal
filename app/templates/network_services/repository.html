@@ -6,15 +6,28 @@
     <script>setTab('navbar-networkServices')</script>
 {% endblock %}
 
-{% macro networkServiceRow(ns) %}
-    <div class="col-sm-2">
-        {{ ns.name }}
-    </div>
-    <div class="col-sm-8" style="overflow: hidden">
-        {{ ns.description }}
-    </div>
-    <div class="col-sm-2">
-        <a class="btn btn-blue" href="{{ url_for('NetworkServices.edit', nsid=ns.id) }}" role="button">Edit</a>
+{% macro networkServiceRow(service) %}
+    <div class="col-sm-12 table-bordered" style="margin-top:1em; margin-bottom: 1em">
+        <div class="col-sm-12" style="border-bottom: #005b90 solid 1px; margin-bottom: 1em; padding: 0 !important;">
+            <div class="col-sm-3">
+                <h4>{{ service.name }}</h4>
+            </div>
+            <div class="col-sm-9">
+                <i>{{ service.description }}</i>
+            </div>
+        </div>
+
+        <div class = col-sm-12 style="margin-bottom: 1em;">
+            <div class="col-sm-1">
+                {{ "🌍" if service.is_public else "🔐" }}
+            </div>
+            <div class="col-sm-10" style="padding: 0 !important;">
+                {% include "network_services/_nsStatusInfo.html" %}
+            </div>
+            <div class="col-sm-1">
+                <a class="btn btn-blue" href="{{ url_for('NetworkServices.edit', nsid=service.id) }}" role="button">Edit</a>
+            </div>
+        </div>
     </div>
 {% endmacro %}
 

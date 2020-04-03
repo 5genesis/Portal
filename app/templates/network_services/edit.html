@@ -30,18 +30,8 @@
             <div class="col-sm-2">
                 {{ wtf.form_field(form.update) }}
             </div>
-            <div class="col-sm-5 text-center">
-                {% if service.PendingOnboards != 0 %}
-                    📦 {{ service.PendingOnboards }} element{{ "s" if service.PendingOnboards > 1 else ""  }} onboard pending
-                {% endif %}
-                <br>
-                {% if service.Busy %}
-                    ⏳ Pending actions
-                {% endif %}
-            </div>
-            <div class="col-sm-5 text-right">
-                {{ "✔️" if service.Ready else "❌" }}
-                <strong>Network service {{ "" if service.Ready else "not" }} ready</strong>
+            <div class="col-sm-10" style="padding: 0 !important;">
+                {% include "network_services/_nsStatusInfo.html" %}
             </div>
         </div>
     </div>
