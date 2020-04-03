@@ -141,26 +141,47 @@ class DispatcherApi(RestClient):
     def OnboardVnfd(self, path: str, token: str) -> Tuple[str, bool]:
         """Returns a pair of str (id or error message) and bool (success)"""
 
-        url = '/mano/vnfd'
+        url = '/mano/vnfd'  # TODO: Use validator's equivalent
+        overrides = {409: "Conflict - VNFD already present"}
+        return self._onboardVnfdOrNsd(url, path, token, 'vnfd', overrides)
+
+    def OnboardNsd(self, path: str, token: str) -> Tuple[str, bool]:
+        """Returns a pair of str (id or error message) and bool (success)"""
+
+        url = '/mano/nsd'  # TODO: Use validator's equivalent
+        overrides = {409: "Conflict - NSD already present"}
+        return self._onboardVnfdOrNsd(url, path, token, "nsd", overrides)
+
+    def _onboardVnfdOrNsd(self, url: str, path: str, token: str, fileId: str, overrides: Dict):
         with open(path, "br") as file:
-            response = self.HttpPost(url, extra_headers=self.bearerAuthHeader(token), files={'vnfd': file})
+            response = self.HttpPost(url, extra_headers=self.bearerAuthHeader(token), files={fileId: file})
             code = self.ResponseStatusCode(response)
             data = self.ResponseToJson(response)
-            if code == 200:
+            if code == 201:
                 return data["id"], True
             else:
-                overrides = {409: "Conflict - VNFD already present"}
                 return self.handleErrorcodes(code, data, overrides), False
 
     def DeleteVnfd(self, vnfdId: str, token: str) -> Optional[str]:
         """Returns an error message, or None on success"""
 
         url = f'/mano/vnfd/{vnfdId}'
+        overrides = {400: "Invalid VNDF value", 404: "VNFD not found",
+                     409: "Conflict - VNFD referenced by at least one NSD"}
+        return self._deleteVnfdOrNsd(url, token, overrides)
+
+    def DeleteNsd(self, nsdId: str, token: str) -> Optional[str]:
+        """Returns an error message, or None on success"""
+
+        url = f'/mano/nsd/{nsdId}'
+        overrides = {400: "Invalid NS id supplied", 404: "NSD not found"}
+        return self._deleteVnfdOrNsd(url, token, overrides)
+
+    def _deleteVnfdOrNsd(self, url: str, token: str, overrides: Dict) -> Optional[str]:
         response = self.HttpDelete(url, extra_headers=self.bearerAuthHeader(token))
         code = self.ResponseStatusCode(response)
         if code != 204:
             data = self.ResponseToJson(response)
-            overrides = {404: "VNFD not found", 409: "Conflict - VNFD referenced by at least one NSD"}
             return self.handleErrorcodes(code, data, overrides)
         else:
             return None

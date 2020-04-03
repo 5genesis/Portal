@@ -37,7 +37,16 @@ class Action(Child):
             raise RuntimeError(f"Exception during onboarding process: {maybeError}")
 
     def onboardNsd(self):
-        self.result = "placeholder"
+        from REST import DispatcherApi
+
+        filePath = abspath(join(Config.UPLOAD_FOLDER, *self.service.NsdLocalPath, self.service.nsd_file))
+        maybeId, success = DispatcherApi().OnboardNsd(filePath, self.token)
+
+        if success:
+            self.result = maybeId
+            self.message = f"VIM Image successfully onboarded"
+        else:
+            raise RuntimeError(f"Exception during onboarding process: {maybeId}")
 
     def onboardVnf(self):
         from REST import DispatcherApi
@@ -60,7 +69,13 @@ class Action(Child):
 
     def deleteNsd(self):
         if self.service.nsd_id is not None:
-            pass  # TODO
+            from REST import DispatcherApi
+            maybeError = DispatcherApi().DeleteNsd(self.service.nsd_id, self.token)
+
+            if maybeError is None:
+                self.message = f"Deleted NSD with id: {self.service.nsd_id}"
+            else:
+                raise RuntimeError(f"Exception during deletion process: {maybeError}")
         else:
             self._deleteLocalFile(self.service.NsdLocalPath, self.service.nsd_file)
             self.message = "Deleted NSD file from temporal storage"
