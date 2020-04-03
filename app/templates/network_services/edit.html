@@ -27,11 +27,21 @@
 
     <div class="col-sm-8 col-sm-offset-2">
         <div class="col-sm-12"></div>
-            <div class="col-sm-6">
+            <div class="col-sm-2">
                 {{ wtf.form_field(form.update) }}
             </div>
-            <div class="col-sm-6 text-right">
-                <strong>Network service ready: </strong>{{ "✔️" if service.Ready else "❌" }}
+            <div class="col-sm-5 text-center">
+                {% if service.PendingOnboards != 0 %}
+                    📦 {{ service.PendingOnboards }} element{{ "s" if service.PendingOnboards > 1 else ""  }} onboard pending
+                {% endif %}
+                <br>
+                {% if service.Busy %}
+                    ⏳ Pending actions
+                {% endif %}
+            </div>
+            <div class="col-sm-5 text-right">
+                {{ "✔️" if service.Ready else "❌" }}
+                <strong>Network service {{ "" if service.Ready else "not" }} ready</strong>
             </div>
         </div>
     </div>

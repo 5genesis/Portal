@@ -37,6 +37,15 @@ class NetworkService(db.Model):
             self.nsd_id is not None and \
             len(self.VNFDs) != 0 and all([vnf.Ready for vnf in self.VNFDs])
 
+    @property
+    def PendingOnboards(self) -> int:
+        values = [
+            1 if self.vim_image is not None and self.vim_id is None else 0,
+            1 if self.nsd_file is not None and self.nsd_id is None else 0,
+            *[(1 if v.vnfd_file is not None and v.vnfd_id is None else 0) for v in self.VNFDs]
+        ]
+        return sum(values)
+
 
 class VnfdPackage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
