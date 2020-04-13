@@ -15,14 +15,14 @@ from Helper import Config
 def index():
     config = Config()
     notices: List[str] = config.Notices
-    actions: List[Action] = User.query.get(current_user.id).userActions()
-    experiments: List[Experiment] = current_user.userExperiments()
+    actions: List[Action] = User.query.get(current_user.id).Actions
+    experiments: List[Experiment] = current_user.Experiments
     formRun = RunExperimentForm()
     if formRun.validate_on_submit():
         success = runExperiment()
         return redirect(f"{request.url}/reload") if success else redirect(request.url)
 
-    return render_template('index.html', title='Home', formRun=formRun, experiments=experiments, notices=notices,
+    return render_template('index.html', formRun=formRun, experiments=experiments, notices=notices,
                            actions=actions)
 
 

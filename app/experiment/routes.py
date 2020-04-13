@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
 from flask_login import current_user, login_required
@@ -7,7 +7,7 @@ from config import Config as UploaderConfig
 from REST import ElcmApi, DispatcherApi
 from app import db
 from app.experiment import bp
-from app.models import Experiment, Execution, Action, NS
+from app.models import Experiment, Execution, Action, NetworkService
 from app.experiment.forms import ExperimentForm, RunExperimentForm
 from app.execution.routes import getLastExecution
 from Helper import Config, Log
@@ -16,15 +16,15 @@ from Helper import Config, Log
 @bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def create():
-    listUEs: List[str] = list(Config().UEs.keys())
+    listUEs: List[str] = list(Config().UEs)
     nss: List[str] = []
     nsIds: List[int] = []
 
     # Get User's VNFs
-
-    for ns in current_user.userNSs():
-        nss.append(ns.name)
-        nsIds.append(ns.id)
+    # TODO: Update
+    for ns in current_user.UsableNetworkServices:
+         nss.append(ns.name)
+         nsIds.append(ns.id)
 
     form = ExperimentForm()
     if form.validate_on_submit():
@@ -44,21 +44,18 @@ def create():
         if formSlice is not None:
             experiment.slice = formSlice
 
-        # Manage multiple VNF-Location selection
         count = int(request.form.get('nsCount', '0'))
         for i in range(count):
             ns_i = 'NS' + str(i + 1)
-            ns = NS.query.get(request.form[ns_i])
+            ns = NetworkService.query.get(request.form[ns_i])
             if ns:
-                if i == 0:  # TODO: Remove experiment.NSD and use only network_services
-                    experiment.NSD = ns.NSD
-                experiment.network_services.append(ns)
+                experiment.networkServicesRelation.append(ns)
 
         db.session.add(experiment)
         db.session.commit()
         Log.I(f'Added experiment {experiment.id}')
 
-        action: Action = Action(timestamp=datetime.utcnow(), author=current_user,
+        action: Action = Action(timestamp=datetime.now(timezone.utc), author=current_user,
                                 message=f'<a href="/experiment/{experiment.id}">Created experiment: {form.name.data}</a>')
         db.session.add(action)
         db.session.commit()
@@ -66,7 +63,7 @@ def create():
         flash('Your experiment has been successfully created', 'info')
         return redirect(url_for('main.index'))
 
-    return render_template('experiment/create.html', title='Home', form=form, testCaseList=Config().TestCases,
+    return render_template('experiment/create.html', title='New Experiment', form=form, testCaseList=Config().TestCases,
                            ueList=listUEs, sliceList=Config().Slices, nss=nss, nsIds=nsIds)
 
 
@@ -95,7 +92,7 @@ def experiment(experimentId: int):
                 flash(f'The experiment {exp.name} doesn\'t have any executions yet', 'info')
                 return redirect(url_for('main.index'))
             else:
-                return render_template('experiment/experiment.html', title='experiment', experiment=exp,
+                return render_template('experiment/experiment.html', title=f'Experiment: {exp.name}', experiment=exp,
                                        executions=executions, formRun=formRun, grafanaUrl=config.GrafanaUrl,
                                        executionId=getLastExecution() + 1,
                                        dispatcherUrl=config.ELCM.Url)  # TODO: Use dispatcher
@@ -138,7 +135,7 @@ def runExperiment() -> bool:
 
             Log.I(f'Added execution {jsonResponse["ExecutionId"]}')
             exp: Experiment = Experiment.query.get(execution.experiment_id)
-            action = Action(timestamp=datetime.utcnow(), author=current_user,
+            action = Action(timestamp=datetime.now(timezone.utc), author=current_user,
                             message=f'<a href="/execution/{execution.id}">Ran experiment: {exp.name}</a>')
             db.session.add(action)
             db.session.commit()

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block scripts %}
+{{ super() }}
+    <script>setTab('navbar-networkServices')</script>
+{% endblock %}
+
+{% macro networkServiceRow(service) %}
+    <div class="col-sm-12 table-bordered" style="margin-top:1em; margin-bottom: 1em">
+        <div class="col-sm-12" style="border-bottom: #005b90 solid 1px; margin-bottom: 1em; padding: 0 !important;">
+            <div class="col-sm-3">
+                <h4>{{ service.name }}</h4>
+            </div>
+            <div class="col-sm-9">
+                <i>{{ service.description }}</i>
+            </div>
+        </div>
+
+        <div class = col-sm-12 style="margin-bottom: 1em;">
+            <div class="col-sm-2">
+                <p >{{ "🌍 Public" if service.is_public else "🔐 Private" }}</p>
+            </div>
+            <div class="col-sm-9" style="padding: 0 !important;">
+                {% include "network_services/_nsStatusInfo.html" %}
+            </div>
+            <div class="col-sm-1">
+                <a class="btn btn-blue" href="{{ url_for('NetworkServices.edit', nsid=service.id) }}" role="button">Edit</a>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
+{% block app_content %}
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-8">
+            <div style="text-align: center">
+                <h2>Network Services Repository</h2>
+            </div>
+            <a class="btn btn-blue" href="{{ url_for('NetworkServices.create') }}" role="button">New Network Service</a>
+            <br>
+            {% for ns in nss %}
+                {{ networkServiceRow(ns) }}
+            {% endfor %}
+        </div>
+        <div class="col-sm-2"></div>
+    </div>
+{% endblock %}

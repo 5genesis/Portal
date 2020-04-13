@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% set busy = action is not none %}
+{% set vimAction = busy and 'Vim' in action.type %}
+{% set nsdAction = busy and 'Nsd' in action.type %}
+{% set vnfAction = busy and 'Vnf' in action.type %}
+{% set onboardAction = busy and 'onboard' in action.type %}
+{% set deleteAction = busy and 'delete' in action.type %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/browseFiles.css') }}">
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>setTab('navbar-networkServices')</script>
+    <script src="{{url_for('static', filename='js/browseFiles.js')}}"></script>
+{% endblock %}
+
+{% macro basicInfo() %}
+    <h4 style="text-align: center">Basic Information</h4>
+    <br>
+    {% include 'network_services/_baseNsForm.html' %}
+
+
+    <div class="col-sm-8 col-sm-offset-2">
+        <div class="col-sm-12"></div>
+            <div class="col-sm-2">
+                {{ wtf.form_field(form.update) }}
+            </div>
+            <div class="col-sm-10" style="padding: 0 !important;">
+                {% include "network_services/_nsStatusInfo.html" %}
+            </div>
+        </div>
+    </div>
+
+{% endmacro %}
+
+{% macro fileSelector(message, tag, actionButton) %}
+    <div class="col-sm-3"><strong>{{ message }}</strong></div>
+    <div class="col-sm-7">
+        <div class="input-file-container">
+            <input type="file" id="file{{ tag }}" name="file{{ tag }}" class="input-file input-file{{ tag }}"/>
+            <label for="file{{ tag }}" class="input-file-trigger input-file-trigger{{ tag }}">Browse</label>
+            <span class="file-return file-return{{ tag }}"></span>
+        </div>
+    </div>
+    <div class="col-sm-2 text-center">{{ actionButton }}</div>
+{% endmacro %}
+
+{% macro vnfd_row(vnfd) %}
+    <div class="col-sm-12" style="padding: 0 !important;">
+        <div class="col-sm-3">
+            <p><strong>{{ vnfd.vnfd_file }}</strong></p>
+        </div>
+        <div class="col-sm-5">
+            <p><strong>ID: </strong>{{ vnfd.vnfd_id }}</p>
+        </div>
+        <div class="col-sm-4 text-right">
+            {% if vnfd.vnfd_id is none %}
+                <button type="submit" id="onboardVnf{{ vnfd.id }}" name="onboardVnf{{ vnfd.id }}" class="btn btn-default">
+                    Onboard</button>
+            {% endif %}
+            <button type="submit" id="deleteVnf{{ vnfd.id }}" name="deleteVnf{{ vnfd.id }}" class="btn btn-default">
+                Delete</button>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro vndfs() %}
+    <div class="col-sm-8 col-sm-offset-2 {{ "disabled" if service.vim_id is none else "" }}">
+        <hr>
+        <h4 style="text-align: center">VNFD Packages</h4>
+        <br>
+        {% if service.VNFDs | length == 0 %}
+            <p style="text-align: center">No VNFD packages defined</p>
+        {% else %}
+            {% for vnfd in service.VNFDs %}
+                {{ vnfd_row(vnfd) }}
+            {% endfor %}
+        {% endif %}
+
+        {{ fileSelector("Add VNFD package", "Vnfd", wtf.form_field(form.preloadVnfd)) }}
+    </div>
+{% endmacro %}
+
+{% macro vim() %}
+    <div class="col-sm-8 col-sm-offset-2">
+        <hr>
+        <h4 style="text-align: center">Virtualized Infrastructure Manager</h4>
+        <br>
+        {%  if service.vim_image is not none %} {# Do not allow selection of the location until it's possible to onboard #}
+            <div class="col-sm-12">
+                {% if service.vim_location is none %}
+                    <strong>VIM Location: </strong>
+                    <select class="form-control" name="location">
+                    {% for location in locations %}
+                        <option value="{{location.Name}}" selected>{{location}}</option>
+                    {% endfor %}
+                    </select>
+                {% else %}
+                    <p><strong>VIM Location: </strong>{{ service.vim_location }} 🔒</p>
+                {% endif %}
+                <br>
+            </div>
+        {% endif %}
+        {% if service.vim_image is none %}
+            {{ fileSelector("Add VIM image", "Vim", wtf.form_field(form.preloadVim)) }}
+        {% else %}
+            <div class="col-sm-8">
+                <p>
+                    <strong>Vim Image: </strong>{{ service.vim_image }}
+                    {{ "🔒" if service.vim_id is not none else "🔓" }}
+                </p>
+            </div>
+            <div class="col-sm-4 text-right">
+                {% if service.vim_id is none %}
+                    {{ wtf.form_field(form.onboardVim) }}
+                    {{ wtf.form_field(form.deleteVim) }}
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro nsd() %}
+    <div class="col-sm-8 col-sm-offset-2 {{ "disabled" if service.vim_id is none else "" }}">
+        <hr>
+        <h4 style="text-align: center">Network Service Descriptor</h4>
+        <br>
+        {% if service.nsd_file is none %}
+            {{ fileSelector("Add NSD file", "Nsd", wtf.form_field(form.preloadNsd)) }}
+        {% else %}
+            <div class="col-sm-3">
+                <p><strong>{{ service.nsd_file }}</strong></p>
+            </div>
+            <div class="col-sm-5">
+                <p><strong>ID: </strong>{{ service.nsd_id }}</p>
+            </div>
+            <div class="col-sm-4 text-right">
+                {% if service.nsd_id is none %}
+                    {{ wtf.form_field(form.onboardNsd) }}
+                {% endif %}
+                {{ wtf.form_field(form.deleteNsd) }}
+            </div>
+        {% endif %}
+        <hr>
+    </div>
+{% endmacro %}
+
+{% macro _action() %}
+    {% set color = "lemonchiffon" if not action.hasFinished else ("indianred" if action.hasFailed else "lightgreen") %}
+
+    <div class="col-sm-8 col-sm-offset-2 table-bordered"
+         style="background: {{ color }}; margin-top: 1em; margin-bottom: 1em;">
+        <div class="col-sm-3">
+            <strong>
+                {% if onboardAction %}
+                    Onboarding
+                {% else %}
+                    Deleting
+                {% endif %}
+
+                {% if vnfAction %}
+                    VNFD package
+                {% elif vimAction %}
+                    VIM image
+                {% else %}
+                    NSD package
+                {% endif %}
+            </strong>
+        </div>
+        <div class="col-sm-7">
+            {{ action.message }}
+        </div>
+        <div class="col-sm-2">
+            {% if action.hasFinished and not action.hasFailed %}
+                {{ wtf.form_field(form.closeAction) }}
+            {% else %}
+                {{ wtf.form_field(form.cancelAction) }}
+            {% endif %}
+        </div>
+    </div>
+{% endmacro %}
+
+{% block app_content %}
+    <div>
+        <form id="form" method="post" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+
+            {{ basicInfo() }}
+
+            {{ vim() }}
+            {% if vimAction %} {{ _action() }} {% endif %}
+
+            {{ vndfs() }}
+            {% if vnfAction %} {{ _action() }} {% endif %}
+
+            {{ nsd() }}
+            {% if nsdAction %} {{ _action() }} {% endif %}
+
+            {# Bottom padding #}
+            <div class="col-sm-8 col-sm-offset-2">
+                <hr>
+                <div style="height: 50vh"></div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

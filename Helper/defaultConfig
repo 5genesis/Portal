@@ -15,8 +15,7 @@ Slices:
   - Slice2
 
 UEs:
-  TestServer1:
-    OS: Linux
+  - TestServer1
 
 Grafana URL:
   None

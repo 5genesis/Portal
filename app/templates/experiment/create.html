@@ -86,33 +86,33 @@
                 </select>
             </div>
         </div>
-        <!--
-        {% if nss %}
-        <h4>Network Services
-            <input type="number" id="nsCount" name="nsCount" class="InputBox form-control" value="0" min="0"
-                   max="24"
-                   style="width: 10%;"/>
-        </h4>
-        <div class="div-wrapper-scrollbar actions-scrollbar">
-            <table id="ns" class="table table-header">
-                <tr id="headtable">
-                    <th class="table-cell-divisor-right col-sm-1">
-                    </td>
-                    <th class="table-cell-divisor-right col-sm-8">
-                        <center>Select VNF</center>
-                    </td>
-                </tr>
-            </table>
+
+        <div class="col-sm-12" style="padding: 0 !important; margin-bottom: 20px">
+            <h4>Network Services</h4>
+            {% if nss %}
+                <div class="col-sm-2">
+                    <input type="number" id="nsCount" name="nsCount" class="InputBox form-control"
+                           value="0" min="0" max="{{ nsIds | count }}" style="margin-top: 1em">
+                </div>
+                <div class="col-sm-10">
+                    <table id="ns" class="table table-header">
+                        <tr id="headtable" style="visibility: collapse">
+                            <th class="table-cell-divisor-right col-sm-1">
+                            </td>
+                            <th class="table-cell-divisor-right col-sm-11 text-center">
+                                Select VNF
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            {% else %}
+                <h5>No network services available.</h5>
+                <a class="btn btn-blue" href="{{ url_for('NetworkServices.repository') }}" role="button">New Network Service</a>
+            {% endif %}
         </div>
-        <br>
-        {% else %}
-        <h4>Network Services</h4>
-        <h5>You have not defined any NS yet.
-            <a class="btn btn-blue" href="{{ url_for('NsManagement.upload_NS') }}" role="button">Upload NS</a>
-        </h5>
-        {% endif %}
-        -->
-        <br>
+
+
+
         <br>
         <button type="submit" id="checkBtn" name="submit" class="btn btn-darkBlue">Add Experiment</button>
     </form>

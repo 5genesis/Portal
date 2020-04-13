@@ -31,9 +31,10 @@ def execution(executionId: int):
                     executor = LogInfo(jsonResponse["Executor"])
                     postRun = LogInfo(jsonResponse["PostRun"])
                     preRun = LogInfo(jsonResponse["PreRun"])
-                    return render_template('execution/execution.html', title='execution', execution=execution,
-                                           executor=executor, postRun=postRun, preRun=preRun, experiment=experiment,
-                                           grafanaUrl=config.GrafanaUrl, executionId=getLastExecution() + 1,
+                    return render_template('execution/execution.html', title=f'Execution {execution.id}',
+                                           execution=execution, executor=executor, postRun=postRun, preRun=preRun,
+                                           experiment=experiment, grafanaUrl=config.GrafanaUrl,
+                                           executionId=getLastExecution() + 1,
                                            dispatcherUrl=config.ELCM.Url)  # TODO: Use dispatcher
                 else:
                     if status == 'Not Found':

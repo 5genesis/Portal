@@ -4,6 +4,8 @@ function configureButton(input, trigger, ret)
         button = document.querySelector( trigger ),
         the_return = document.querySelector( ret);
 
+    if (fileInput == null || button == null || the_return == null){ return; }
+
     button.addEventListener( "click", function(event) {
         fileInput.focus();
         return false;
@@ -16,5 +18,6 @@ function configureButton(input, trigger, ret)
 
 document.querySelector("html").classList.add('js');
 
-configureButton(".input-file1", ".input-file-trigger1", ".file-return1");
-configureButton(".input-file2", ".input-file-trigger2", ".file-return2");
+configureButton(".input-fileVnfd", ".input-file-triggerVnfd", ".file-returnVnfd");
+configureButton(".input-fileVim", ".input-file-triggerVim", ".file-returnVim");
+configureButton(".input-fileNsd", ".input-file-triggerNsd", ".file-returnNsd");

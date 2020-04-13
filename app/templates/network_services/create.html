@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>setTab('navbar-networkServices')</script>
+{% endblock %}
+
+{% block app_content %}
+<div style="text-align: center">
+    <h2>New Network Service</h2>
+</div>
+<br>
+<div>
+    <form id="form" method="post" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        {% include 'network_services/_baseNsForm.html' %}
+
+        <div class="col-sm-8 col-sm-offset-2">
+            <hr>
+            <button type="submit" name="submit" class="btn btn-darkBlue">Create</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
