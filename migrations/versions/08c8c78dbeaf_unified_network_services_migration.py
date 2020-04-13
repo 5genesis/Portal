@@ -50,7 +50,7 @@ def upgrade():
     # ALTER commands for sqlite
     op.get_bind().execute(text("""
         create table experiments_ns_dg_tmp (
-            experiment_id INTEGER references experiment,
+            experiment_id INTEGER constraint experiments_ns_experiment_id_fk references experiment(id),
             ns_id INTEGER constraint experiments_ns_network_service_id_fk references network_service(id)
             );
     """))
