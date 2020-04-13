@@ -16,7 +16,7 @@ from Helper import Config, Log
 @bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def create():
-    listUEs: List[str] = list(Config().UEs.keys())
+    listUEs: List[str] = list(Config().UEs)
     nss: List[str] = []
     nsIds: List[int] = []
 

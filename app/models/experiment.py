@@ -19,34 +19,38 @@ class Experiment(db.Model):
     unattended = db.Column(db.Boolean)
     test_cases = db.Column(JSONEncodedDict)
     ues = db.Column(JSONEncodedDict)
-    NSD = db.Column(db.String(256))
     slice = db.Column(db.String(64))
     executions = db.relationship('Execution', backref='experiment', lazy='dynamic')
     networkServicesRelation = db.relationship('NetworkService', secondary=experiment_ns)
 
     def __repr__(self):
         return f'<Id: {self.id}, Name: {self.name}, User_id: {self.user_id}, Type: {self.type}, ' \
-            f'Unattended: {self.unattended}, TestCases: {self.test_cases}, NSD: {self.NSD}, Slice: {self.slice}>'
+            f'Unattended: {self.unattended}, TestCases: {self.test_cases}, Slice: {self.slice}>'
 
     def experimentExecutions(self) -> List:
         exp: db.BaseQuery = Execution.query.filter_by(experiment_id=self.id)
         return list(exp.order_by(Execution.id.desc()))
 
     def serialization(self) -> Dict[str, object]:
-        from .user import User
+        return {
+            'Version': '2.0.0',
+            'ExperimentType': 'StandardTestPlan',
+            'TestCases': self.test_cases,
+            'UEs': self.ues,
+            'Slice': self.slice,
+            'NSs': [ns.nsd_id for ns in self.networkServicesRelation],
+            'ExclusiveExecution': False,
+            'Scenario': None,
+            'Automated': True,
+            'ReservationTime': 0,
 
-        ueDictionary = {}
-        allUEs: Dict = HelperConfig().UEs
-        executionIds: List = [exe.id for exe in self.experimentExecutions()]
+            'Application': None,
+            'Parameters': {},
 
-        for ue in self.ues:
-            if ue in allUEs.keys(): ueDictionary[ue] = allUEs[ue]
+            'Distributed': False,
+            'Role': 'Master',
+            'SlavePlatform': None,
+            'SlaveExperiment': None,
 
-        # TODO: Update
-        networkServices = [] #[ns.serialization() for ns in self.network_services]
-
-        dictionary = {'Id': self.id, 'Name': self.name, 'User': User.query.get(self.user_id).serialization(),
-                      'Executions': executionIds, "Platform": HelperConfig().Platform,
-                      "TestCases": self.test_cases, "UEs": ueDictionary, "Slice": self.slice, "NSD": self.NSD,
-                      "NetworkServices": networkServices}
-        return dictionary
+            'Extra': {}
+        }

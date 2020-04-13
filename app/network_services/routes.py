@@ -46,6 +46,7 @@ def edit(nsid: int):
         if form.validate_on_submit():
             handler = EditHandler(request, form, service, db, current_user.id)
             handler.Handle()
+            return redirect(url_for("NetworkServices.edit", nsid=nsid))
 
     form = EditNsForm(
         name=service.name,
