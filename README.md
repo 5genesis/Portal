@@ -109,11 +109,10 @@ The values that can be configured on `config.yml` are:
 > Direct communication with the ELCM is still needed
 * Platform: Platform name/location.
 * TestCases: List of TestCases supported by the platform.
-* UEs: Dictionary that contains information about the UEs available in the platform. Each element key defines the unique
-ID of the UE, while the value contains a dictionary with extra data about the UE (currently the operating system).
+* UEs: List of UEs available in the platform.
 > The list of TestCases and UEs selected for each experiment will be sent to the Dispatcher (and ELCM) on every 
 execution request. The ELCM uses these values in order to customize the campaign execution (via the Composer and the 
-Facility Registry).
+Facility Registry). The names of the UEs and TestCases must exactly match with their counterparts on the ELCM.
 * Slices: List of available Network Slices.
 > This information is not currently used by the ELCM (as of 3/6/2019)
 * Grafana URL: Base URL of Grafana Dashboard to display Execution results.

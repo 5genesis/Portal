@@ -1,3 +1,7 @@
+**13/04/2020** [Version 2.1.0]
+
+ - Onboarding of network services using Dispatcher
+
 **16/03/2020** [Version 2.0.0]
 
  - Use Dispatcher for user authentication
