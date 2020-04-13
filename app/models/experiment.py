@@ -32,10 +32,6 @@ class Experiment(db.Model):
         exp: db.BaseQuery = Execution.query.filter_by(experiment_id=self.id)
         return list(exp.order_by(Execution.id.desc()))
 
-    def experimentNSs(self) -> List:
-        nss: db.BaseQuery = experiment_ns.query.filter_by(experiment_id=self.id)
-        return list(nss)
-
     def serialization(self) -> Dict[str, object]:
         from .user import User
 
