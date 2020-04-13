@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timezone
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
 from flask_login import current_user, login_required
 from config import Config as UploaderConfig
@@ -16,15 +16,14 @@ from Helper import Config, Log
 @bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def create():
-    listUEs: List[str] = list(Config().UEs)
-    nss: List[str] = []
-    nsIds: List[int] = []
+    experimentTypes = ['Standard', 'Custom', 'MONROE']
 
-    # Get User's VNFs
-    # TODO: Update
+    listUEs: List[str] = list(Config().UEs)
+    nss: List[Tuple[str, int]] = []
+
+    # Get User's available NSs
     for ns in current_user.UsableNetworkServices:
-         nss.append(ns.name)
-         nsIds.append(ns.id)
+         nss.append((ns.name, ns.id))
 
     form = ExperimentForm()
     if form.validate_on_submit():
@@ -46,9 +45,8 @@ def create():
 
         count = int(request.form.get('nsCount', '0'))
         for i in range(count):
-            ns_i = 'NS' + str(i + 1)
-            ns = NetworkService.query.get(request.form[ns_i])
-            if ns:
+            ns = NetworkService.query.get(request.form[f'NS{i+1}'])
+            if ns is not None:
                 experiment.networkServicesRelation.append(ns)
 
         db.session.add(experiment)
@@ -64,7 +62,7 @@ def create():
         return redirect(url_for('main.index'))
 
     return render_template('experiment/create.html', title='New Experiment', form=form, testCaseList=Config().TestCases,
-                           ueList=listUEs, sliceList=Config().Slices, nss=nss, nsIds=nsIds)
+                           ueList=listUEs, sliceList=Config().Slices, nss=nss, experimentTypes=experimentTypes)
 
 
 @bp.route('/<experimentId>/reload', methods=['GET', 'POST'])

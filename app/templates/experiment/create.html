@@ -13,29 +13,50 @@
     <script src="{{url_for('static', filename='js/browseFiles.js')}}"></script>
     <script>setTab('navbar-createExperiment')</script>
     <script>
-    (function() {
-      $("#nsCount").bind('change', function() {
-        curVal = $.trim($(this).val()).match(/^\d*$/);
-        curFloors = $('.ns').length;
-        nss = [];
-        nsIds = [];
-        {% for ns in nss%}
-          nss.push("{{ ns }}");
-        {% endfor %}
-        {% for nsId in nsIds %}
-          nsIds.push("{{ nsId }}");
-        {% endfor %}
-        if (curVal > curFloors) {
-            console.log("add");
-          addNs(curFloors, curVal, nss, nsIds);
-        } else if (curVal < curFloors) {
-            console.log("remove");
-          removeNs(curVal);
-        }
-      })
-    })();
-</script>
+        // Force a change of div so that only one group of settings is visible
+        $(document).ready( changeSettingsDiv() );
+
+        // Build the list of NSs before binding the function to the counter
+        $("#nsCount").bind('change', function() {
+            nss = []; nsIds = [];
+            {% for ns in nss%}
+              nss.push("{{ ns[0] }}");
+              nsIds.push("{{ ns[1] }}");
+            {% endfor %}
+            changeNsRows(nss, nsIds);
+          });
+    </script>
 {% endblock %}
+
+{% macro standardSettings() %}
+    <div class="col-sm-12 settingsDiv" id="StandardSettings" style="padding: 0 !important; margin-bottom: 20px">
+        <h4>Test Cases</h4>
+        {% for test_case in testCaseList %}
+            <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" name="testCases" value="{{test_case}}">
+                {{test_case}}
+            </div>
+        {% endfor %}
+        <h4>UEs</h4>
+        {% for ue in ueList %}
+            <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" name="ues" value="{{ue}}"> {{ue}}
+            </div>
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro customSettings() %}
+    <div class="col-sm-12 settingsDiv" id="CustomSettings" style="padding: 0 !important; margin-bottom: 20px">
+        CUSTOM!
+    </div>
+{% endmacro %}
+
+{% macro monroeSettings() %}
+    <div class="col-sm-12 settingsDiv" id="MONROESettings" style="padding: 0 !important; margin-bottom: 20px">
+        MONROE!
+    </div>
+{% endmacro %}
 
 {% block app_content %}
 <div style="text-align: center">
@@ -52,25 +73,20 @@
             </div>
             <div class="col-sm-4">
                 <h4>Type</h4>
-                <select class="form-control" name="type">
-                    <option value="Standard" selected>Standard</option>
-                    <option value="Custom" disabled>Custom</option>
+                <select class="form-control" name="type" id="expType" onchange="changeSettingsDiv()">
+                    {% for type in experimentTypes %}
+                        <option value="{{ type }}" {{ "selected" if loop.first else "" }}>
+                            {{ type }}
+                        </option>
+                    {% endfor %}
                 </select>
             </div>
         </div>
-        <h4>Test Cases</h4>
-        {% for test_case in testCaseList %}
-        <div class="custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input" name="testCases" value="{{test_case}}">
-            {{test_case}}
-        </div>
-        {% endfor %}
-        <h4>UEs</h4>
-        {% for ue in ueList %}
-        <div class="custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input" name="ues" value="{{ue}}"> {{ue}}
-        </div>
-        {% endfor %}
+
+        {{ standardSettings() }}
+        {{ customSettings() }}
+        {{ monroeSettings() }}
+
         <h4>Slice</h4>
         <div class="col-sm-12" style="padding: 0 !important; margin-bottom: 20px">
             <div class="custom-control custom-checkbox col-sm-1"
@@ -92,7 +108,7 @@
             {% if nss %}
                 <div class="col-sm-2">
                     <input type="number" id="nsCount" name="nsCount" class="InputBox form-control"
-                           value="0" min="0" max="{{ nsIds | count }}" style="margin-top: 1em">
+                           value="0" min="0" max="{{ nss | count }}" style="margin-top: 1em">
                 </div>
                 <div class="col-sm-10">
                     <table id="ns" class="table table-header">
@@ -111,10 +127,10 @@
             {% endif %}
         </div>
 
-
-
         <br>
-        <button type="submit" id="checkBtn" name="submit" class="btn btn-darkBlue">Add Experiment</button>
+        <button type="submit" id="checkBtn" name="submit" class="btn btn-darkBlue" onclick="checkInput()">
+            Add Experiment
+        </button>
     </form>
 </div>
 <div class="col-sm-2"></div>
