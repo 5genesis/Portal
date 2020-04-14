@@ -27,18 +27,13 @@ def create():
 
     form = ExperimentForm()
     if form.validate_on_submit():
-        testCases = request.form.getlist('testCases')
-        if not testCases:
-            flash(f'Please, select at least one Test Case', 'error')
-            return redirect(url_for('main.create'))
+        experimentType = request.form.get('type')
+        experimentName = request.form.get('name')
+        testCases = request.form.getlist(f'{experimentType}_testCases')
+        ues_selected = request.form.getlist(f'{experimentType}_ues')
 
-        ues_selected = request.form.getlist('ues')
-
-        Log.D(f'Create experiment form data - Name: {form.name.data}, Type: {form.type.data}'
-              f', TestCases {testCases}, UEs: {ues_selected}, Slice: {request.form.get("slice", None)}')
-
-        experiment: Experiment = Experiment(name=form.name.data, author=current_user, unattended=True,
-                                            type=form.type.data, test_cases=testCases, ues=ues_selected)
+        experiment: Experiment = Experiment(name=experimentName, author=current_user, unattended=True,
+                                            type=experimentType, test_cases=testCases, ues=ues_selected)
         formSlice = request.form.get('slice', None)
         if formSlice is not None:
             experiment.slice = formSlice
@@ -54,7 +49,7 @@ def create():
         Log.I(f'Added experiment {experiment.id}')
 
         action: Action = Action(timestamp=datetime.now(timezone.utc), author=current_user,
-                                message=f'<a href="/experiment/{experiment.id}">Created experiment: {form.name.data}</a>')
+                                message=f'<a href="/experiment/{experiment.id}">Created experiment: {experimentName}</a>')
         db.session.add(action)
         db.session.commit()
         Log.I(f'Added action - Created experiment')

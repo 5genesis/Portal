@@ -157,3 +157,11 @@ div.disabled
   opacity: 0.3;
   background: #FFFFFF;
 }
+
+.nopadding {
+    padding: 0 !important;
+}
+
+label {
+    font-weight: normal;
+}

@@ -8,7 +8,7 @@
 
 {% macro networkServiceRow(service) %}
     <div class="col-sm-12 table-bordered" style="margin-top:1em; margin-bottom: 1em">
-        <div class="col-sm-12" style="border-bottom: #005b90 solid 1px; margin-bottom: 1em; padding: 0 !important;">
+        <div class="col-sm-12 nopadding" style="border-bottom: #005b90 solid 1px; margin-bottom: 1em;">
             <div class="col-sm-3">
                 <h4>{{ service.name }}</h4>
             </div>
@@ -21,7 +21,7 @@
             <div class="col-sm-2">
                 <p >{{ "🌍 Public" if service.is_public else "🔐 Private" }}</p>
             </div>
-            <div class="col-sm-9" style="padding: 0 !important;">
+            <div class="col-sm-9 nopadding">
                 {% include "network_services/_nsStatusInfo.html" %}
             </div>
             <div class="col-sm-1">

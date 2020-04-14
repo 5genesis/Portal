@@ -1,12 +1,24 @@
 
 
 function checkInput() {
-  checked = $("input[name=testCases]:checked").length;
-  if (!checked) {
-    alert("Please, select at least one Test Case");
-    return false;
+  let errors = false;
+  let message = "The following issues have been found:\n";
+  let type = $('#expType').val();
+
+  let name = $("input[name=name]").val();
+  if (name.length === 0 || !/\S/.test(name)) {
+    errors = true;
+    message += " - Name must not be empty\n";
   }
-  return true;
+
+  let testcases = $("input[name=" + type + "_testCases]:checked").length;
+  if (testcases === 0) {
+    errors = true;
+    message += " - Select at least one TestCase\n";
+  }
+
+  if (errors) { alert(message); }
+  return !errors;
 }
 
 function changeNsRows(nss, nsIds) {
@@ -49,7 +61,6 @@ function disableSliceList() {
 
 function changeSettingsDiv() {
   let type = $('#expType').val();
-  console.log(type);
   $(".settingsDiv").hide();
   $("#"+type+"Settings").show();
 }

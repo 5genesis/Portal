@@ -30,7 +30,7 @@
             <div class="col-sm-2">
                 {{ wtf.form_field(form.update) }}
             </div>
-            <div class="col-sm-10" style="padding: 0 !important;">
+            <div class="col-sm-10 nopadding">
                 {% include "network_services/_nsStatusInfo.html" %}
             </div>
         </div>
@@ -51,7 +51,7 @@
 {% endmacro %}
 
 {% macro vnfd_row(vnfd) %}
-    <div class="col-sm-12" style="padding: 0 !important;">
+    <div class="col-sm-12 nopadding">
         <div class="col-sm-3">
             <p><strong>{{ vnfd.vnfd_file }}</strong></p>
         </div>

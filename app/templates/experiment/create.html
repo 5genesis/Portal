@@ -28,33 +28,62 @@
     </script>
 {% endblock %}
 
-{% macro standardSettings() %}
-    <div class="col-sm-12 settingsDiv" id="StandardSettings" style="padding: 0 !important; margin-bottom: 20px">
+{% macro parametersField(id) %}
+    <div class="col-sm-12">
+        <h4><label for="{{ id }}">Parameters</label></h4>
+        <input class="form-control" type="text" name="{{ id }}" id="{{ id }}"/>
+    </div>
+{% endmacro %}
+
+{% macro testCasesField(id, list) %}
+    <div class="col-sm-6">
         <h4>Test Cases</h4>
-        {% for test_case in testCaseList %}
+        {% if list %}
+            {% for test_case in list %}
             <div class="custom-control custom-checkbox">
-                <input type="checkbox" class="custom-control-input" name="testCases" value="{{test_case}}">
-                {{test_case}}
+                <label>
+                    <input type="checkbox" class="custom-control-input" name="{{ id }}_testCases"
+                           value="{{ test_case }}"> {{test_case}}
+                </label>
             </div>
         {% endfor %}
-        <h4>UEs</h4>
-        {% for ue in ueList %}
-            <div class="custom-control custom-checkbox">
-                <input type="checkbox" class="custom-control-input" name="ues" value="{{ue}}"> {{ue}}
-            </div>
-        {% endfor %}
+        {% else %}
+            <p>No available Test Cases of {{ id }} type.</p>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro standardSettings() %}
+    <div class="col-sm-12 settingsDiv nopadding" id="StandardSettings" style="margin-bottom: 20px">
+        {{ testCasesField('Standard', testCaseList) }}
+
+        <div class="col-sm-6">
+            <h4>UEs</h4>
+            {% for ue in ueList %}
+                <div class="custom-control custom-checkbox">
+                    <label>
+                        <input type="checkbox" class="custom-control-input" name="ues" value="{{ue}}"> {{ue}}
+                    </label>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 {% endmacro %}
 
 {% macro customSettings() %}
-    <div class="col-sm-12 settingsDiv" id="CustomSettings" style="padding: 0 !important; margin-bottom: 20px">
-        CUSTOM!
+    <div class="col-sm-12 settingsDiv nopadding" id="CustomSettings" style="margin-bottom: 20px">
+        {{ parametersField("customParameters") }}
+        {{ testCasesField('Custom', []) }} {# TODO #}
     </div>
 {% endmacro %}
 
 {% macro monroeSettings() %}
-    <div class="col-sm-12 settingsDiv" id="MONROESettings" style="padding: 0 !important; margin-bottom: 20px">
-        MONROE!
+    <div class="col-sm-12 settingsDiv nopadding" id="MONROESettings" style="margin-bottom: 20px">
+        <div class="col-sm-12">
+            <h4><label for="expApplication">Application</label></h4>
+            <input class="form-control" type="text" name="application" id="expApplication"/>
+        </div>
+        {{ parametersField("monroeParameters") }}
     </div>
 {% endmacro %}
 
@@ -64,15 +93,16 @@
 </div>
 <div class="col-sm-2"></div>
 <div class="col-sm-8">
-    <form id="form" method="post" enctype="multipart/form-data">
+    <form id="form" method="post" enctype="multipart/form-data" onsubmit="return checkInput()">
         {{ form.hidden_tag() }}
-        <div class="col-sm-12" style="padding: 0 !important; margin-bottom: 25px">
+
+        <div class="col-sm-12 nopadding">
             <div class="col-sm-8">
-                <h4>Name</h4>
-                <input class="form-control" type="text" name="name" required/>
+                <h4><label for="expNname">Name</label></h4>
+                <input class="form-control" type="text" name="name" id="expName"/>
             </div>
             <div class="col-sm-4">
-                <h4>Type</h4>
+                <h4><label for="expType">Type</label></h4>
                 <select class="form-control" name="type" id="expType" onchange="changeSettingsDiv()">
                     {% for type in experimentTypes %}
                         <option value="{{ type }}" {{ "selected" if loop.first else "" }}>
@@ -82,42 +112,54 @@
                 </select>
             </div>
         </div>
+        <div class="col-sm-12" style="margin-bottom: 25px">
+            <div class="custom-control custom-checkbox">
+                <label>
+                    <input type="checkbox" class="custom-control-input" name="exclusive" value="exclusive">
+                    Avoid running other experiments at the same time
+                </label>
+            </div>
+        </div>
 
         {{ standardSettings() }}
         {{ customSettings() }}
         {{ monroeSettings() }}
 
-        <h4>Slice</h4>
-        <div class="col-sm-12" style="padding: 0 !important; margin-bottom: 20px">
+        <div class="col-sm-12 " style="margin-bottom: 20px">
+            <h4><label for="sliceList">Slice</label></h4>
             <div class="custom-control custom-checkbox col-sm-1"
                  style="padding: 5px 0 !important; margin-right: -30px;">
-                <input type="checkbox" class="custom-control-input" id="sliceNone" name="sliceNone"
-                       onclick="disableSliceList()">
+                <label>
+                    <input type="checkbox" class="custom-control-input" id="sliceNone" name="sliceNone"
+                           onclick="disableSliceList()">
+                </label>
             </div>
-            <div class="col-sm-11" style="padding: 0 !important;">
+            <div class="col-sm-11 ">
                 <select id="sliceList" class="form-control" name="slice" disabled>
                     {% for slice in sliceList %}
-                    <option value="{{ slice }}">{{ slice }}</option>
+                        <option value="{{ slice }}">{{ slice }}</option>
                     {% endfor %}
                 </select>
             </div>
         </div>
 
-        <div class="col-sm-12" style="padding: 0 !important; margin-bottom: 20px">
+        <div class="col-sm-12 " style="margin-bottom: 20px">
             <h4>Network Services</h4>
             {% if nss %}
                 <div class="col-sm-2">
-                    <input type="number" id="nsCount" name="nsCount" class="InputBox form-control"
-                           value="0" min="0" max="{{ nss | count }}" style="margin-top: 1em">
+                    <label>
+                        <input type="number" id="nsCount" name="nsCount" class="InputBox form-control"
+                               value="0" min="0" max="{{ nss | count }}" style="margin-top: 1em">
+                    </label>
                 </div>
                 <div class="col-sm-10">
                     <table id="ns" class="table table-header">
                         <tr id="headtable" style="visibility: collapse">
                             <th class="table-cell-divisor-right col-sm-1">
-                            </td>
+                            </th>
                             <th class="table-cell-divisor-right col-sm-11 text-center">
                                 Select VNF
-                            </td>
+                            </th>
                         </tr>
                     </table>
                 </div>
@@ -128,7 +170,7 @@
         </div>
 
         <br>
-        <button type="submit" id="checkBtn" name="submit" class="btn btn-darkBlue" onclick="checkInput()">
+        <button type="submit" id="checkBtn" name="submit" class="btn btn-darkBlue">
             Add Experiment
         </button>
     </form>
