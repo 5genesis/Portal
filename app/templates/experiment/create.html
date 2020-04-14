@@ -79,7 +79,7 @@
     <div class="col-sm-12 settingsDiv nopadding" id="CustomSettings" style="margin-bottom: 20px">
         <div class="col-sm-4">
             <label>
-                <input type="checkbox" class="custom-control-input" id="automateCheckbox" name="automate"
+                <input type="checkbox" class="custom-control-input" id="automateCheckbox" name="automate" value="automate"
                        onclick="disableAutomatedSettings()" checked>
                     Automate experiment
             </label>
@@ -92,7 +92,7 @@
         </div>
 
         <div class="col-sm-12 nopadding" id="CustomAutomatedSettings">
-            {{ testCasesField('Custom', []) }} {# TODO #}
+            {{ testCasesField('Custom', ['Custom1', 'Custom2']) }} {# TODO #}
             {{ uesField('Custom', ueList) }}
         </div>
         {{ parametersField("customParameters") }}

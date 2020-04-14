@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timezone
 from typing import Dict, List, Tuple
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
+from flask.json import loads as jsonParse
 from flask_login import current_user, login_required
 from config import Config as UploaderConfig
 from REST import ElcmApi, DispatcherApi
@@ -27,14 +28,41 @@ def create():
 
     form = ExperimentForm()
     if form.validate_on_submit():
-        experimentType = request.form.get('type')
         experimentName = request.form.get('name')
+        experimentType = request.form.get('type')
+
         testCases = request.form.getlist(f'{experimentType}_testCases')
         ues_selected = request.form.getlist(f'{experimentType}_ues')
 
-        experiment: Experiment = Experiment(name=experimentName, author=current_user, unattended=True,
-                                            type=experimentType, test_cases=testCases, ues=ues_selected)
+        rawParams = None
+        if experimentType == "Custom":
+            rawParams = request.form.get('customParameters')
+        elif experimentType == "MONROE":
+            rawParams = request.form.get('monroeParameters')
+
+        if rawParams is not None:
+            try:
+                parameters = jsonParse(rawParams)
+            except Exception as e:
+                flash(f'Exception while parsing Parameters: {e}', 'error')
+                return redirect(url_for("experiment.create"))
+        else:
+            parameters = {}
+
+        automated = (len(request.form.getlist('automate')) != 0) if experimentType == "Custom" else True
+        reservationTime = int(request.form.get('reservation')) if experimentType == "Custom" else None
+
+        application = request.form.get('application') if experimentType == "MONROE" else None
+
+        experiment = Experiment(
+            name=experimentName, author=current_user, type=experimentType,
+            test_cases=testCases, ues=ues_selected,
+            automated=automated, reservation_Time=reservationTime,
+            parameters=parameters, application=application,
+        )
+
         formSlice = request.form.get('slice', None)
+
         if formSlice is not None:
             experiment.slice = formSlice
 

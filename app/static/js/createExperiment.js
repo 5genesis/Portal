@@ -1,4 +1,6 @@
-
+function isWhitespace(str) {
+  return (str.length === 0 || !/\S/.test(str))
+}
 
 function checkInput() {
   let errors = false;
@@ -6,15 +8,35 @@ function checkInput() {
   let type = $('#expType').val();
 
   let name = $("input[name=name]").val();
-  if (name.length === 0 || !/\S/.test(name)) {
+  if (isWhitespace(name)) {
     errors = true;
     message += " - Name must not be empty\n";
   }
 
   let testcases = $("input[name=" + type + "_testCases]:checked").length;
-  if (testcases === 0) {
+  let automated = (type !== 'Custom') || $('#automateCheckbox')[0].checked;
+  if (automated && type !== "MONROE" && testcases === 0) {
     errors = true;
     message += " - Select at least one TestCase\n";
+  }
+
+  let application = $('#expApplication').val();
+  if (type === "MONROE" && isWhitespace(application)) {
+    errors = true;
+    message += " - Application must not be empty\n";
+  }
+
+  let parameters = "";
+  if (type === "Custom") { parameters = $("#customParameters").val(); }
+  if (type === "MONROE") { parameters = $("#monroeParameters").val(); }
+
+  if (!isWhitespace(parameters)) {
+    try {
+      JSON.parse(parameters);
+    } catch(err) {
+      errors = true;
+      message += " - Could not parse Parameters as valid JSON:\n" + err;
+    }
   }
 
   if (errors) { alert(message); }

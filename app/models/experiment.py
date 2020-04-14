@@ -17,6 +17,7 @@ class Experiment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     type = db.Column(db.String(16))
     automated = db.Column(db.Boolean)
+    reservation_time = db.Column(db.Integer)
     test_cases = db.Column(JSONEncodedDict)
     ues = db.Column(JSONEncodedDict)
     slice = db.Column(db.String(64))
