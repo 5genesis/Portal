@@ -52,12 +52,18 @@ function disableSliceList() {
   let checkBox = document.getElementById('sliceNone');
   let sliceList = document.getElementById('sliceList');
 
-  if (checkBox.checked == true) {
+  if (checkBox.checked === true) {
     sliceList.removeAttribute("disabled");
   } else {
     sliceList.setAttribute("disabled", true);
   }
-};
+}
+
+function disableAutomatedSettings() {
+  let checkbox = document.getElementById('automateCheckbox');
+  let settings = document.getElementById('CustomAutomatedSettings');
+  settings.hidden = !checkbox.checked;
+}
 
 function changeSettingsDiv() {
   let type = $('#expType').val();

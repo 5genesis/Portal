@@ -31,7 +31,7 @@
 {% macro parametersField(id) %}
     <div class="col-sm-12">
         <h4><label for="{{ id }}">Parameters</label></h4>
-        <input class="form-control" type="text" name="{{ id }}" id="{{ id }}"/>
+        <textarea form="form" class="form-control" name="{{ id }}" id="{{ id }}"></textarea>
     </div>
 {% endmacro %}
 
@@ -53,27 +53,49 @@
     </div>
 {% endmacro %}
 
-{% macro standardSettings() %}
-    <div class="col-sm-12 settingsDiv nopadding" id="StandardSettings" style="margin-bottom: 20px">
-        {{ testCasesField('Standard', testCaseList) }}
-
-        <div class="col-sm-6">
+{% macro uesField(id, list) %}
+    <div class="col-sm-6">
+        {% if list %}
             <h4>UEs</h4>
-            {% for ue in ueList %}
+            {% for ue in list %}
                 <div class="custom-control custom-checkbox">
                     <label>
-                        <input type="checkbox" class="custom-control-input" name="ues" value="{{ue}}"> {{ue}}
+                        <input type="checkbox" class="custom-control-input" name="{{ id }}_ues" value="{{ue}}"> {{ue}}
                     </label>
                 </div>
             {% endfor %}
-        </div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro standardSettings() %}
+    <div class="col-sm-12 settingsDiv nopadding" id="StandardSettings" style="margin-bottom: 20px">
+        {{ testCasesField('Standard', testCaseList) }}
+        {{ uesField('Standard', ueList) }}
     </div>
 {% endmacro %}
 
 {% macro customSettings() %}
     <div class="col-sm-12 settingsDiv nopadding" id="CustomSettings" style="margin-bottom: 20px">
+        <div class="col-sm-4">
+            <label>
+                <input type="checkbox" class="custom-control-input" id="automateCheckbox" name="automate"
+                       onclick="disableAutomatedSettings()" checked>
+                    Automate experiment
+            </label>
+        </div>
+        <div class="col-sm-5 text-right">
+            <label for="reservation">Reservation time (minutes)</label>
+        </div>
+        <div class="col-sm-3">
+             <input type="number" id="reservation" name="reservation" class="InputBox form-control" min="5" value="30">
+        </div>
+
+        <div class="col-sm-12 nopadding" id="CustomAutomatedSettings">
+            {{ testCasesField('Custom', []) }} {# TODO #}
+            {{ uesField('Custom', ueList) }}
+        </div>
         {{ parametersField("customParameters") }}
-        {{ testCasesField('Custom', []) }} {# TODO #}
     </div>
 {% endmacro %}
 
