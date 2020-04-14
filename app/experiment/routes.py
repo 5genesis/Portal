@@ -30,9 +30,11 @@ def create():
     if form.validate_on_submit():
         experimentName = request.form.get('name')
         experimentType = request.form.get('type')
+        exclusive = (len(request.form.getlist('exclusive')) != 0)
 
         testCases = request.form.getlist(f'{experimentType}_testCases')
         ues_selected = request.form.getlist(f'{experimentType}_ues')
+        scenario = None  # TODO
 
         rawParams = None
         if experimentType == "Custom":
@@ -55,9 +57,10 @@ def create():
         application = request.form.get('application') if experimentType == "MONROE" else None
 
         experiment = Experiment(
-            name=experimentName, author=current_user, type=experimentType,
-            test_cases=testCases, ues=ues_selected,
-            automated=automated, reservation_Time=reservationTime,
+            name=experimentName, author=current_user,
+            type=experimentType, exclusive=exclusive,
+            test_cases=testCases, ues=ues_selected, scenario=scenario,
+            automated=automated, reservation_time=reservationTime,
             parameters=parameters, application=application,
         )
 
@@ -74,6 +77,7 @@ def create():
 
         db.session.add(experiment)
         db.session.commit()
+
         Log.I(f'Added experiment {experiment.id}')
 
         action: Action = Action(timestamp=datetime.now(timezone.utc), author=current_user,

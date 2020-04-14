@@ -39,18 +39,18 @@ class Experiment(db.Model):
     def serialization(self) -> Dict[str, object]:
         return {
             'Version': '2.0.0',
-            'ExperimentType': 'StandardTestPlan',
+            'ExperimentType': self.type,
             'TestCases': self.test_cases,
             'UEs': self.ues,
             'Slice': self.slice,
             'NSs': [ns.nsd_id for ns in self.networkServicesRelation],
-            'ExclusiveExecution': False,
-            'Scenario': None,
-            'Automated': True,
-            'ReservationTime': 0,
+            'ExclusiveExecution': self.exclusive,
+            'Scenario': self.scenario,
+            'Automated': self.automated,
+            'ReservationTime': self.reservation_time,
 
-            'Application': None,
-            'Parameters': {},
+            'Application': self.application,
+            'Parameters': self.parameters,
 
             'Distributed': False,
             'Role': 'Master',
