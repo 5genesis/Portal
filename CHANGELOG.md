@@ -1,3 +1,8 @@
+**15/04/2020** [Version 2.2.0]
+
+ - Custom and MONROE experiment types
+ - Updated experiment descriptor
+
 **13/04/2020** [Version 2.1.0]
 
  - Onboarding of network services using Dispatcher
