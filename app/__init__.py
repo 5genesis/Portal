@@ -6,7 +6,7 @@ from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask_moment import Moment
 from config import Config
-from Helper import Log
+from Helper import Log, Facility
 
 
 db = SQLAlchemy()
@@ -53,6 +53,8 @@ def create_app(config_class=Config):
     from app.execution import bp as execution_bp
     app.register_blueprint(execution_bp, url_prefix='/execution')
 
+    Log.I("Requesting facility information to ELCM...")
+    Facility.Reload()
     Log.I('5Genesis startup')
     return app
 

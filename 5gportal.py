@@ -1,7 +1,7 @@
 from typing import Dict
 from app import create_app, db
 from app.models import User, Experiment, Execution, Action
-from Helper import Config
+from Helper import Config, Facility, Log
 
 app = create_app()
 config = Config()
@@ -9,4 +9,6 @@ config = Config()
 
 @app.shell_context_processor
 def make_shell_context() -> Dict:
-    return {'DB': db, 'User': User, 'Experiment': Experiment, 'Execution': Execution, 'Action': Action, 'Config': config}
+    return {'DB': db, 'User': User, 'Experiment': Experiment,
+            'Execution': Execution, 'Action': Action,
+            'Config': config, 'Facility': Facility}
