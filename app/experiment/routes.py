@@ -177,7 +177,7 @@ def runExperiment() -> bool:
 def kickstart(experimentId: int):
     try:
         Log.I(f"KS: Kickstarting experiment {experimentId}")
-        jsonResponse: Dict = ElcmApi().Post(experimentId)
+        jsonResponse: Dict = ElcmApi().Run(experimentId)
         execution: Execution = Execution(id=jsonResponse["ExecutionId"], experiment_id=experimentId, status='Init')
         db.session.add(execution)
         db.session.commit()
