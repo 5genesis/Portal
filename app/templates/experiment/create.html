@@ -70,8 +70,8 @@
 
 {% macro standardSettings() %}
     <div class="col-sm-12 settingsDiv nopadding" id="StandardSettings" style="margin-bottom: 20px">
-        {{ testCasesField('Standard', testCaseList) }}
-        {{ uesField('Standard', ueList) }}
+        {{ testCasesField('Standard', standardTestCases) }}
+        {{ uesField('Standard', ues) }}
     </div>
 {% endmacro %}
 
@@ -92,8 +92,8 @@
         </div>
 
         <div class="col-sm-12 nopadding" id="CustomAutomatedSettings">
-            {{ testCasesField('Custom', ['Custom1', 'Custom2']) }} {# TODO #}
-            {{ uesField('Custom', ueList) }}
+            {{ testCasesField('Custom', customTestCases) }}
+            {{ uesField('Custom', ues) }}
         </div>
         {{ parametersField("customParameters") }}
     </div>

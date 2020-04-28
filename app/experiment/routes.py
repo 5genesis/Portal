@@ -11,7 +11,7 @@ from app.experiment import bp
 from app.models import Experiment, Execution, Action, NetworkService
 from app.experiment.forms import ExperimentForm, RunExperimentForm
 from app.execution.routes import getLastExecution
-from Helper import Config, Log
+from Helper import Config, Log, Facility
 
 
 @bp.route('/create', methods=['GET', 'POST'])
@@ -19,7 +19,6 @@ from Helper import Config, Log
 def create():
     experimentTypes = ['Standard', 'Custom', 'MONROE']
 
-    listUEs: List[str] = list(Config().UEs)
     nss: List[Tuple[str, int]] = []
 
     # Get User's available NSs
@@ -88,8 +87,10 @@ def create():
         flash('Your experiment has been successfully created', 'info')
         return redirect(url_for('main.index'))
 
-    return render_template('experiment/create.html', title='New Experiment', form=form, testCaseList=Config().TestCases,
-                           ueList=listUEs, sliceList=Config().Slices, nss=nss, experimentTypes=experimentTypes)
+    return render_template('experiment/create.html', title='New Experiment', form=form,
+                           standardTestCases=Facility.StandardTestCases(), ues=Facility.UEs(),
+                           customTestCases=Facility.AvailableCustomTestCases(current_user.email),
+                           sliceList=Config().Slices, nss=nss, experimentTypes=experimentTypes)
 
 
 @bp.route('/<experimentId>/reload', methods=['GET', 'POST'])
