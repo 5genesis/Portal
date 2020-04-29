@@ -7,6 +7,7 @@ class Facility:
     standard: List[str] = []
     custom: List[str] = []
     privateCustom: Dict[str, Set[str]] = {}
+    parameters: Dict[str, List[Dict[str, str]]] = {}
 
     @classmethod
     def Reload(cls):
@@ -20,9 +21,11 @@ class Facility:
             standard = []
             custom = []
             privateCustom = {}
+            parameters = {}
 
             for testcase in testcases:
                 name = testcase['Name']
+                parameters[name] = testcase['Parameters']
                 if testcase['Standard']:
                     standard.append(name)
                 if testcase['PublicCustom']:
@@ -36,6 +39,7 @@ class Facility:
             cls.standard = sorted(standard)
             cls.custom = sorted(custom)
             cls.privateCustom = privateCustom
+            cls.parameters = parameters
         except Exception as e:
             Log.E(f"Exception while reloading facility information: {e}")
             Log.W("Facility information not updated.")
@@ -59,3 +63,6 @@ class Facility:
             *cls.PublicCustomTestCases(),
             *cls.PrivateCustomTestCases(email)
         ])
+
+    @classmethod
+    def TestCaseParameters(cls): return cls.parameters
