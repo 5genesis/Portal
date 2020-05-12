@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timezone
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Set
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
 from flask.json import loads as jsonParse
 from flask_login import current_user, login_required
@@ -87,9 +87,30 @@ def create():
         flash('Your experiment has been successfully created', 'info')
         return redirect(url_for('main.index'))
 
+    customTestCases = Facility.AvailableCustomTestCases(current_user.email)
+    parametersPerTestCase = Facility.TestCaseParameters()
+    parameterNamesPerTestCase: Dict[str, Set[str]] = {}
+    testCaseNamesPerParameter: Dict[str, Set[str]] = {}
+    parameterInfo: Dict[str, Dict[str, str]] = {}
+    for testCase in customTestCases:
+        parameters = parametersPerTestCase[testCase]
+        for parameter in parameters:
+            name = parameter['Name']
+            parameterInfo[name] = parameter
+
+            if testCase not in parameterNamesPerTestCase.keys():
+                parameterNamesPerTestCase[testCase] = set()
+            parameterNamesPerTestCase[testCase].add(name)
+
+            if name not in testCaseNamesPerParameter.keys():
+                testCaseNamesPerParameter[name] = set()
+            testCaseNamesPerParameter[name].add(testCase)
+
     return render_template('experiment/create.html', title='New Experiment', form=form,
                            standardTestCases=Facility.StandardTestCases(), ues=Facility.UEs(),
-                           customTestCases=Facility.AvailableCustomTestCases(current_user.email),
+                           customTestCases=customTestCases, parameterInfo=parameterInfo,
+                           parameterNamesPerTestCase=parameterNamesPerTestCase,
+                           testCaseNamesPerParameter=testCaseNamesPerParameter,
                            sliceList=Config().Slices, nss=nss, experimentTypes=experimentTypes)
 
 

@@ -1,5 +1,9 @@
 {% extends 'bootstrap/base.html' %}
 
+{% macro csv(values, separator = ', ') %}
+    {% for value in values %}{{ value }}{{ separator if not loop.last }}{% endfor %}
+{% endmacro %}
+
 {% block scripts %}
     {{ super() }}
     {{ moment.include_jquery() }}

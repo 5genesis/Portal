@@ -92,3 +92,37 @@ function changeSettingsDiv() {
   $(".settingsDiv").hide();
   $("#"+type+"Settings").show();
 }
+
+function displayParameters() {
+  let parameterRows = document.getElementsByClassName('parameter_row');
+  for (let i = 0; i < parameterRows.length; i++) { parameterRows[i].style.display = 'none'; }
+
+  let badges = document.getElementsByClassName('test_case_badge');
+  for (let i = 0; i < badges.length; i++) { badges[i].style.display = 'none'; }
+
+  let hasParameters = false;
+  let checkboxes = document.getElementsByName('Custom_testCases');
+  for (let i = 0; i < checkboxes.length; i++) {
+    let checkbox = checkboxes[i];
+    if (checkbox.checked) {
+      let parameterNames = checkbox.dataset.testCaseParameters.trim().split(',');
+      let testCaseName = checkbox.dataset.testCaseName.trim();
+
+      for (let j = 0; j < parameterNames.length; j++) {
+        let name = parameterNames[j];
+        if (name.length > 0) {
+          let parameterRow = document.getElementById(name + "_row");
+          parameterRow.style.display = 'block';
+          hasParameters = true;
+        }
+      }
+
+      let testCaseBadges = document.getElementsByClassName(testCaseName + "_badge")
+      for (let i = 0; i < testCaseBadges.length; i++) { testCaseBadges[i].style.display = 'inline'; }
+    }
+
+    if (!hasParameters) {
+      document.getElementById('no_params_row').style.display = 'block';
+    }
+  }
+}
