@@ -28,9 +28,15 @@
             <b>Application</b>: {{ experiment.application }}
         {% endif %}
         <br>
+
+        {% if experiment.parameters | length != 0 %}
+            <b>Parameters</b>: {{ experiment.parameters }}<br>
+        {% endif %}
+
         {% if experiment.slice %}
             <b>Slice</b>: {{ experiment.slice }}
         {% endif %}
+
         {% set nss = experiment.networkServicesRelation | count %}
         {% if nss > 0 %}
             {{ '- ' if experiment.slice }}{{ nss }} Network service{{ 's' if nss > 1 }}

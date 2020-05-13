@@ -1,3 +1,9 @@
+**13/05/2020** [Version 2.3.0]
+
+ - Available TestCases and UEs are now retrieved from the ELCM
+ - Per user custom test cases
+ - Improved custom test case parameters interface
+
 **15/04/2020** [Version 2.2.0]
 
  - Custom and MONROE experiment types

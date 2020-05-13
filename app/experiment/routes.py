@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timezone
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Set
 from flask import render_template, flash, redirect, url_for, request, send_from_directory
 from flask.json import loads as jsonParse
 from flask_login import current_user, login_required
@@ -11,7 +11,7 @@ from app.experiment import bp
 from app.models import Experiment, Execution, Action, NetworkService
 from app.experiment.forms import ExperimentForm, RunExperimentForm
 from app.execution.routes import getLastExecution
-from Helper import Config, Log
+from Helper import Config, Log, Facility
 
 
 @bp.route('/create', methods=['GET', 'POST'])
@@ -19,7 +19,6 @@ from Helper import Config, Log
 def create():
     experimentTypes = ['Standard', 'Custom', 'MONROE']
 
-    listUEs: List[str] = list(Config().UEs)
     nss: List[Tuple[str, int]] = []
 
     # Get User's available NSs
@@ -36,20 +35,20 @@ def create():
         ues_selected = request.form.getlist(f'{experimentType}_ues')
         scenario = None  # TODO
 
-        rawParams = None
+        parameters = {}
         if experimentType == "Custom":
-            rawParams = request.form.get('customParameters')
+            for key, value in request.form.items():
+                key = str(key)
+                if key.endswith('_ParameterTextField') and len(value) != 0:
+                    parameters[key.replace('_ParameterTextField', '')] = value
         elif experimentType == "MONROE":
             rawParams = request.form.get('monroeParameters')
-
-        if rawParams is not None:
-            try:
-                parameters = jsonParse(rawParams)
-            except Exception as e:
-                flash(f'Exception while parsing Parameters: {e}', 'error')
-                return redirect(url_for("experiment.create"))
-        else:
-            parameters = {}
+            if rawParams is not None:
+                try:
+                    parameters = jsonParse(rawParams)
+                except Exception as e:
+                    flash(f'Exception while parsing Parameters: {e}', 'error')
+                    return redirect(url_for("experiment.create"))
 
         automated = (len(request.form.getlist('automate')) != 0) if experimentType == "Custom" else True
         reservationTime = int(request.form.get('reservation')) if experimentType == "Custom" else None
@@ -88,8 +87,31 @@ def create():
         flash('Your experiment has been successfully created', 'info')
         return redirect(url_for('main.index'))
 
-    return render_template('experiment/create.html', title='New Experiment', form=form, testCaseList=Config().TestCases,
-                           ueList=listUEs, sliceList=Config().Slices, nss=nss, experimentTypes=experimentTypes)
+    customTestCases = Facility.AvailableCustomTestCases(current_user.email)
+    parametersPerTestCase = Facility.TestCaseParameters()
+    parameterNamesPerTestCase: Dict[str, Set[str]] = {}
+    testCaseNamesPerParameter: Dict[str, Set[str]] = {}
+    parameterInfo: Dict[str, Dict[str, str]] = {}
+    for testCase in customTestCases:
+        parameters = parametersPerTestCase[testCase]
+        for parameter in parameters:
+            name = parameter['Name']
+            parameterInfo[name] = parameter
+
+            if testCase not in parameterNamesPerTestCase.keys():
+                parameterNamesPerTestCase[testCase] = set()
+            parameterNamesPerTestCase[testCase].add(name)
+
+            if name not in testCaseNamesPerParameter.keys():
+                testCaseNamesPerParameter[name] = set()
+            testCaseNamesPerParameter[name].add(testCase)
+
+    return render_template('experiment/create.html', title='New Experiment', form=form,
+                           standardTestCases=Facility.StandardTestCases(), ues=Facility.UEs(),
+                           customTestCases=customTestCases, parameterInfo=parameterInfo,
+                           parameterNamesPerTestCase=parameterNamesPerTestCase,
+                           testCaseNamesPerParameter=testCaseNamesPerParameter,
+                           sliceList=Config().Slices, nss=nss, experimentTypes=experimentTypes)
 
 
 @bp.route('/<experimentId>/reload', methods=['GET', 'POST'])
@@ -177,7 +199,7 @@ def runExperiment() -> bool:
 def kickstart(experimentId: int):
     try:
         Log.I(f"KS: Kickstarting experiment {experimentId}")
-        jsonResponse: Dict = ElcmApi().Post(experimentId)
+        jsonResponse: Dict = ElcmApi().Run(experimentId)
         execution: Execution = Execution(id=jsonResponse["ExecutionId"], experiment_id=experimentId, status='Init')
         db.session.add(execution)
         db.session.commit()

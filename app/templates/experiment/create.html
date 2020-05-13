@@ -13,8 +13,11 @@
     <script src="{{url_for('static', filename='js/browseFiles.js')}}"></script>
     <script>setTab('navbar-createExperiment')</script>
     <script>
-        // Force a change of div so that only one group of settings is visible
-        $(document).ready( changeSettingsDiv() );
+        // Force a change of div so that only one group of settings is visible, and hide parameters
+        $(document).ready( function () {
+            changeSettingsDiv();
+            displayParameters();
+        } );
 
         // Build the list of NSs before binding the function to the counter
         $("#nsCount").bind('change', function() {
@@ -28,13 +31,6 @@
     </script>
 {% endblock %}
 
-{% macro parametersField(id) %}
-    <div class="col-sm-12">
-        <h4><label for="{{ id }}">Parameters</label></h4>
-        <textarea form="form" class="form-control" name="{{ id }}" id="{{ id }}"></textarea>
-    </div>
-{% endmacro %}
-
 {% macro testCasesField(id, list) %}
     <div class="col-sm-6">
         <h4>Test Cases</h4>
@@ -42,7 +38,11 @@
             {% for test_case in list %}
             <div class="custom-control custom-checkbox">
                 <label>
-                    <input type="checkbox" class="custom-control-input" name="{{ id }}_testCases"
+                    <input type="checkbox" name="{{ id }}_testCases"
+                           class="custom-control-input testCaseCheckbox {{ test_case }}_testCaseCheckbox"
+                           data-test-case-name="{{ test_case}}"
+                           data-test-case-parameters="{{ csv(parameterNamesPerTestCase[test_case], ',') }}"
+                           onchange="displayParameters();"
                            value="{{ test_case }}"> {{test_case}}
                 </label>
             </div>
@@ -70,8 +70,8 @@
 
 {% macro standardSettings() %}
     <div class="col-sm-12 settingsDiv nopadding" id="StandardSettings" style="margin-bottom: 20px">
-        {{ testCasesField('Standard', testCaseList) }}
-        {{ uesField('Standard', ueList) }}
+        {{ testCasesField('Standard', standardTestCases) }}
+        {{ uesField('Standard', ues) }}
     </div>
 {% endmacro %}
 
@@ -80,7 +80,7 @@
         <div class="col-sm-4">
             <label>
                 <input type="checkbox" class="custom-control-input" id="automateCheckbox" name="automate" value="automate"
-                       onclick="disableAutomatedSettings()" checked>
+                       onclick="disableAutomatedSettings();" checked>
                     Automate experiment
             </label>
         </div>
@@ -92,10 +92,43 @@
         </div>
 
         <div class="col-sm-12 nopadding" id="CustomAutomatedSettings">
-            {{ testCasesField('Custom', ['Custom1', 'Custom2']) }} {# TODO #}
-            {{ uesField('Custom', ueList) }}
+            {{ testCasesField('Custom', customTestCases) }}
+            {{ uesField('Custom', ues) }}
         </div>
-        {{ parametersField("customParameters") }}
+
+        <div class="col-sm-12">
+            <h4>Parameters</h4>
+            <div class="col-sm-12 nopadding parameter_row text-center" id="no_params_row">
+                No configurable parameters
+            </div>
+            {% for parameter in parameterInfo | sort %}
+                {% set info = parameterInfo[parameter] %}
+                {% set type = info['Type'] %}
+                {% set description = info['Description'] %}
+                {% set testCases = testCaseNamesPerParameter[parameter] %}
+                <div class="col-sm-12 nopadding parameter_row" id="{{ parameter }}_row"
+                    style="margin-bottom: 0.5em; margin-top: 0.5em">
+                    <div class="col-sm-2">
+                        <label for="{{ parameter }}_textField">
+                            <b>{{ parameter }}</b>
+                        </label>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" class="InputBox form-control"
+                            id="{{ parameter }}_ParameterTextField" name="{{ parameter }}_ParameterTextField">
+                    </div>
+                    <div class="col-sm-4">({{ type }}) {{ description }}</div>
+                    <div class="col-sm-3">
+                            {% for testCase in testCases | sort %}
+                                <span class="badge test_case_badge {{ testCase }}_badge">{{ testCase }}</span>
+                            {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="col-sm-12 nopadding parameter_row text-center" id="params_hint_row">
+                Leave a field empty to use the default value
+            </div>
+        </div>
     </div>
 {% endmacro %}
 
@@ -105,7 +138,10 @@
             <h4><label for="expApplication">Application</label></h4>
             <input class="form-control" type="text" name="application" id="expApplication"/>
         </div>
-        {{ parametersField("monroeParameters") }}
+        <div class="col-sm-12">
+            <h4><label for="monroeParameters">Parameters</label></h4>
+            <textarea form="form" class="form-control" name="monroeParameters" id="monroeParameters"></textarea>
+        </div>
     </div>
 {% endmacro %}
 
