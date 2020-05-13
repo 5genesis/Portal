@@ -106,19 +106,28 @@
                 {% set type = info['Type'] %}
                 {% set description = info['Description'] %}
                 {% set testCases = testCaseNamesPerParameter[parameter] %}
-                <div class="col-sm-12 nopadding parameter_row" id="{{ parameter }}_row">
-                    <div class="col-sm-2"><p><b>{{ parameter }}</b></p></div>
-                    <div class="col-sm-3">{{ type }}</div>
-                    <div class="col-sm-4">{{ description }}</div>
+                <div class="col-sm-12 nopadding parameter_row" id="{{ parameter }}_row"
+                    style="margin-bottom: 0.5em; margin-top: 0.5em">
+                    <div class="col-sm-2">
+                        <label for="{{ parameter }}_textField">
+                            <b>{{ parameter }}</b>
+                        </label>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" class="InputBox form-control"
+                            id="{{ parameter }}_ParameterTextField" name="{{ parameter }}_ParameterTextField">
+                    </div>
+                    <div class="col-sm-4">({{ type }}) {{ description }}</div>
                     <div class="col-sm-3">
                             {% for testCase in testCases | sort %}
-                                <span class="badge test_case_badge {{ testCase }}_badge">
-                                    {{ testCase }}
-                                </span>
+                                <span class="badge test_case_badge {{ testCase }}_badge">{{ testCase }}</span>
                             {% endfor %}
                     </div>
                 </div>
             {% endfor %}
+            <div class="col-sm-12 nopadding parameter_row text-center" id="params_hint_row">
+                Leave a field empty to use the default value
+            </div>
         </div>
     </div>
 {% endmacro %}

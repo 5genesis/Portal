@@ -121,8 +121,7 @@ function displayParameters() {
       for (let i = 0; i < testCaseBadges.length; i++) { testCaseBadges[i].style.display = 'inline'; }
     }
 
-    if (!hasParameters) {
-      document.getElementById('no_params_row').style.display = 'block';
-    }
+    document.getElementById('no_params_row').style.display = hasParameters ? 'none': 'block';
+    document.getElementById('params_hint_row').style.display = hasParameters ? 'block': 'none';
   }
 }

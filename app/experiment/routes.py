@@ -35,20 +35,20 @@ def create():
         ues_selected = request.form.getlist(f'{experimentType}_ues')
         scenario = None  # TODO
 
-        rawParams = None
+        parameters = {}
         if experimentType == "Custom":
-            rawParams = request.form.get('customParameters')
+            for key, value in request.form.items():
+                key = str(key)
+                if key.endswith('_ParameterTextField') and len(value) != 0:
+                    parameters[key.replace('_ParameterTextField', '')] = value
         elif experimentType == "MONROE":
             rawParams = request.form.get('monroeParameters')
-
-        if rawParams is not None:
-            try:
-                parameters = jsonParse(rawParams)
-            except Exception as e:
-                flash(f'Exception while parsing Parameters: {e}', 'error')
-                return redirect(url_for("experiment.create"))
-        else:
-            parameters = {}
+            if rawParams is not None:
+                try:
+                    parameters = jsonParse(rawParams)
+                except Exception as e:
+                    flash(f'Exception while parsing Parameters: {e}', 'error')
+                    return redirect(url_for("experiment.create"))
 
         automated = (len(request.form.getlist('automate')) != 0) if experimentType == "Custom" else True
         reservationTime = int(request.form.get('reservation')) if experimentType == "Custom" else None
