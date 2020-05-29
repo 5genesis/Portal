@@ -50,6 +50,7 @@ class NetworkService(db.Model):
     def PublicServices():
         return NetworkService.query.filter_by(is_public=True).order_by(NetworkService.name.asc())
 
+
 class VnfdPackage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     service_id = db.Column(db.Integer, db.ForeignKey('network_service.id'))

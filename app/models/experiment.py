@@ -43,7 +43,7 @@ class Experiment(db.Model):
             'TestCases': self.test_cases,
             'UEs': self.ues,
             'Slice': self.slice,
-            'NSs': [ns.nsd_id for ns in self.networkServicesRelation],
+            'NSs': [(ns.nsd_id, ns.vim_location) for ns in self.networkServicesRelation],
             'ExclusiveExecution': self.exclusive,
             'Scenario': self.scenario,
             'Automated': self.automated,
