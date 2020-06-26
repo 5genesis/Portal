@@ -84,7 +84,9 @@ function disableSliceList() {
 function disableAutomatedSettings() {
   let checkbox = document.getElementById('automateCheckbox');
   let settings = document.getElementById('CustomAutomatedSettings');
+  let reservation = document.getElementById('reservationCustom');
   settings.hidden = !checkbox.checked;
+  reservation.disabled = checkbox.checked;
 }
 
 function changeSettingsDiv() {

@@ -85,10 +85,11 @@
             </label>
         </div>
         <div class="col-sm-5 text-right">
-            <label for="reservation">Reservation time (minutes)</label>
+            <label for="reservationCustom">Reservation time (minutes)</label>
         </div>
         <div class="col-sm-3">
-             <input type="number" id="reservation" name="reservation" class="InputBox form-control" min="5" value="30">
+             <input type="number" id="reservationCustom" name="reservationCustom" class="InputBox form-control"
+                    min="5" value="30" disabled>
         </div>
 
         <div class="col-sm-12 nopadding" id="CustomAutomatedSettings">
@@ -134,6 +135,13 @@
 
 {% macro monroeSettings() %}
     <div class="col-sm-12 settingsDiv nopadding" id="MONROESettings" style="margin-bottom: 20px">
+        <div class="col-sm-9 text-right">
+            <label for="reservationMonroe">Reservation time (minutes)</label>
+        </div>
+        <div class="col-sm-3">
+             <input type="number" id="reservationMonroe" name="reservationMonroe" class="InputBox form-control" min="1" value="30">
+        </div>
+
         <div class="col-sm-12">
             <h4><label for="expApplication">Application</label></h4>
             <input class="form-control" type="text" name="application" id="expApplication"/>
@@ -142,6 +150,7 @@
             <h4><label for="monroeParameters">Parameters</label></h4>
             <textarea form="form" class="form-control" name="monroeParameters" id="monroeParameters"></textarea>
         </div>
+    {# TODO: Autograph, but with parameters on the portal #}
     </div>
 {% endmacro %}
 

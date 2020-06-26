@@ -1,6 +1,5 @@
 from typing import Dict, List
 from app import db
-from Helper import Config as HelperConfig
 from .json_encoded_dict import JSONEncodedDict
 from .execution import Execution
 
