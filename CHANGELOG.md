@@ -1,3 +1,8 @@
+**29/06/2020** [Version 2.3.1]
+
+ - Add reservation time to MONROE experiments
+ - Bugfixes
+
 **13/05/2020** [Version 2.3.0]
 
  - Available TestCases and UEs are now retrieved from the ELCM
