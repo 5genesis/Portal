@@ -1,6 +1,5 @@
 from typing import Dict, List
 from app import db
-from Helper import Config as HelperConfig
 from .json_encoded_dict import JSONEncodedDict
 from .execution import Execution
 
@@ -43,7 +42,7 @@ class Experiment(db.Model):
             'TestCases': self.test_cases,
             'UEs': self.ues,
             'Slice': self.slice,
-            'NSs': [ns.nsd_id for ns in self.networkServicesRelation],
+            'NSs': [(ns.nsd_id, ns.vim_location) for ns in self.networkServicesRelation],
             'ExclusiveExecution': self.exclusive,
             'Scenario': self.scenario,
             'Automated': self.automated,

@@ -44,6 +44,7 @@ def create():
         elif experimentType == "MONROE":
             rawParams = request.form.get('monroeParameters')
             if rawParams is not None:
+                rawParams = '{}' if len(rawParams) == 0 else rawParams  # Minimal valid JSON
                 try:
                     parameters = jsonParse(rawParams)
                 except Exception as e:
@@ -51,7 +52,10 @@ def create():
                     return redirect(url_for("experiment.create"))
 
         automated = (len(request.form.getlist('automate')) != 0) if experimentType == "Custom" else True
-        reservationTime = int(request.form.get('reservation')) if experimentType == "Custom" else None
+        possibleTimes = {'Standard': None,
+                         'Custom': None if automated else int(request.form.get('reservationCustom')),
+                         'MONROE': int(request.form.get('reservationMonroe'))}
+        reservationTime = possibleTimes[experimentType]
 
         application = request.form.get('application') if experimentType == "MONROE" else None
 
