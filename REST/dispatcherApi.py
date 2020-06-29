@@ -105,17 +105,17 @@ class DispatcherApi(RestClient):
         return RestClient.ResponseToJson(response)
 
     def GetVimLocations(self, user: User) -> Tuple[List[VimInfo], Optional[str]]:
-        result = []
-        maybeError = self.RenewUserTokenIfExpired(user)
-        if maybeError is not None:
-            return result, maybeError
+        try:
+            maybeError = self.RenewUserTokenIfExpired(user)
+            if maybeError is not None:
+                return [], maybeError
 
-        token = user.CurrentDispatcherToken
-        url = '/mano/vims'
-        response = self.HttpGet(url, extra_headers=self.bearerAuthHeader(token))
-        result = [VimInfo(vim) for vim in self.ResponseToJson(response)]
-
-        return result, None
+            token = user.CurrentDispatcherToken
+            url = '/mano/vims'
+            response = self.HttpGet(url, extra_headers=self.bearerAuthHeader(token))
+            return [VimInfo(vim) for vim in self.ResponseToJson(response)], None
+        except Exception as e:
+            return [], f"Exception while retrieving list of VIMs: {e}"
 
     def handleErrorcodes(self, code: int, data: Dict, overrides: Dict[int, str] = None) -> str:
         defaults = {
