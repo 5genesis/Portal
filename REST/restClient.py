@@ -4,6 +4,13 @@ from typing import Dict
 from urllib3 import connection_from_url
 from requests import post
 from os.path import realpath, join
+from enum import Enum, unique
+
+
+@unique
+class Payload(Enum):
+    Form = 0
+    Data = 1
 
 
 class RestClient:
@@ -45,8 +52,14 @@ class RestClient:
                                  headers=extra_headers,
                                  retries=self.RETRIES)
 
-    def HttpPost(self, url, extra_headers=None, body='', files=None):
+    def HttpPost(self, url, extra_headers=None, body='', files=None, payload: Payload = None):
         extra_headers = {} if extra_headers is None else extra_headers
+        if payload == Payload.Data:
+            extra_headers['Content-Type'] = 'application/json'
+        elif payload == Payload.Form:
+            extra_headers['Content-Type'] = 'application/x-www-form-urlencoded'
+            body = self.JsonToUrlEncoded(body)
+
         if files is None:
             return self.pool.request('POST',
                                      url,
@@ -88,3 +101,14 @@ class RestClient:
             return json.loads(raw.decode('utf-8'))
         except Exception as e:
             raise RuntimeError(f'JSON parse exception: {e}. data={response.data}')
+
+    @staticmethod
+    def JsonToUrlEncoded(jsonData: str) -> str:
+        try:
+            return RestClient.DictToUrlEncoded(json.loads(jsonData))
+        except Exception as e:
+            raise RuntimeError(f'JSON parse exception: {e}. data={jsonData}')
+
+    @staticmethod
+    def DictToUrlEncoded(dict: Dict) -> str:
+        return "&".join(f"{key}={value}" for key, value in dict.items())
