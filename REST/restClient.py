@@ -55,23 +55,27 @@ class RestClient:
     def HttpPost(self, url, extra_headers=None, body: Optional[Union[str, Dict]] = None,
                  files=None, payload: Payload = None):
         extra_headers = {} if extra_headers is None else extra_headers
+
         if payload == Payload.Data:
             extra_headers['Content-Type'] = 'application/json'
             if isinstance(body, Dict):
                 body = json.dumps(body)
-
         elif payload == Payload.Form:
-            extra_headers['Content-Type'] = 'application/x-www-form-urlencoded'
-            if isinstance(body, str):
-                body = self.JsonToUrlEncoded(body)
-            elif isinstance(body, Dict):
-                body = self.DictToUrlEncoded(body)
+            if files is None:
+                extra_headers['Content-Type'] = 'application/x-www-form-urlencoded'
+                if isinstance(body, str):
+                    body = self.JsonToUrlEncoded(body)
+                elif isinstance(body, Dict):
+                    body = self.DictToUrlEncoded(body)
+            else:  # Do not add any Content-Type, and ensure that body is a Dict
+                if not isinstance(body, Dict):
+                    raise ValueError("For POST requests with files the body must be a Dict")
 
         if files is None:
             return self.pool.request('POST', url, body=body or '', headers={**self.HEADERS, **extra_headers},
                                      retries=self.RETRIES)
         else:
-            return post(f"{self.api_url}{url}", data=body or '', headers={**self.HEADERS, **extra_headers},
+            return post(f"{self.api_url}{url}", data=body, headers={**self.HEADERS, **extra_headers},
                         files=files, verify=not self.insecure)
 
     def HttpPatch(self, url, extra_headers=None, body=''):
