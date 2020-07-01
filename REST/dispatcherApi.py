@@ -1,12 +1,11 @@
 import json
 from typing import Dict, Tuple, Optional, List
 from app.models import User, Experiment
-from .restClient import RestClient
+from .restClient import RestClient, Payload
 from base64 import b64encode
 from Helper import Config, Log, LogInfo
 from app import db
 from datetime import datetime, timezone
-from os.path import splitext
 
 
 class VimInfo:
@@ -41,7 +40,7 @@ class DispatcherApi(RestClient):
             'email': user.email,
             'password': user.password_hash
         }
-        response = self.HttpPost(url, {'Content-Type': 'application/json'}, json.dumps(data))
+        response = self.HttpPost(url, body=data, payload=Payload.Form)
         return self.ResponseToJson(response)
 
     def GetToken(self, user: User) -> Tuple[str, bool]:
