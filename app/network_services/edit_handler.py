@@ -1,5 +1,5 @@
 from os import makedirs
-from os.path import join
+from os.path import join, splitext
 from werkzeug.utils import secure_filename
 from config import Config
 from flask import flash
@@ -91,9 +91,14 @@ class EditHandler:
         elif button == 'preloadVim':
             file = self.CheckFile('fileVim', "VIM image file is missing")
             if file is not None:
-                self.service.vim_image = self.Store(file, self.service.VimLocalPath)
-                self.ApplyChanges(self.db, self.service)
-                flash(f"Pre-loaded VIM image: {self.service.vim_image}")
+                valid = ['.qcow2', '.img', '.iso', '.ova', '.vhd']
+                _, ext = splitext(file.filename)
+                if ext not in valid:
+                    flash(f"Invalid image format {ext}, must be one of {valid}")
+                else:
+                    self.service.vim_image = self.Store(file, self.service.VimLocalPath)
+                    self.ApplyChanges(self.db, self.service)
+                    flash(f"Pre-loaded VIM image: {self.service.vim_image}")
 
         elif button == 'preloadNsd':
             file = self.CheckFile('fileNsd', "NSD file is missing")

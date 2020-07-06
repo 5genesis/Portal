@@ -189,11 +189,10 @@ class DispatcherApi(RestClient):
         """Returns an error message, or None on success"""
 
         with open(path, "br") as file:
-            _, diskFormat = splitext(path)
-            diskFormat = diskFormat[1:]
             containerFormat = "bare"
-            url = f'/mano/image/{location}?disk_format={diskFormat}&container_format={containerFormat}'
-            response = self.HttpPost(url, extra_headers=self.bearerAuthHeader(token), files={'image': file})
+            data = {'vim_id': location, 'container_format': containerFormat}
+            response = self.HttpPost('/mano/image', extra_headers=self.bearerAuthHeader(token),
+                                     body=data, files={'file': file}, payload=Payload.Form)
             code = self.ResponseStatusCode(response)
 
         if code != 201:
