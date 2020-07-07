@@ -1,5 +1,5 @@
 from os import makedirs
-from os.path import join, splitext
+from os.path import join
 from werkzeug.utils import secure_filename
 from config import Config
 from flask import flash
@@ -46,11 +46,18 @@ class EditHandler:
         file.save(savePath)
         return filename
 
-    def CheckFile(self, name, message):
+    def CheckFile(self, name: str, message: str, valid: List[str]):
         file = self.request.files.get(name, None)
         if file is None or file.filename == '':
             flash(message, 'error')
             return None
+
+        name = file.filename
+        ext = '' if '.' not in name else '.' + '.'.join(name.split('.')[1:])  # splitext returns only the last piece
+        if ext not in valid and len(valid) != 0:
+            flash(f"Invalid extension '{ext}', must be {(f'one of {valid}' if len(valid) > 1 else valid[0])}")
+            return None
+
         return file
 
     def GetButton(self):
@@ -80,7 +87,7 @@ class EditHandler:
             flash("Network Service information updated.")
 
         elif button == 'preloadVnfd':
-            file = self.CheckFile('fileVnfd', "VNFD file is missing")
+            file = self.CheckFile('fileVnfd', "VNFD file is missing", [".tar.gz"])
             if file is not None:
                 newVnfd = VnfdPackage(network_service=self.service)
                 self.ApplyChanges(self.db, newVnfd)
@@ -89,19 +96,14 @@ class EditHandler:
                 flash(f"Pre-loaded new VNFD package: {newVnfd.vnfd_file}")
 
         elif button == 'preloadVim':
-            file = self.CheckFile('fileVim', "VIM image file is missing")
+            file = self.CheckFile('fileVim', "VIM image file is missing", ['.qcow2', '.img', '.iso', '.ova', '.vhd'])
             if file is not None:
-                valid = ['.qcow2', '.img', '.iso', '.ova', '.vhd']
-                _, ext = splitext(file.filename)
-                if ext not in valid:
-                    flash(f"Invalid image format {ext}, must be one of {valid}")
-                else:
-                    self.service.vim_image = self.Store(file, self.service.VimLocalPath)
-                    self.ApplyChanges(self.db, self.service)
-                    flash(f"Pre-loaded VIM image: {self.service.vim_image}")
+                self.service.vim_image = self.Store(file, self.service.VimLocalPath)
+                self.ApplyChanges(self.db, self.service)
+                flash(f"Pre-loaded VIM image: {self.service.vim_image}")
 
         elif button == 'preloadNsd':
-            file = self.CheckFile('fileNsd', "NSD file is missing")
+            file = self.CheckFile('fileNsd', "NSD file is missing", [".tar.gz"])
             if file is not None:
                 self.service.nsd_file = self.Store(file, self.service.NsdLocalPath)
                 self.ApplyChanges(self.db, self.service)
