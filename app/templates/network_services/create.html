@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
+{% import 'network_services/_baseNsForm.html' as baseNsForm %}
 
 {% block scripts %}
     {{ super() }}
@@ -14,7 +15,7 @@
 <div>
     <form id="form" method="post" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
-        {% include 'network_services/_baseNsForm.html' %}
+        {{ baseNsForm.render(form, lockVisibility=False) }}
 
         <div class="col-sm-8 col-sm-offset-2">
             <hr>

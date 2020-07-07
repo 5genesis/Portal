@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
+{% import 'network_services/_baseNsForm.html' as baseNsForm %}
 
 {% set busy = action is not none %}
 {% set vimAction = busy and 'Vim' in action.type %}
@@ -22,8 +23,7 @@
 {% macro basicInfo() %}
     <h4 style="text-align: center">Basic Information</h4>
     <br>
-    {% include 'network_services/_baseNsForm.html' %}
-
+    {{ baseNsForm.render(form, lockVisibility=True) }}
 
     <div class="col-sm-8 col-sm-offset-2">
         <div class="col-sm-12"></div>

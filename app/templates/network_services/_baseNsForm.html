@@ -1,15 +1,22 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
-<div class="col-sm-8 col-sm-offset-2 nopadding">
-    <div class="col-sm-8">
-        {{ wtf.form_field(form.name) }}
+{% macro render(form, lockVisibility) %}
+    <div class="col-sm-8 col-sm-offset-2 nopadding">
+        <div class="col-sm-8">
+            {{ wtf.form_field(form.name) }}
+        </div>
+
+        <div class="col-sm-4">
+            {% if lockVisibility %}
+                <p>Visibility</p>
+                <p>{{ "🌍 Public" if form.data['public'] == 'Public' else "🔐 Private" }}</p>
+            {% else %}
+                {{ wtf.form_field(form.public) }}
+            {% endif %}
+        </div>
     </div>
 
-    <div class="col-sm-4">
-        {{ wtf.form_field(form.public) }}
+    <div class="col-sm-8 col-sm-offset-2">
+        {{ wtf.form_field(form.description) }}
     </div>
-</div>
-
-<div class="col-sm-8 col-sm-offset-2">
-    {{ wtf.form_field(form.description) }}
-</div>
+{% endmacro %}
