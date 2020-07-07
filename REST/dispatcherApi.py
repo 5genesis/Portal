@@ -138,23 +138,26 @@ class DispatcherApi(RestClient):
             extra = f" (Code {code})"
         return error + extra
 
-    def OnboardVnfd(self, path: str, token: str) -> Tuple[str, bool]:
+    def OnboardVnfd(self, path: str, token: str, visibility: bool) -> Tuple[str, bool]:
         """Returns a pair of str (id or error message) and bool (success)"""
 
         url = '/mano/vnfd'  # TODO: Use validator's equivalent
         overrides = {409: "Conflict - VNFD already present"}
-        return self._onboardVnfdOrNsd(url, path, token, 'VNFs', overrides)
+        return self._onboardVnfdOrNsd(url, path, token, 'VNFs', overrides, visibility)
 
-    def OnboardNsd(self, path: str, token: str) -> Tuple[str, bool]:
+    def OnboardNsd(self, path: str, token: str, visibility: bool) -> Tuple[str, bool]:
         """Returns a pair of str (id or error message) and bool (success)"""
 
         url = '/mano/nsd'  # TODO: Use validator's equivalent
         overrides = {409: "Conflict - NSD already present"}
-        return self._onboardVnfdOrNsd(url, path, token, "NSs", overrides)
+        return self._onboardVnfdOrNsd(url, path, token, "NSs", overrides, visibility)
 
-    def _onboardVnfdOrNsd(self, url: str, path: str, token: str, dictId: str, overrides: Dict):
+    def _onboardVnfdOrNsd(self, url: str, path: str, token: str, dictId: str, overrides: Dict, visibility: bool):
         with open(path, "br") as file:
-            response = self.HttpPost(url, extra_headers=self.bearerAuthHeader(token), files={'file': file})
+            data = {'visibility': str(visibility).lower()}
+            response = self.HttpPost(url, extra_headers=self.bearerAuthHeader(token), files={'file': file},
+                                     body=data, payload=Payload.Form)
+
             code = self.ResponseStatusCode(response)
             data = self.ResponseToJson(response)
             if code == 200:
@@ -194,12 +197,13 @@ class DispatcherApi(RestClient):
         else:
             return None
 
-    def OnboardVim(self, path: str, location: str, token: str) -> Optional[str]:
+    def OnboardVim(self, path: str, location: str, token: str, visibility: str) -> Optional[str]:
         """Returns an error message, or None on success"""
 
         with open(path, "br") as file:
             containerFormat = "bare"
-            data = {'vim_id': location, 'container_format': containerFormat}
+            data = {'vim_id': location, 'container_format': containerFormat,
+                    'visibility': str(visibility).lower()}
             response = self.HttpPost('/mano/image', extra_headers=self.bearerAuthHeader(token),
                                      body=data, files={'file': file}, payload=Payload.Form)
             code = self.ResponseStatusCode(response)

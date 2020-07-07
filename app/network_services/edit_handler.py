@@ -47,15 +47,19 @@ class EditHandler:
         return filename
 
     def CheckFile(self, name: str, message: str, valid: List[str]):
+        def _checkExt(name):  # splitext returns only the last piece, there can be extra dots in filename
+            if len(valid) == 0: return True
+            for choice in valid:
+                if name.endswith(choice): return True
+            return False
+
         file = self.request.files.get(name, None)
         if file is None or file.filename == '':
             flash(message, 'error')
             return None
 
-        name = file.filename
-        ext = '' if '.' not in name else '.' + '.'.join(name.split('.')[1:])  # splitext returns only the last piece
-        if ext not in valid and len(valid) != 0:
-            flash(f"Invalid extension '{ext}', must be {(f'one of {valid}' if len(valid) > 1 else valid[0])}")
+        if not _checkExt(file.filename):
+            flash(f"Invalid extension, must be {(f'one of {valid}' if len(valid) > 1 else valid[0])}")
             return None
 
         return file

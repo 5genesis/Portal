@@ -28,7 +28,7 @@ class Action(Child):
 
         filePath = abspath(join(Config.UPLOAD_FOLDER, *self.service.VimLocalPath, self.service.vim_image))
         location = self.service.vim_location
-        maybeError = DispatcherApi().OnboardVim(filePath, location, self.token)
+        maybeError = DispatcherApi().OnboardVim(filePath, location, self.token, self.service.is_public)
 
         if maybeError is None:
             self.result = "<onboarded>"  # Not a known ID but a value to signal it's been onboarded
@@ -40,7 +40,7 @@ class Action(Child):
         from REST import DispatcherApi
 
         filePath = abspath(join(Config.UPLOAD_FOLDER, *self.service.NsdLocalPath, self.service.nsd_file))
-        maybeId, success = DispatcherApi().OnboardNsd(filePath, self.token)
+        maybeId, success = DispatcherApi().OnboardNsd(filePath, self.token, self.service.is_public)
 
         if success:
             self.result = maybeId
@@ -52,7 +52,7 @@ class Action(Child):
         from REST import DispatcherApi
 
         filePath = abspath(join(Config.UPLOAD_FOLDER, *self.vnfd.VnfdLocalPath, self.vnfd.vnfd_file))
-        maybeId, success = DispatcherApi().OnboardVnfd(filePath, self.token)
+        maybeId, success = DispatcherApi().OnboardVnfd(filePath, self.token, self.service.is_public)
 
         if success:
             self.result = maybeId
