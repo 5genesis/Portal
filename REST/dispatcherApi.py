@@ -6,6 +6,7 @@ from base64 import b64encode
 from Helper import Config, Log, LogInfo
 from app import db
 from datetime import datetime, timezone
+from os.path import split
 
 
 class VimInfo:
@@ -142,22 +143,30 @@ class DispatcherApi(RestClient):
 
         url = '/mano/vnfd'  # TODO: Use validator's equivalent
         overrides = {409: "Conflict - VNFD already present"}
-        return self._onboardVnfdOrNsd(url, path, token, 'vnfd', overrides)
+        return self._onboardVnfdOrNsd(url, path, token, 'VNFs', overrides)
 
     def OnboardNsd(self, path: str, token: str) -> Tuple[str, bool]:
         """Returns a pair of str (id or error message) and bool (success)"""
 
         url = '/mano/nsd'  # TODO: Use validator's equivalent
         overrides = {409: "Conflict - NSD already present"}
-        return self._onboardVnfdOrNsd(url, path, token, "nsd", overrides)
+        return self._onboardVnfdOrNsd(url, path, token, "NSs", overrides)
 
-    def _onboardVnfdOrNsd(self, url: str, path: str, token: str, fileId: str, overrides: Dict):
+    def _onboardVnfdOrNsd(self, url: str, path: str, token: str, dictId: str, overrides: Dict):
         with open(path, "br") as file:
-            response = self.HttpPost(url, extra_headers=self.bearerAuthHeader(token), files={fileId: file})
+            response = self.HttpPost(url, extra_headers=self.bearerAuthHeader(token), files={'file': file})
             code = self.ResponseStatusCode(response)
             data = self.ResponseToJson(response)
-            if code == 201:
-                return data["id"], True
+            if code == 200:
+                try:
+                    return data[dictId].keys()[0], True
+                except (KeyError, IndexError, AttributeError):
+                    return split(path)[1], True
+            elif code == 400:
+                try:
+                    return data['error'], False
+                except KeyError:
+                    return str(data), False
             else:
                 return self.handleErrorcodes(code, data, overrides), False
 
