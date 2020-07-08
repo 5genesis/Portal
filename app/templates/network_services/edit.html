@@ -23,7 +23,7 @@
 {% macro basicInfo() %}
     <h4 style="text-align: center">Basic Information</h4>
     <br>
-    {{ baseNsForm.render(form, lockVisibility=True) }}
+    {{ baseNsForm.render(form, [], service.vim_location, lock=True) }}
 
     <div class="col-sm-8 col-sm-offset-2">
         <div class="col-sm-12"></div>
@@ -91,21 +91,6 @@
         <hr>
         <h4 style="text-align: center">Virtualized Infrastructure Manager</h4>
         <br>
-        {%  if service.vim_image is not none %} {# Do not allow selection of the location until it's possible to onboard #}
-            <div class="col-sm-12">
-                {% if service.vim_location is none %}
-                    <strong>VIM Location: </strong>
-                    <select class="form-control" name="location">
-                    {% for location in locations %}
-                        <option value="{{location.Name}}" selected>{{location}}</option>
-                    {% endfor %}
-                    </select>
-                {% else %}
-                    <p><strong>VIM Location: </strong>{{ service.vim_location }} 🔒</p>
-                {% endif %}
-                <br>
-            </div>
-        {% endif %}
         {% if service.vim_image is none %}
             {{ fileSelector("Add VIM image", "Vim", wtf.form_field(form.preloadVim)) }}
         {% else %}

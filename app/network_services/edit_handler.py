@@ -180,10 +180,6 @@ class EditHandler:
                     _launchInBackground("onboardVnf", vnfd)
                     _notify("Onboarding", "VNFD package", vnfd.vnfd_id)
             else:
-                # Ensure that the launched action finds the correct location
-                if "Vim" in action and self.service.vim_location is None:
-                    self.service.vim_location = self.request.form['location']
-                    self.ApplyChanges(self.db, self.service)
                 _launchInBackground(action, None)
                 _notify("Onboarding", "VIM image" if 'Vim' in action else "NSD file",
                         self.service.vim_id if 'Vim' in action else self.service.nsd_id)

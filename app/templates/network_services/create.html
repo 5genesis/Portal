@@ -15,7 +15,7 @@
 <div>
     <form id="form" method="post" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
-        {{ baseNsForm.render(form, lockVisibility=False) }}
+        {{ baseNsForm.render(form, locations, None, lock=False) }}
 
         <div class="col-sm-8 col-sm-offset-2">
             <hr>

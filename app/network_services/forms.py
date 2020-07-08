@@ -6,8 +6,7 @@ from wtforms.validators import DataRequired
 class BaseNsForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     description = TextAreaField('Description')
-    public = SelectField('Visibility', choices=[('Public', 'Public'), ('Private', 'Private')],
-                         description="Cannot be changed later")
+    public = SelectField('Visibility', choices=[('Public', 'Public'), ('Private', 'Private')])
 
 
 class NewNsForm(BaseNsForm):

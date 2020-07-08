@@ -1,13 +1,27 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
-{% macro render(form, lockVisibility) %}
+{% macro render(form, locations, vimLocation, lock) %}
     <div class="col-sm-8 col-sm-offset-2 nopadding">
-        <div class="col-sm-8">
+        <div class="col-sm-6">
             {{ wtf.form_field(form.name) }}
         </div>
 
         <div class="col-sm-4">
-            {% if lockVisibility %}
+            {% if lock %}
+                <p>Location</p>
+                <p>🔐 {{ vimLocation }}</p>
+            {% else %}
+                <strong>VIM Location: </strong>
+                <select class="form-control" name="location">
+                {% for location in locations %}
+                    <option value="{{location.Name}}" selected>{{location}}</option>
+                {% endfor %}
+                </select>
+            {% endif %}
+        </div>
+
+        <div class="col-sm-2">
+            {% if lock %}
                 <p>Visibility</p>
                 <p>{{ "🌍 Public" if form.data['public'] == 'Public' else "🔐 Private" }}</p>
             {% else %}
