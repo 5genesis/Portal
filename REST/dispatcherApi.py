@@ -199,9 +199,8 @@ class DispatcherApi(RestClient):
                                      body=data, files={'file': file}, payload=Payload.Form)
             code = self.ResponseStatusCode(response)
 
-        if code != 201:
-            data = self.ResponseToJson(response)
-            overrides = {422: "Image file not in request or request badly formed"}
-            return self.handleErrorcodes(code, data, overrides)
-        else:
+        if code == 200:
             return None
+        else:
+            data = self.ResponseToJson(response)
+            return data.get('detail', data.get('result', f'Unknown error. Status code: {code}'))
