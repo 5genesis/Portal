@@ -12,9 +12,9 @@ from REST import DispatcherApi
 
 
 class EditHandler:
-    buttonNames = ['update', 'preloadVnfd',
-                   'preloadVim', 'onboardVim', 'deleteVim',
-                   'preloadNsd', 'onboardNsd', 'deleteNsd',
+    buttonNames = ['update', 'preloadVnfd', 'selectVnfd',
+                   'preloadVim', 'onboardVim', 'deleteVim', 'selectVim',
+                   'preloadNsd', 'onboardNsd', 'deleteNsd', 'selectNsd',
                    'closeAction', 'cancelAction']
 
     def __init__(self, request, form, service, db, userId):
@@ -67,7 +67,7 @@ class EditHandler:
     def GetButton(self):
         if self.form is not None:
             for name in self.buttonNames:
-                if self.form.data[name]:
+                if self.form.data.get(name, False):
                     return name, None
 
             choices = ['onboardVnf', 'deleteVnf']
@@ -105,6 +105,13 @@ class EditHandler:
                 self.service.vim_image = self.Store(file, self.service.VimLocalPath)
                 self.ApplyChanges(self.db, self.service)
                 flash(f"Pre-loaded VIM image: {self.service.vim_image}")
+
+        elif button == 'selectVim':
+            image = self.request.form['image']
+            self.service.vim_image = image
+            self.service.vim_id = image
+            self.ApplyChanges(self.db, self.service)
+            flash(f"Selected VIM image: {self.service.vim_image}")
 
         elif button == 'preloadNsd':
             file = self.CheckFile('fileNsd', "NSD file is missing", [".tar.gz"])

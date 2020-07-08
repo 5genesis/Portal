@@ -15,15 +15,19 @@ class NewNsForm(BaseNsForm):
 
 class EditNsForm(BaseNsForm):
     update = SubmitField('Update')
+
     preloadVnfd = SubmitField('Pre-load')
+    selectVndf = SubmitField('Select')
 
     preloadVim = SubmitField('Pre-load')
     onboardVim = SubmitField('Onboard')
     deleteVim = SubmitField('Delete')
+    selectVim = SubmitField('Select')
 
     preloadNsd = SubmitField('Pre-load')
     onboardNsd = SubmitField('Onboard')
     deleteNsd = SubmitField('Delete')
+    selectNsd = SubmitField('Select')
 
     closeAction = SubmitField('Commit')
     cancelAction = SubmitField('Cancel')
