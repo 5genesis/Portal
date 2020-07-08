@@ -188,30 +188,6 @@ class DispatcherApi(RestClient):
             else:
                 return self.handleErrorcodes(code, data, overrides), False
 
-    def DeleteVnfd(self, vnfdId: str, token: str) -> Optional[str]:
-        """Returns an error message, or None on success"""
-
-        url = f'/mano/vnfd/{vnfdId}'
-        overrides = {400: "Invalid VNDF value", 404: "VNFD not found",
-                     409: "Conflict - VNFD referenced by at least one NSD"}
-        return self._deleteVnfdOrNsd(url, token, overrides)
-
-    def DeleteNsd(self, nsdId: str, token: str) -> Optional[str]:
-        """Returns an error message, or None on success"""
-
-        url = f'/mano/nsd/{nsdId}'
-        overrides = {400: "Invalid NS id supplied", 404: "NSD not found"}
-        return self._deleteVnfdOrNsd(url, token, overrides)
-
-    def _deleteVnfdOrNsd(self, url: str, token: str, overrides: Dict) -> Optional[str]:
-        response = self.HttpDelete(url, extra_headers=self.bearerAuthHeader(token))
-        code = self.ResponseStatusCode(response)
-        if code != 204:
-            data = self.ResponseToJson(response)
-            return self.handleErrorcodes(code, data, overrides)
-        else:
-            return None
-
     def OnboardVim(self, path: str, location: str, token: str, visibility: str) -> Optional[str]:
         """Returns an error message, or None on success"""
 

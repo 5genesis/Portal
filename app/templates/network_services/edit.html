@@ -70,9 +70,9 @@
             {% if vnfd.vnfd_id is none %}
                 <button type="submit" id="onboardVnf{{ vnfd.id }}" name="onboardVnf{{ vnfd.id }}" class="btn btn-default">
                     Onboard</button>
+                <button type="submit" id="deleteVnf{{ vnfd.id }}" name="deleteVnf{{ vnfd.id }}" class="btn btn-default">
+                Delete</button> {# Only allow deletion when it's locally stored #}
             {% endif %}
-            <button type="submit" id="deleteVnf{{ vnfd.id }}" name="deleteVnf{{ vnfd.id }}" class="btn btn-default">
-                Delete</button>
         </div>
     </div>
 {% endmacro %}
@@ -96,7 +96,7 @@
         <div class="col-sm-7">
             {{ selector("vnfd", vnfds) }}
         </div>
-        <div class="col-sm-2">
+        <div class="col-sm-2 text-center">
             {{ wtf.form_field(form.selectVnfd) }}
         </div>
         {{ fileSelector("Add VNFD package", "Vnfd", wtf.form_field(form.preloadVnfd)) }}
@@ -115,7 +115,7 @@
             <div class="col-sm-7">
                 {{ selector("image", images) }}
             </div>
-            <div class="col-sm-2">
+            <div class="col-sm-2 text-center">
                 {{ wtf.form_field(form.selectVim) }}
             </div>
             <div class="col-sm-12 nopadding">
@@ -128,10 +128,10 @@
                     {{ "🔒" if service.vim_id is not none else "🔓" }}
                 </p>
             </div>
-            <div class="col-sm-4 text-right">
+            <div class="col-sm-4 text-center">
                 {% if service.vim_id is none %}
                     {{ wtf.form_field(form.onboardVim) }}
-                    {{ wtf.form_field(form.deleteVim) }}
+                    {{ wtf.form_field(form.deleteVim) }} {# Only allow deletion when it's locally stored #}
                 {% endif %}
             </div>
         {% endif %}
@@ -150,7 +150,7 @@
             <div class="col-sm-7">
                 {{ selector("nsd", nsds) }}
             </div>
-            <div class="col-sm-2">
+            <div class="col-sm-2 text-center">
                 {{ wtf.form_field(form.selectNsd) }}
             </div>
             {{ fileSelector("Add NSD file", "Nsd", wtf.form_field(form.preloadNsd)) }}
@@ -161,11 +161,11 @@
             <div class="col-sm-5">
                 <p><strong>ID: </strong>{{ service.nsd_id }}</p>
             </div>
-            <div class="col-sm-4 text-right">
+            <div class="col-sm-4 text-center">
                 {% if service.nsd_id is none %}
                     {{ wtf.form_field(form.onboardNsd) }}
+                    {{ wtf.form_field(form.deleteNsd) }}
                 {% endif %}
-                {{ wtf.form_field(form.deleteNsd) }}
             </div>
         {% endif %}
         <hr>

@@ -28,6 +28,7 @@ class Action(Child):
 
         filePath = abspath(join(Config.UPLOAD_FOLDER, *self.service.VimLocalPath, self.service.vim_image))
         location = self.service.vim_location
+        self.message = f"VIM Image onboarding in progress"
         maybeError = DispatcherApi().OnboardVim(filePath, location, self.token, self.service.is_public)
 
         if maybeError is None:
@@ -40,11 +41,12 @@ class Action(Child):
         from REST import DispatcherApi
 
         filePath = abspath(join(Config.UPLOAD_FOLDER, *self.service.NsdLocalPath, self.service.nsd_file))
+        self.message = f"NSD file onboarding in progress"
         maybeId, success = DispatcherApi().OnboardNsd(filePath, self.token, self.service.is_public)
 
         if success:
             self.result = maybeId
-            self.message = f"VIM Image successfully onboarded"
+            self.message = f"NSD file successfully onboarded"
         else:
             raise RuntimeError(f"Exception during onboarding process: {maybeId}")
 
@@ -52,6 +54,7 @@ class Action(Child):
         from REST import DispatcherApi
 
         filePath = abspath(join(Config.UPLOAD_FOLDER, *self.vnfd.VnfdLocalPath, self.vnfd.vnfd_file))
+        self.message = f"VNFD package onboarding in progress"
         maybeId, success = DispatcherApi().OnboardVnfd(filePath, self.token, self.service.is_public)
 
         if success:
@@ -62,34 +65,25 @@ class Action(Child):
 
     def deleteVim(self):
         if self.service.vim_id is not None:
-            pass  # No endpoints for deleting VIM images
+            self.message = "Deletion of onboarded VIM images is not supported"
         else:
+            self.message = "Deleting VIM image"
             self._deleteLocalFile(self.service.VimLocalPath, self.service.vim_image)
             self.message = "Deleted VIM image from temporal storage"
 
     def deleteNsd(self):
         if self.service.nsd_id is not None:
-            from REST import DispatcherApi
-            maybeError = DispatcherApi().DeleteNsd(self.service.nsd_id, self.token)
-
-            if maybeError is None:
-                self.message = f"Deleted NSD with id: {self.service.nsd_id}"
-            else:
-                raise RuntimeError(f"Exception during deletion process: {maybeError}")
+            self.message = "Deletion of onboarded NSD is not supported"
         else:
+            self.message = "Deleting NSD file"
             self._deleteLocalFile(self.service.NsdLocalPath, self.service.nsd_file)
             self.message = "Deleted NSD file from temporal storage"
 
     def deleteVnf(self):
         if self.vnfd.vnfd_id is not None:
-            from REST import DispatcherApi
-            maybeError = DispatcherApi().DeleteVnfd(self.vnfd.vnfd_id, self.token)
-
-            if maybeError is None:
-                self.message = f"Deleted VNFD with id: {self.vnfd.vnfd_id}"
-            else:
-                raise RuntimeError(f"Exception during deletion process: {maybeError}")
+            self.message = "Deletion of onboarded VNFDs is not supported"
         else:
+            self.message = "Deleting VNFD package"
             self._deleteLocalFile(self.vnfd.VnfdLocalPath, self.vnfd.vnfd_file)
             self.message = "Deleted VNFD package file from temporal storage"
 
