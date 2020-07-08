@@ -63,10 +63,16 @@ def edit(nsid: int):
     action = ActionHandler.Get(service.id)
 
     images, error = DispatcherApi().GetVimLocationImages(current_user, service.vim_location)
-    if error is not None:
-        flash(error, 'error')
+    if error is not None: flash(error, 'error')
+
+    vnfds, error = DispatcherApi().GetAvailableVnfds(current_user)
+    if error is not None: flash(error, 'error')
+
+    nsds, error = DispatcherApi().GetAvailableNsds(current_user)
+    if error is not None: flash(error, 'error')
 
     return render_template('network_services/edit.html', Title=f'Network Service: {service.name}',
-                           form=form, service=service, action=action, images=images)
+                           form=form, service=service, action=action, images=images, vnfds=vnfds,
+                           nsds=nsds)
 
 

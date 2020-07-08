@@ -99,6 +99,14 @@ class EditHandler:
                 self.ApplyChanges(self.db, newVnfd)
                 flash(f"Pre-loaded new VNFD package: {newVnfd.vnfd_file}")
 
+        elif button == 'selectVnfd':
+            vnfd = self.request.form['vnfd']
+            newVnfd = VnfdPackage(network_service=self.service)
+            newVnfd.vnfd_file = vnfd
+            newVnfd.vnfd_id = vnfd
+            self.ApplyChanges(self.db, newVnfd)
+            flash(f"Added existing VNFD package '{vnfd}'")
+
         elif button == 'preloadVim':
             file = self.CheckFile('fileVim', "VIM image file is missing", ['.qcow2', '.img', '.iso', '.ova', '.vhd'])
             if file is not None:
@@ -119,6 +127,13 @@ class EditHandler:
                 self.service.nsd_file = self.Store(file, self.service.NsdLocalPath)
                 self.ApplyChanges(self.db, self.service)
                 flash(f"Pre-loaded NSD file: {self.service.nsd_file}")
+
+        elif button == 'selectNsd':
+            nsd = self.request.form['nsd']
+            self.service.nsd_file = nsd
+            self.service.nsd_id = nsd
+            self.ApplyChanges(self.db, self.service)
+            flash(f"Selected NSD '{nsd}'")
 
         # Asynchronous actions
         elif button in ['closeAction', 'cancelAction']:

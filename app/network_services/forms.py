@@ -17,7 +17,7 @@ class EditNsForm(BaseNsForm):
     update = SubmitField('Update')
 
     preloadVnfd = SubmitField('Pre-load')
-    selectVndf = SubmitField('Select')
+    selectVnfd = SubmitField('Add')
 
     preloadVim = SubmitField('Pre-load')
     onboardVim = SubmitField('Onboard')

@@ -50,6 +50,14 @@
     <div class="col-sm-2 text-center">{{ actionButton }}</div>
 {% endmacro %}
 
+{% macro selector(name, values) %}
+    <select class="form-control" name="{{ name }}">
+    {% for value in values %}
+        <option value="{{value}}" selected>{{value}}</option>
+    {% endfor %}
+    </select>
+{% endmacro %}
+
 {% macro vnfd_row(vnfd) %}
     <div class="col-sm-12 nopadding">
         <div class="col-sm-3">
@@ -82,6 +90,15 @@
             {% endfor %}
         {% endif %}
 
+        <div class="col-sm-3">
+            <strong>Available VNFDs: </strong>
+        </div>
+        <div class="col-sm-7">
+            {{ selector("vnfd", vnfds) }}
+        </div>
+        <div class="col-sm-2">
+            {{ wtf.form_field(form.selectVnfd) }}
+        </div>
         {{ fileSelector("Add VNFD package", "Vnfd", wtf.form_field(form.preloadVnfd)) }}
     </div>
 {% endmacro %}
@@ -96,11 +113,7 @@
                 <strong>Available images: </strong>
             </div>
             <div class="col-sm-7">
-                <select class="form-control" name="image">
-                {% for image in images %}
-                    <option value="{{image}}" selected>{{image}}</option>
-                {% endfor %}
-                </select>
+                {{ selector("image", images) }}
             </div>
             <div class="col-sm-2">
                 {{ wtf.form_field(form.selectVim) }}
@@ -131,6 +144,15 @@
         <h4 style="text-align: center">Network Service Descriptor</h4>
         <br>
         {% if service.nsd_file is none %}
+            <div class="col-sm-3">
+                <strong>Available NSDs: </strong>
+            </div>
+            <div class="col-sm-7">
+                {{ selector("nsd", nsds) }}
+            </div>
+            <div class="col-sm-2">
+                {{ wtf.form_field(form.selectNsd) }}
+            </div>
             {{ fileSelector("Add NSD file", "Nsd", wtf.form_field(form.preloadNsd)) }}
         {% else %}
             <div class="col-sm-3">

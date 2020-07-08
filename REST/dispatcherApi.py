@@ -104,18 +104,33 @@ class DispatcherApi(RestClient):
         response = self.HttpGet(url, extra_headers=self.bearerAuthHeader(token))
         return RestClient.ResponseToJson(response)
 
-    def GetVimLocations(self, user: User) -> Tuple[List[VimInfo], Optional[str]]:
+    def basicGet(self, user: User, url: str, action: str) -> Tuple[object, Optional[str]]:
         try:
             maybeError = self.RenewUserTokenIfExpired(user)
             if maybeError is not None:
-                return [], maybeError
+                return {}, maybeError
 
             token = user.CurrentDispatcherToken
-            url = '/mano/vims'
             response = self.HttpGet(url, extra_headers=self.bearerAuthHeader(token))
-            return [VimInfo(vim) for vim in self.ResponseToJson(response)], None
+            return self.ResponseToJson(response), None
         except Exception as e:
-            return [], f"Exception while retrieving list of VIMs: {e}"
+            return {}, f"Exception while {action}: {e}"
+
+    def GetVimLocations(self, user: User) -> Tuple[List[VimInfo], Optional[str]]:
+        data, error = self.basicGet(user, '/mano/vims', 'retrieving list of VIMs')  # type: List, Optional[str]
+        return [VimInfo(vim) for vim in data] if error is None else [], error
+
+    def GetVimLocationImages(self, user: User, location: str) -> Tuple[List[VimInfo], Optional[str]]:
+        data, error = self.basicGet(user, '/mano/image', f"list of images for VIM '{location}'")  # type: Dict, Optional[str]
+        return data.get(location, []) if error is None else [], error
+
+    def GetAvailableVnfds(self, user: User) -> Tuple[List[str], Optional[str]]:
+        data, error = self.basicGet(user, '/mano/vnfd', f"list of VNFDs")  # type: Dict, Optional[str]
+        return data if error is None else [], error
+
+    def GetAvailableNsds(self, user: User) -> Tuple[List[str], Optional[str]]:
+        data, error = self.basicGet(user, '/mano/nsd', f"list of VNFDs")  # type: Dict, Optional[str]
+        return data if error is None else [], error
 
     def handleErrorcodes(self, code: int, data: Dict, overrides: Dict[int, str] = None) -> str:
         defaults = {
