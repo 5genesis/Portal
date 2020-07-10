@@ -89,7 +89,7 @@ class DispatcherApi(RestClient):
 
         token = user.CurrentDispatcherToken
         descriptor = json.dumps(Experiment.query.get(experimentId).serialization())
-        url = f'/elcmapi/v0/run'  # TODO: See if this can be improved
+        url = f'/elcmapi/v0/run'  # TODO: Can be improved, but validation must be updated first
         response = self.HttpPost(url, {'Content-Type': 'application/json', **self.bearerAuthHeader(token)}, descriptor)
         return RestClient.ResponseToJson(response)
 
@@ -156,14 +156,14 @@ class DispatcherApi(RestClient):
     def OnboardVnfd(self, path: str, token: str, visibility: bool) -> Tuple[str, bool]:
         """Returns a pair of str (id or error message) and bool (success)"""
 
-        url = '/mano/vnfd'  # TODO: Use validator's equivalent
+        url = '/mano/vnfd'
         overrides = {409: "Conflict - VNFD already present"}
         return self._onboardVnfdOrNsd(url, path, token, 'VNFs', overrides, visibility)
 
     def OnboardNsd(self, path: str, token: str, visibility: bool) -> Tuple[str, bool]:
         """Returns a pair of str (id or error message) and bool (success)"""
 
-        url = '/mano/nsd'  # TODO: Use validator's equivalent
+        url = '/mano/nsd'
         overrides = {409: "Conflict - NSD already present"}
         return self._onboardVnfdOrNsd(url, path, token, "NSs", overrides, visibility)
 

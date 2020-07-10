@@ -1,3 +1,7 @@
+**10/07/2020** [Version 2.3.2]
+
+ - Updated NS handling
+
 **29/06/2020** [Version 2.3.1]
 
  - Add reservation time to MONROE experiments

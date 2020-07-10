@@ -153,20 +153,6 @@ def experiment(experimentId: int):
             return redirect(url_for('main.index'))
 
 
-@bp.route('/<experimentId>/nsdFile', methods=['GET'])
-def downloadNSD(experimentId: int):
-    experiment = Experiment.query.get(experimentId)
-    if experiment is None: return render_template('errors/404.html'), 404
-
-    # TODO: Handle experiments with multiple network services
-    ns = experiment.network_services[0] if len(experiment.network_services) != 0 else None
-    if ns is None: return render_template('errors/404.html'), 404
-    filename = ns.NSD
-
-    baseFolder = os.path.realpath(os.path.join(UploaderConfig.UPLOAD_FOLDER, 'nss', str(ns.id), 'nsd'))
-    return send_from_directory(directory=baseFolder, filename=filename, as_attachment=True)
-
-
 def runExperiment() -> bool:
     """Returns true if no issue has been detected"""
     try:
