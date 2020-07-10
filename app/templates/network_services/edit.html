@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
+{% import 'network_services/_baseNsForm.html' as baseNsForm %}
 
 {% set busy = action is not none %}
 {% set vimAction = busy and 'Vim' in action.type %}
@@ -22,8 +23,7 @@
 {% macro basicInfo() %}
     <h4 style="text-align: center">Basic Information</h4>
     <br>
-    {% include 'network_services/_baseNsForm.html' %}
-
+    {{ baseNsForm.render(form, [], service.vim_location, lock=True) }}
 
     <div class="col-sm-8 col-sm-offset-2">
         <div class="col-sm-12"></div>
@@ -50,6 +50,14 @@
     <div class="col-sm-2 text-center">{{ actionButton }}</div>
 {% endmacro %}
 
+{% macro selector(name, values) %}
+    <select class="form-control" name="{{ name }}">
+    {% for value in values %}
+        <option value="{{value}}" selected>{{value}}</option>
+    {% endfor %}
+    </select>
+{% endmacro %}
+
 {% macro vnfd_row(vnfd) %}
     <div class="col-sm-12 nopadding">
         <div class="col-sm-3">
@@ -62,9 +70,9 @@
             {% if vnfd.vnfd_id is none %}
                 <button type="submit" id="onboardVnf{{ vnfd.id }}" name="onboardVnf{{ vnfd.id }}" class="btn btn-default">
                     Onboard</button>
+                <button type="submit" id="deleteVnf{{ vnfd.id }}" name="deleteVnf{{ vnfd.id }}" class="btn btn-default">
+                Delete</button> {# Only allow deletion when it's locally stored #}
             {% endif %}
-            <button type="submit" id="deleteVnf{{ vnfd.id }}" name="deleteVnf{{ vnfd.id }}" class="btn btn-default">
-                Delete</button>
         </div>
     </div>
 {% endmacro %}
@@ -82,6 +90,15 @@
             {% endfor %}
         {% endif %}
 
+        <div class="col-sm-3">
+            <strong>Available VNFDs: </strong>
+        </div>
+        <div class="col-sm-7">
+            {{ selector("vnfd", vnfds) }}
+        </div>
+        <div class="col-sm-2 text-center">
+            {{ wtf.form_field(form.selectVnfd) }}
+        </div>
         {{ fileSelector("Add VNFD package", "Vnfd", wtf.form_field(form.preloadVnfd)) }}
     </div>
 {% endmacro %}
@@ -91,23 +108,19 @@
         <hr>
         <h4 style="text-align: center">Virtualized Infrastructure Manager</h4>
         <br>
-        {%  if service.vim_image is not none %} {# Do not allow selection of the location until it's possible to onboard #}
-            <div class="col-sm-12">
-                {% if service.vim_location is none %}
-                    <strong>VIM Location: </strong>
-                    <select class="form-control" name="location">
-                    {% for location in locations %}
-                        <option value="{{location.Name}}" selected>{{location}}</option>
-                    {% endfor %}
-                    </select>
-                {% else %}
-                    <p><strong>VIM Location: </strong>{{ service.vim_location }} 🔒</p>
-                {% endif %}
-                <br>
-            </div>
-        {% endif %}
         {% if service.vim_image is none %}
-            {{ fileSelector("Add VIM image", "Vim", wtf.form_field(form.preloadVim)) }}
+            <div class="col-sm-3">
+                <strong>Available images: </strong>
+            </div>
+            <div class="col-sm-7">
+                {{ selector("image", images) }}
+            </div>
+            <div class="col-sm-2 text-center">
+                {{ wtf.form_field(form.selectVim) }}
+            </div>
+            <div class="col-sm-12 nopadding">
+                {{ fileSelector("Add VIM image", "Vim", wtf.form_field(form.preloadVim)) }}
+            </div>
         {% else %}
             <div class="col-sm-8">
                 <p>
@@ -115,10 +128,10 @@
                     {{ "🔒" if service.vim_id is not none else "🔓" }}
                 </p>
             </div>
-            <div class="col-sm-4 text-right">
+            <div class="col-sm-4 text-center">
                 {% if service.vim_id is none %}
                     {{ wtf.form_field(form.onboardVim) }}
-                    {{ wtf.form_field(form.deleteVim) }}
+                    {{ wtf.form_field(form.deleteVim) }} {# Only allow deletion when it's locally stored #}
                 {% endif %}
             </div>
         {% endif %}
@@ -131,6 +144,15 @@
         <h4 style="text-align: center">Network Service Descriptor</h4>
         <br>
         {% if service.nsd_file is none %}
+            <div class="col-sm-3">
+                <strong>Available NSDs: </strong>
+            </div>
+            <div class="col-sm-7">
+                {{ selector("nsd", nsds) }}
+            </div>
+            <div class="col-sm-2 text-center">
+                {{ wtf.form_field(form.selectNsd) }}
+            </div>
             {{ fileSelector("Add NSD file", "Nsd", wtf.form_field(form.preloadNsd)) }}
         {% else %}
             <div class="col-sm-3">
@@ -139,11 +161,11 @@
             <div class="col-sm-5">
                 <p><strong>ID: </strong>{{ service.nsd_id }}</p>
             </div>
-            <div class="col-sm-4 text-right">
+            <div class="col-sm-4 text-center">
                 {% if service.nsd_id is none %}
                     {{ wtf.form_field(form.onboardNsd) }}
+                    {{ wtf.form_field(form.deleteNsd) }}
                 {% endif %}
-                {{ wtf.form_field(form.deleteNsd) }}
             </div>
         {% endif %}
         <hr>

@@ -1,12 +1,12 @@
 import json
 from typing import Dict, Tuple, Optional, List
 from app.models import User, Experiment
-from .restClient import RestClient
+from .restClient import RestClient, Payload
 from base64 import b64encode
 from Helper import Config, Log, LogInfo
 from app import db
 from datetime import datetime, timezone
-from os.path import splitext
+from os.path import split
 
 
 class VimInfo:
@@ -41,7 +41,7 @@ class DispatcherApi(RestClient):
             'email': user.email,
             'password': user.password_hash
         }
-        response = self.HttpPost(url, {'Content-Type': 'application/json'}, json.dumps(data))
+        response = self.HttpPost(url, body=data, payload=Payload.Form)
         return self.ResponseToJson(response)
 
     def GetToken(self, user: User) -> Tuple[str, bool]:
@@ -89,7 +89,7 @@ class DispatcherApi(RestClient):
 
         token = user.CurrentDispatcherToken
         descriptor = json.dumps(Experiment.query.get(experimentId).serialization())
-        url = f'/elcmapi/v0/run'  # TODO: See if this can be improved
+        url = f'/elcmapi/v0/run'  # TODO: Can be improved, but validation must be updated first
         response = self.HttpPost(url, {'Content-Type': 'application/json', **self.bearerAuthHeader(token)}, descriptor)
         return RestClient.ResponseToJson(response)
 
@@ -104,18 +104,33 @@ class DispatcherApi(RestClient):
         response = self.HttpGet(url, extra_headers=self.bearerAuthHeader(token))
         return RestClient.ResponseToJson(response)
 
+    def basicGet(self, user: User, url: str, action: str) -> Tuple[object, Optional[str]]:
+        try:
+            maybeError = self.RenewUserTokenIfExpired(user)
+            if maybeError is not None:
+                return {}, maybeError
+
+            token = user.CurrentDispatcherToken
+            response = self.HttpGet(url, extra_headers=self.bearerAuthHeader(token))
+            return self.ResponseToJson(response), None
+        except Exception as e:
+            return {}, f"Exception while {action}: {e}"
+
     def GetVimLocations(self, user: User) -> Tuple[List[VimInfo], Optional[str]]:
-        result = []
-        maybeError = self.RenewUserTokenIfExpired(user)
-        if maybeError is not None:
-            return result, maybeError
+        data, error = self.basicGet(user, '/mano/vims', 'retrieving list of VIMs')  # type: List, Optional[str]
+        return [VimInfo(vim) for vim in data] if error is None else [], error
 
-        token = user.CurrentDispatcherToken
-        url = '/mano/vims'
-        response = self.HttpGet(url, extra_headers=self.bearerAuthHeader(token))
-        result = [VimInfo(vim) for vim in self.ResponseToJson(response)]
+    def GetVimLocationImages(self, user: User, location: str) -> Tuple[List[VimInfo], Optional[str]]:
+        data, error = self.basicGet(user, '/mano/image', f"list of images for VIM '{location}'")  # type: Dict, Optional[str]
+        return data.get(location, []) if error is None else [], error
 
-        return result, None
+    def GetAvailableVnfds(self, user: User) -> Tuple[List[str], Optional[str]]:
+        data, error = self.basicGet(user, '/mano/vnfd', f"list of VNFDs")  # type: Dict, Optional[str]
+        return data if error is None else [], error
+
+    def GetAvailableNsds(self, user: User) -> Tuple[List[str], Optional[str]]:
+        data, error = self.basicGet(user, '/mano/nsd', f"list of VNFDs")  # type: Dict, Optional[str]
+        return data if error is None else [], error
 
     def handleErrorcodes(self, code: int, data: Dict, overrides: Dict[int, str] = None) -> str:
         defaults = {
@@ -138,68 +153,54 @@ class DispatcherApi(RestClient):
             extra = f" (Code {code})"
         return error + extra
 
-    def OnboardVnfd(self, path: str, token: str) -> Tuple[str, bool]:
+    def OnboardVnfd(self, path: str, token: str, visibility: bool) -> Tuple[str, bool]:
         """Returns a pair of str (id or error message) and bool (success)"""
 
-        url = '/mano/vnfd'  # TODO: Use validator's equivalent
+        url = '/mano/vnfd'
         overrides = {409: "Conflict - VNFD already present"}
-        return self._onboardVnfdOrNsd(url, path, token, 'vnfd', overrides)
+        return self._onboardVnfdOrNsd(url, path, token, 'VNFs', overrides, visibility)
 
-    def OnboardNsd(self, path: str, token: str) -> Tuple[str, bool]:
+    def OnboardNsd(self, path: str, token: str, visibility: bool) -> Tuple[str, bool]:
         """Returns a pair of str (id or error message) and bool (success)"""
 
-        url = '/mano/nsd'  # TODO: Use validator's equivalent
+        url = '/mano/nsd'
         overrides = {409: "Conflict - NSD already present"}
-        return self._onboardVnfdOrNsd(url, path, token, "nsd", overrides)
+        return self._onboardVnfdOrNsd(url, path, token, "NSs", overrides, visibility)
 
-    def _onboardVnfdOrNsd(self, url: str, path: str, token: str, fileId: str, overrides: Dict):
+    def _onboardVnfdOrNsd(self, url: str, path: str, token: str, dictId: str, overrides: Dict, visibility: bool):
         with open(path, "br") as file:
-            response = self.HttpPost(url, extra_headers=self.bearerAuthHeader(token), files={fileId: file})
+            data = {'visibility': str(visibility).lower()}
+            response = self.HttpPost(url, extra_headers=self.bearerAuthHeader(token), files={'file': file},
+                                     body=data, payload=Payload.Form)
+
             code = self.ResponseStatusCode(response)
             data = self.ResponseToJson(response)
-            if code == 201:
-                return data["id"], True
+            if code == 200:
+                try:
+                    return data[dictId].keys()[0], True
+                except (KeyError, IndexError, AttributeError):
+                    return split(path)[1], True
+            elif code == 400:
+                try:
+                    return data['error'], False
+                except KeyError:
+                    return str(data), False
             else:
                 return self.handleErrorcodes(code, data, overrides), False
 
-    def DeleteVnfd(self, vnfdId: str, token: str) -> Optional[str]:
-        """Returns an error message, or None on success"""
-
-        url = f'/mano/vnfd/{vnfdId}'
-        overrides = {400: "Invalid VNDF value", 404: "VNFD not found",
-                     409: "Conflict - VNFD referenced by at least one NSD"}
-        return self._deleteVnfdOrNsd(url, token, overrides)
-
-    def DeleteNsd(self, nsdId: str, token: str) -> Optional[str]:
-        """Returns an error message, or None on success"""
-
-        url = f'/mano/nsd/{nsdId}'
-        overrides = {400: "Invalid NS id supplied", 404: "NSD not found"}
-        return self._deleteVnfdOrNsd(url, token, overrides)
-
-    def _deleteVnfdOrNsd(self, url: str, token: str, overrides: Dict) -> Optional[str]:
-        response = self.HttpDelete(url, extra_headers=self.bearerAuthHeader(token))
-        code = self.ResponseStatusCode(response)
-        if code != 204:
-            data = self.ResponseToJson(response)
-            return self.handleErrorcodes(code, data, overrides)
-        else:
-            return None
-
-    def OnboardVim(self, path: str, location: str, token: str) -> Optional[str]:
+    def OnboardVim(self, path: str, location: str, token: str, visibility: str) -> Optional[str]:
         """Returns an error message, or None on success"""
 
         with open(path, "br") as file:
-            _, diskFormat = splitext(path)
-            diskFormat = diskFormat[1:]
             containerFormat = "bare"
-            url = f'/mano/image/{location}?disk_format={diskFormat}&container_format={containerFormat}'
-            response = self.HttpPost(url, extra_headers=self.bearerAuthHeader(token), files={'image': file})
+            data = {'vim_id': location, 'container_format': containerFormat,
+                    'visibility': str(visibility).lower()}
+            response = self.HttpPost('/mano/image', extra_headers=self.bearerAuthHeader(token),
+                                     body=data, files={'file': file}, payload=Payload.Form)
             code = self.ResponseStatusCode(response)
 
-        if code != 201:
-            data = self.ResponseToJson(response)
-            overrides = {422: "Image file not in request or request badly formed"}
-            return self.handleErrorcodes(code, data, overrides)
-        else:
+        if code == 200:
             return None
+        else:
+            data = self.ResponseToJson(response)
+            return data.get('detail', data.get('result', f'Unknown error. Status code: {code}'))

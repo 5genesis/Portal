@@ -1,9 +1,16 @@
 import re
 import json
-from typing import Dict
+from typing import Dict, Union, Optional
 from urllib3 import connection_from_url
 from requests import post
 from os.path import realpath, join
+from enum import Enum, unique
+
+
+@unique
+class Payload(Enum):
+    Form = 0
+    Data = 1
 
 
 class RestClient:
@@ -45,17 +52,30 @@ class RestClient:
                                  headers=extra_headers,
                                  retries=self.RETRIES)
 
-    def HttpPost(self, url, extra_headers=None, body='', files=None):
+    def HttpPost(self, url, extra_headers=None, body: Optional[Union[str, Dict]] = None,
+                 files=None, payload: Payload = None):
         extra_headers = {} if extra_headers is None else extra_headers
+
+        if payload == Payload.Data:
+            extra_headers['Content-Type'] = 'application/json'
+            if isinstance(body, Dict):
+                body = json.dumps(body)
+        elif payload == Payload.Form:
+            if files is None:
+                extra_headers['Content-Type'] = 'application/x-www-form-urlencoded'
+                if isinstance(body, str):
+                    body = self.JsonToUrlEncoded(body)
+                elif isinstance(body, Dict):
+                    body = self.DictToUrlEncoded(body)
+            else:  # Do not add any Content-Type, and ensure that body is a Dict
+                if not isinstance(body, Dict):
+                    raise ValueError("For POST requests with files the body must be a Dict")
+
         if files is None:
-            return self.pool.request('POST',
-                                     url,
-                                     body=body,
-                                     headers={**self.HEADERS, **extra_headers},
+            return self.pool.request('POST', url, body=body or '', headers={**self.HEADERS, **extra_headers},
                                      retries=self.RETRIES)
         else:
-            url = f"{self.api_url}{url}"
-            return post(url, data=body, headers={**self.HEADERS, **extra_headers},
+            return post(f"{self.api_url}{url}", data=body, headers={**self.HEADERS, **extra_headers},
                         files=files, verify=not self.insecure)
 
     def HttpPatch(self, url, extra_headers=None, body=''):
@@ -88,3 +108,14 @@ class RestClient:
             return json.loads(raw.decode('utf-8'))
         except Exception as e:
             raise RuntimeError(f'JSON parse exception: {e}. data={response.data}')
+
+    @staticmethod
+    def JsonToUrlEncoded(jsonData: str) -> str:
+        try:
+            return RestClient.DictToUrlEncoded(json.loads(jsonData))
+        except Exception as e:
+            raise RuntimeError(f'JSON parse exception: {e}. data={jsonData}')
+
+    @staticmethod
+    def DictToUrlEncoded(dict: Dict) -> str:
+        return "&".join(f"{key}={value}" for key, value in dict.items())

@@ -12,9 +12,9 @@ from REST import DispatcherApi
 
 
 class EditHandler:
-    buttonNames = ['update', 'preloadVnfd',
-                   'preloadVim', 'onboardVim', 'deleteVim',
-                   'preloadNsd', 'onboardNsd', 'deleteNsd',
+    buttonNames = ['update', 'preloadVnfd', 'selectVnfd',
+                   'preloadVim', 'onboardVim', 'deleteVim', 'selectVim',
+                   'preloadNsd', 'onboardNsd', 'deleteNsd', 'selectNsd',
                    'closeAction', 'cancelAction']
 
     def __init__(self, request, form, service, db, userId):
@@ -46,17 +46,28 @@ class EditHandler:
         file.save(savePath)
         return filename
 
-    def CheckFile(self, name, message):
+    def CheckFile(self, name: str, message: str, valid: List[str]):
+        def _checkExt(name):  # splitext returns only the last piece, there can be extra dots in filename
+            if len(valid) == 0: return True
+            for choice in valid:
+                if name.endswith(choice): return True
+            return False
+
         file = self.request.files.get(name, None)
         if file is None or file.filename == '':
             flash(message, 'error')
             return None
+
+        if not _checkExt(file.filename):
+            flash(f"Invalid extension, must be {(f'one of {valid}' if len(valid) > 1 else valid[0])}")
+            return None
+
         return file
 
     def GetButton(self):
         if self.form is not None:
             for name in self.buttonNames:
-                if self.form.data[name]:
+                if self.form.data.get(name, False):
                     return name, None
 
             choices = ['onboardVnf', 'deleteVnf']
@@ -80,7 +91,7 @@ class EditHandler:
             flash("Network Service information updated.")
 
         elif button == 'preloadVnfd':
-            file = self.CheckFile('fileVnfd', "VNFD file is missing")
+            file = self.CheckFile('fileVnfd', "VNFD file is missing", [".tar.gz"])
             if file is not None:
                 newVnfd = VnfdPackage(network_service=self.service)
                 self.ApplyChanges(self.db, newVnfd)
@@ -88,19 +99,41 @@ class EditHandler:
                 self.ApplyChanges(self.db, newVnfd)
                 flash(f"Pre-loaded new VNFD package: {newVnfd.vnfd_file}")
 
+        elif button == 'selectVnfd':
+            vnfd = self.request.form['vnfd']
+            newVnfd = VnfdPackage(network_service=self.service)
+            newVnfd.vnfd_file = vnfd
+            newVnfd.vnfd_id = vnfd
+            self.ApplyChanges(self.db, newVnfd)
+            flash(f"Added existing VNFD package '{vnfd}'")
+
         elif button == 'preloadVim':
-            file = self.CheckFile('fileVim', "VIM image file is missing")
+            file = self.CheckFile('fileVim', "VIM image file is missing", ['.qcow2', '.img', '.iso', '.ova', '.vhd'])
             if file is not None:
                 self.service.vim_image = self.Store(file, self.service.VimLocalPath)
                 self.ApplyChanges(self.db, self.service)
                 flash(f"Pre-loaded VIM image: {self.service.vim_image}")
 
+        elif button == 'selectVim':
+            image = self.request.form['image']
+            self.service.vim_image = image
+            self.service.vim_id = image
+            self.ApplyChanges(self.db, self.service)
+            flash(f"Selected VIM image: {self.service.vim_image}")
+
         elif button == 'preloadNsd':
-            file = self.CheckFile('fileNsd', "NSD file is missing")
+            file = self.CheckFile('fileNsd', "NSD file is missing", [".tar.gz"])
             if file is not None:
                 self.service.nsd_file = self.Store(file, self.service.NsdLocalPath)
                 self.ApplyChanges(self.db, self.service)
                 flash(f"Pre-loaded NSD file: {self.service.nsd_file}")
+
+        elif button == 'selectNsd':
+            nsd = self.request.form['nsd']
+            self.service.nsd_file = nsd
+            self.service.nsd_id = nsd
+            self.ApplyChanges(self.db, self.service)
+            flash(f"Selected NSD '{nsd}'")
 
         # Asynchronous actions
         elif button in ['closeAction', 'cancelAction']:
@@ -169,10 +202,6 @@ class EditHandler:
                     _launchInBackground("onboardVnf", vnfd)
                     _notify("Onboarding", "VNFD package", vnfd.vnfd_id)
             else:
-                # Ensure that the launched action finds the correct location
-                if "Vim" in action and self.service.vim_location is None:
-                    self.service.vim_location = self.request.form['location']
-                    self.ApplyChanges(self.db, self.service)
                 _launchInBackground(action, None)
                 _notify("Onboarding", "VIM image" if 'Vim' in action else "NSD file",
                         self.service.vim_id if 'Vim' in action else self.service.nsd_id)

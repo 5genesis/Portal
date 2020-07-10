@@ -24,10 +24,15 @@ def create():
     form = NewNsForm()
     if form.validate_on_submit():
         newNs = NetworkService(author=current_user)
-        EditHandler.AssignBaseFormData(db, form, newNs)  # Assign using default location
+        newNs.vim_location = request.form['location']
+        EditHandler.AssignBaseFormData(db, form, newNs)
         return redirect(url_for('NetworkServices.edit', nsid=newNs.id))
 
-    return render_template('network_services/create.html', title='New Network Service', form=form)
+    locations, error = DispatcherApi().GetVimLocations(current_user)
+    if error is not None:
+        flash(error, 'error')
+
+    return render_template('network_services/create.html', title='New Network Service', form=form, locations=locations)
 
 
 @bp.route('/edit/<int:nsid>', methods=['GET', 'POST'])
@@ -43,7 +48,7 @@ def edit(nsid: int):
     if request.method == "POST":
         form = EditNsForm()
 
-        if form.validate_on_submit():
+        if form.is_submitted():
             handler = EditHandler(request, form, service, db, current_user.id)
             handler.Handle()
             return redirect(url_for("NetworkServices.edit", nsid=nsid))
@@ -57,13 +62,17 @@ def edit(nsid: int):
 
     action = ActionHandler.Get(service.id)
 
-    locations: List[VimInfo] = []
-    if service.vim_id is None:
-        locations, error = DispatcherApi().GetVimLocations(current_user)
-        if error is not None:
-            flash(error, 'error')
+    images, error = DispatcherApi().GetVimLocationImages(current_user, service.vim_location)
+    if error is not None: flash(error, 'error')
+
+    vnfds, error = DispatcherApi().GetAvailableVnfds(current_user)
+    if error is not None: flash(error, 'error')
+
+    nsds, error = DispatcherApi().GetAvailableNsds(current_user)
+    if error is not None: flash(error, 'error')
 
     return render_template('network_services/edit.html', Title=f'Network Service: {service.name}',
-                           form=form, service=service, action=action, locations=locations)
+                           form=form, service=service, action=action, images=images, vnfds=vnfds,
+                           nsds=nsds)
 
 
