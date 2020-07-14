@@ -1,3 +1,7 @@
+**14/07/2020** [Version 2.3.3]
+
+ - Added experiment descriptor retrieval
+
 **10/07/2020** [Version 2.3.2]
 
  - Updated NS handling

@@ -8,13 +8,13 @@
     <th scope="row" class="col-md-1">
         {{ experiment.id }}
     </th>
-    <td class="col-md-3">
+    <td class="col-md-2">
         {{ experiment.name }}
     </td>
     <td class="col-md-1">
         {{ experiment.type }}
     </td>
-    <td class="col-md-5" style="font-size: small;">
+    <td class="col-md-4" style="font-size: small;">
         {% if experiment.type != "MONROE" %}
             {% if experiment.automated %}
                 <b>TestCases</b>: {{ csv(experiment.test_cases) }}
@@ -42,12 +42,13 @@
             {{ '- ' if experiment.slice }}{{ nss }} Network service{{ 's' if nss > 1 }}
         {% endif %}
     </td>
-    <td class="col-md-2">
+    <td class="col-md-4">
         <form id="formRun" method="post" novalidate>
             {{ formRun.hidden_tag() }}
             <input type="hidden" name="id" value="{{ experiment.id }}"/>
             <button type="submit" name="submit" class="btn btn-darkBlue btn-sm">Run</button>
             <a class="btn btn-blue btn-sm" href="/experiment/{{ experiment.id }}" role="button">History</a>
+            <a class="btn btn-blue btn-sm" href="{{ url_for('experiment.descriptor', experimentId=experiment.id) }}" role="button">Descriptor</a>
         </form>
     </td>
 </tr>

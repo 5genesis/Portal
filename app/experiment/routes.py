@@ -1,10 +1,8 @@
-import os
 from datetime import datetime, timezone
 from typing import Dict, List, Tuple, Set
-from flask import render_template, flash, redirect, url_for, request, send_from_directory
+from flask import render_template, flash, redirect, url_for, request, jsonify
 from flask.json import loads as jsonParse
 from flask_login import current_user, login_required
-from config import Config as UploaderConfig
 from REST import ElcmApi, DispatcherApi
 from app import db
 from app.experiment import bp
@@ -183,6 +181,20 @@ def runExperiment() -> bool:
         Log.E(f'Error running experiment: {e}')
         flash(f'Exception while trying to connect with dispatcher: {e}', 'error')
         return False
+
+
+@bp.route('/<experimentId>/descriptor', methods=["GET"])
+@login_required
+def descriptor(experimentId: int):
+    experiment = Experiment.query.get(experimentId)
+    if experiment is None:
+        flash('Experiment not found', 'error')
+        return redirect(url_for('main.index'))
+    elif experiment.user_id != current_user.id:
+        flash("Forbidden - You don't have permission to access this experiment", 'error')
+        return redirect(url_for('main.index'))
+    else:
+        return jsonify(experiment.serialization())
 
 
 @bp.route('/kickstart/<experimentId>', methods=["GET"])

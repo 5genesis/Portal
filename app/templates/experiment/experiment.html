@@ -66,6 +66,7 @@
     {{ formRun.hidden_tag() }}
     <input type="hidden" name="id" value="{{ experiment.id }}"/>
     <button type="submit" name="submit" class="btn btn-darkBlue">Run Experiment</button>
+    <a class="btn btn-darkBlue" href="{{ url_for('.descriptor', experimentId=experiment.id) }}" role="button">View descriptor</a>
 </form>
 
 <hr>
