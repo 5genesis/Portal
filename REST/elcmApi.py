@@ -36,3 +36,11 @@ class ElcmApi(RestClient):
             return self.ResponseToJson(response)['TestCases']
         except Exception:
             return None
+
+    def GetBaseSlices(self) -> List[str]:
+        url = f'{self.api_url}/facility/baseSliceDescriptors'
+        try:
+            response = self.HttpGet(url)
+            return self.ResponseToJson(response)
+        except Exception:
+            return []

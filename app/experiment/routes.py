@@ -91,6 +91,7 @@ def create():
 
     customTestCases = Facility.AvailableCustomTestCases(current_user.email)
     parametersPerTestCase = Facility.TestCaseParameters()
+    baseSlices = Facility.BaseSlices()
     parameterNamesPerTestCase: Dict[str, Set[str]] = {}
     testCaseNamesPerParameter: Dict[str, Set[str]] = {}
     parameterInfo: Dict[str, Dict[str, str]] = {}
@@ -113,7 +114,7 @@ def create():
                            customTestCases=customTestCases, parameterInfo=parameterInfo,
                            parameterNamesPerTestCase=parameterNamesPerTestCase,
                            testCaseNamesPerParameter=testCaseNamesPerParameter,
-                           sliceList=Config().Slices, nss=nss, experimentTypes=experimentTypes)
+                           sliceList=baseSlices, nss=nss, experimentTypes=experimentTypes)
 
 
 @bp.route('/<experimentId>/reload', methods=['GET', 'POST'])

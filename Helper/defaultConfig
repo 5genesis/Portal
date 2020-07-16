@@ -1,35 +1,15 @@
-Dispatcher:
-  Host: '127.0.0.1'
-  Port: 8082
-  TokenExpiry: 240
-
-ELCM:
-  Host: '127.0.0.1'
-  Port: 5001
-
-TestCases:
-  - RTT
-
-Slices:
-  - Slice1
-  - Slice2
-
-UEs:
-  - TestServer1
-
-Grafana URL:
-  None
-
-Platform:
-  Málaga [UMA]
-
-PlatformDescriptionPage:
-  platform.html
-
-Description:
-  5th Generation End-to-end Network, Experimentation, System Integration, and Showcasing
-
 Logging:
   Folder: 'Logs'
   AppLevel: INFO
   LogLevel: DEBUG
+Dispatcher:
+  Host: '127.0.0.1'
+  Port: 8082
+  TokenExpiry: 240
+ELCM:
+  Host: '127.0.0.1'
+  Port: 5001
+Grafana URL: None
+Platform: 5GenesisPlatform
+PlatformDescriptionPage: platform.html
+Description: 5th Generation End-to-end Network, Experimentation, System Integration, and Showcasing

@@ -102,24 +102,12 @@ class Config:
         return ELCM(self.data)
 
     @property
-    def TestCases(self):
-        return self.data['TestCases']
-
-    @property
-    def UEs(self):
-        return self.data['UEs']
-
-    @property
     def Platform(self):
         return self.data['Platform']
 
     @property
     def Description(self):
         return self.data['Description']
-
-    @property
-    def Slices(self):
-        return self.data['Slices']
 
     @property
     def GrafanaUrl(self):

@@ -98,11 +98,11 @@ class RestClient:
             return response.status_code
 
     @staticmethod
-    def ResponseToJson(response) -> Dict:
+    def ResponseToJson(response) -> object:
         try:
             raw = response.data if hasattr(response, 'data') else response.content
         except Exception as e:
-            raise RuntimeError("Could not extract raw data from response")
+            raise RuntimeError(f"Could not extract raw data from response: {e}")
 
         try:
             return json.loads(raw.decode('utf-8'))
