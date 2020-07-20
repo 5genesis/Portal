@@ -70,14 +70,14 @@ function removeNs(target) {
   }
 }
 
-function disableSliceList() {
-  let checkBox = document.getElementById('sliceNone');
-  let sliceList = document.getElementById('sliceList');
+function disableCheckboxedList(checkboxId, listId) {
+  let checkBox = document.getElementById(checkboxId);
+  let list = document.getElementById(listId);
 
   if (checkBox.checked === true) {
-    sliceList.removeAttribute("disabled");
+    list.removeAttribute("disabled");
   } else {
-    sliceList.setAttribute("disabled", true);
+    list.setAttribute("disabled", true);
   }
 }
 

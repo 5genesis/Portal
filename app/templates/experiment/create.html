@@ -154,6 +154,29 @@
     </div>
 {% endmacro %}
 
+{% macro checkboxedList(id, name, values) %}
+    {% set checkbox = id + 'CheckboxedCheckbox' %}
+    {% set list = id + 'CheckboxedList' %}
+
+    <div class="col-sm-12 " style="margin-bottom: 20px">
+        <h4><label for="{{ list }}">{{ name }}</label></h4>
+        <div class="custom-control custom-checkbox col-sm-1"
+             style="padding: 5px 0 !important; margin-right: -30px;">
+            <label>
+                <input type="checkbox" class="custom-control-input" id={{ checkbox }} name={{ checkbox }}
+                       onclick="disableCheckboxedList('{{ checkbox }}', '{{ list }}')">
+            </label>
+        </div>
+        <div class="col-sm-11 ">
+            <select id="{{ list }}" class="form-control" name="{{ list }}" disabled>
+                {% for value in values %}
+                    <option value="{{ value }}">{{ value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+{% endmacro %}
+
 {% block app_content %}
 <div style="text-align: center">
     <h2>CREATE EXPERIMENT</h2>
@@ -192,23 +215,8 @@
         {{ customSettings() }}
         {{ monroeSettings() }}
 
-        <div class="col-sm-12 " style="margin-bottom: 20px">
-            <h4><label for="sliceList">Slice</label></h4>
-            <div class="custom-control custom-checkbox col-sm-1"
-                 style="padding: 5px 0 !important; margin-right: -30px;">
-                <label>
-                    <input type="checkbox" class="custom-control-input" id="sliceNone" name="sliceNone"
-                           onclick="disableSliceList()">
-                </label>
-            </div>
-            <div class="col-sm-11 ">
-                <select id="sliceList" class="form-control" name="slice" disabled>
-                    {% for slice in sliceList %}
-                        <option value="{{ slice }}">{{ slice }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
+        {{ checkboxedList("slice", "Slice", sliceList) }}
+        {{ checkboxedList("scenario", "Scenario", scenarioList) }}
 
         <div class="col-sm-12 " style="margin-bottom: 20px">
             <h4>Network Services</h4>
