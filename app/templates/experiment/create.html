@@ -158,22 +158,19 @@
     {% set checkbox = id + 'CheckboxedCheckbox' %}
     {% set list = id + 'CheckboxedList' %}
 
-    <div class="col-sm-12 " style="margin-bottom: 20px">
-        <h4><label for="{{ list }}">{{ name }}</label></h4>
-        <div class="custom-control custom-checkbox col-sm-1"
-             style="padding: 5px 0 !important; margin-right: -30px;">
-            <label>
-                <input type="checkbox" class="custom-control-input" id={{ checkbox }} name={{ checkbox }}
-                       onclick="disableCheckboxedList('{{ checkbox }}', '{{ list }}')">
-            </label>
-        </div>
-        <div class="col-sm-11 ">
-            <select id="{{ list }}" class="form-control" name="{{ list }}" disabled>
-                {% for value in values %}
-                    <option value="{{ value }}">{{ value }}</option>
-                {% endfor %}
-            </select>
-        </div>
+    <h4><label for="{{ list }}">{{ name }}</label></h4>
+    <div class="custom-control custom-checkbox col-sm-1 nopadding">
+        <label>
+            <input type="checkbox" class="custom-control-input" id={{ checkbox }} name={{ checkbox }}
+                   onclick="disableCheckboxedList('{{ checkbox }}', '{{ list }}')">
+        </label>
+    </div>
+    <div class="col-sm-11">
+        <select id="{{ list }}" class="form-control" name="{{ list }}" disabled>
+            {% for value in values %}
+                <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+        </select>
     </div>
 {% endmacro %}
 
@@ -214,9 +211,10 @@
         {{ standardSettings() }}
         {{ customSettings() }}
         {{ monroeSettings() }}
-
-        {{ checkboxedList("slice", "Slice", sliceList) }}
-        {{ checkboxedList("scenario", "Scenario", scenarioList) }}
+        <div class="col-sm-12 " style="margin-bottom: 20px">
+            <div class="col-sm-6 nopadding">{{ checkboxedList("slice", "Slice", sliceList) }}</div>
+            <div class="col-sm-6 nopadding">{{ checkboxedList("scenario", "Scenario", scenarioList) }}</div>
+        </div>
 
         <div class="col-sm-12 " style="margin-bottom: 20px">
             <h4>Network Services</h4>

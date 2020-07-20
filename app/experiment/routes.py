@@ -31,7 +31,6 @@ def create():
 
         testCases = request.form.getlist(f'{experimentType}_testCases')
         ues_selected = request.form.getlist(f'{experimentType}_ues')
-        scenario = None  # TODO
 
         parameters = {}
         if experimentType == "Custom":
@@ -60,15 +59,18 @@ def create():
         experiment = Experiment(
             name=experimentName, author=current_user,
             type=experimentType, exclusive=exclusive,
-            test_cases=testCases, ues=ues_selected, scenario=scenario,
+            test_cases=testCases, ues=ues_selected,
             automated=automated, reservation_time=reservationTime,
             parameters=parameters, application=application,
         )
 
-        formSlice = request.form.get('slice', None)
+        maybeSlice = request.form.get('sliceCheckboxedList', None)
+        maybeScenario = request.form.get('scenarioCheckboxedList', None)
 
-        if formSlice is not None:
-            experiment.slice = formSlice
+        if maybeSlice is not None:
+            experiment.slice = maybeSlice
+        if maybeScenario is not None:
+            experiment.scenario = maybeScenario
 
         count = int(request.form.get('nsCount', '0'))
         for i in range(count):
