@@ -16,6 +16,7 @@
         // Force a change of div so that only one group of settings is visible, and hide parameters
         $(document).ready( function () {
             changeSettingsDiv();
+            changeSliceSettingsDiv(document.getElementById("enableSlicing"))
             displayParameters();
         } );
 
@@ -154,23 +155,66 @@
     </div>
 {% endmacro %}
 
-{% macro checkboxedList(id, name, values) %}
+{% macro dropdownList(id, name, values, hasCheckbox) %}
     {% set checkbox = id + 'CheckboxedCheckbox' %}
     {% set list = id + 'CheckboxedList' %}
 
     <h4><label for="{{ list }}">{{ name }}</label></h4>
+    {% if hasCheckbox %}
     <div class="custom-control custom-checkbox col-sm-1 nopadding">
         <label>
             <input type="checkbox" class="custom-control-input" id={{ checkbox }} name={{ checkbox }}
                    onclick="disableCheckboxedList('{{ checkbox }}', '{{ list }}')">
         </label>
     </div>
-    <div class="col-sm-11">
-        <select id="{{ list }}" class="form-control" name="{{ list }}" disabled>
+    {% endif %}
+    <div class="{{ "col-sm-11" if hasCheckbox else "col-sm-12" }}">
+        <select id="{{ list }}" class="form-control" name="{{ list }}" {{ "disabled" if hasCheckbox else "enabled" }}>
             {% for value in values %}
                 <option value="{{ value }}">{{ value }}</option>
             {% endfor %}
         </select>
+    </div>
+{% endmacro %}
+
+{% macro sliceSettings() %}
+    <div class="col-sm-1 custom-control custom-checkbox" style="padding: 10px 0 !important; margin-right: -48px;">
+        <input type="checkbox" class="custom-control-input" id = "enableSlicing" name="enableSlicing"
+               value="enableSlicing" onchange="changeSliceSettingsDiv(this)">
+    </div>
+    <div class="col-sm-11"><h4><label for="enableSlicing">Network slicing</label></h4></div>
+
+    <div class="col-sm-12 nopadding disabled" id="sliceSettingsDiv">
+        <div class="col-sm-12 " style="margin-bottom: 20px">
+            <div class="col-sm-6 nopadding">{{ dropdownList("slice", "Slice", sliceList, False) }}</div>
+            <div class="col-sm-6 nopadding">{{ dropdownList("scenario", "Scenario", scenarioList, True) }}</div>
+        </div>
+
+        <div class="col-sm-12 " style="margin-bottom: 20px">
+            <h4>Network Services</h4>
+            {% if nss %}
+                <div class="col-sm-2">
+                    <label>
+                        <input type="number" id="nsCount" name="nsCount" class="InputBox form-control"
+                               value="0" min="0" max="{{ nss | count }}" style="margin-top: 1em">
+                    </label>
+                </div>
+                <div class="col-sm-10">
+                    <table id="ns" class="table table-header">
+                        <tr id="headtable" style="visibility: collapse">
+                            <th class="table-cell-divisor-right col-sm-1">
+                            </th>
+                            <th class="table-cell-divisor-right col-sm-11 text-center">
+                                Select VNF
+                            </th>
+                        </tr>
+                    </table>
+                </div>
+            {% else %}
+                <h5>No network services available.</h5>
+                <a class="btn btn-blue" href="{{ url_for('NetworkServices.repository') }}" role="button">New Network Service</a>
+            {% endif %}
+        </div>
     </div>
 {% endmacro %}
 
@@ -211,36 +255,7 @@
         {{ standardSettings() }}
         {{ customSettings() }}
         {{ monroeSettings() }}
-        <div class="col-sm-12 " style="margin-bottom: 20px">
-            <div class="col-sm-6 nopadding">{{ checkboxedList("slice", "Slice", sliceList) }}</div>
-            <div class="col-sm-6 nopadding">{{ checkboxedList("scenario", "Scenario", scenarioList) }}</div>
-        </div>
-
-        <div class="col-sm-12 " style="margin-bottom: 20px">
-            <h4>Network Services</h4>
-            {% if nss %}
-                <div class="col-sm-2">
-                    <label>
-                        <input type="number" id="nsCount" name="nsCount" class="InputBox form-control"
-                               value="0" min="0" max="{{ nss | count }}" style="margin-top: 1em">
-                    </label>
-                </div>
-                <div class="col-sm-10">
-                    <table id="ns" class="table table-header">
-                        <tr id="headtable" style="visibility: collapse">
-                            <th class="table-cell-divisor-right col-sm-1">
-                            </th>
-                            <th class="table-cell-divisor-right col-sm-11 text-center">
-                                Select VNF
-                            </th>
-                        </tr>
-                    </table>
-                </div>
-            {% else %}
-                <h5>No network services available.</h5>
-                <a class="btn btn-blue" href="{{ url_for('NetworkServices.repository') }}" role="button">New Network Service</a>
-            {% endif %}
-        </div>
+        {{ sliceSettings() }}
 
         <br>
         <button type="submit" id="checkBtn" name="submit" class="btn btn-darkBlue">

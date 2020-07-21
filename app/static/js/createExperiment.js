@@ -3,44 +3,55 @@ function isWhitespace(str) {
 }
 
 function checkInput() {
-  let errors = false;
-  let message = "The following issues have been found:\n";
-  let type = $('#expType').val();
+  try {
+    let errors = false;
+    let message = "The following issues have been found:\n";
+    let type = $('#expType').val();
 
-  let name = $("input[name=name]").val();
-  if (isWhitespace(name)) {
-    errors = true;
-    message += " - Name must not be empty\n";
-  }
-
-  let testcases = $("input[name=" + type + "_testCases]:checked").length;
-  let automated = (type !== 'Custom') || $('#automateCheckbox')[0].checked;
-  if (automated && type !== "MONROE" && testcases === 0) {
-    errors = true;
-    message += " - Select at least one TestCase\n";
-  }
-
-  let application = $('#expApplication').val();
-  if (type === "MONROE" && isWhitespace(application)) {
-    errors = true;
-    message += " - Application must not be empty\n";
-  }
-
-  let parameters = "";
-  if (type === "Custom") { parameters = $("#customParameters").val(); }
-  if (type === "MONROE") { parameters = $("#monroeParameters").val(); }
-
-  if (!isWhitespace(parameters)) {
-    try {
-      JSON.parse(parameters);
-    } catch(err) {
+    let name = $("input[name=name]").val();
+    if (isWhitespace(name)) {
       errors = true;
-      message += " - Could not parse Parameters as valid JSON:\n" + err;
+      message += " - Name must not be empty\n";
     }
-  }
 
-  if (errors) { alert(message); }
-  return !errors;
+    let testcases = $("input[name=" + type + "_testCases]:checked").length;
+    let automated = (type !== 'Custom') || $('#automateCheckbox')[0].checked;
+    if (automated && type !== "MONROE" && testcases === 0) {
+      errors = true;
+      message += " - Select at least one TestCase\n";
+    }
+
+    let application = $('#expApplication').val();
+    if (type === "MONROE" && isWhitespace(application)) {
+      errors = true;
+      message += " - Application must not be empty\n";
+    }
+
+    if (type === "MONROE") {
+      let parameters = $("#monroeParameters").val();
+      if (!isWhitespace(parameters)) {
+        try {
+          JSON.parse(parameters);
+        } catch(err) {
+          errors = true;
+          message += " - Could not parse Parameters as valid JSON:\n" + err + "\n";
+        }
+      }
+    }
+
+    if (document.getElementById("enableSlicing").checked) {
+      if (isWhitespace(document.getElementById("sliceCheckboxedList").value)){
+        errors = true;
+        message += " - 'Slice' value must be set when 'Network Slicing' is enabled\n";
+      }
+    }
+
+    if (errors) { alert(message); }
+    return !errors;
+  } catch(err) {
+    console.log(err)
+    return false;
+  }
 }
 
 function changeNsRows(nss, nsIds) {
@@ -78,6 +89,16 @@ function disableCheckboxedList(checkboxId, listId) {
     list.removeAttribute("disabled");
   } else {
     list.setAttribute("disabled", true);
+  }
+}
+
+function changeSliceSettingsDiv(checkbox) {
+  let settings = document.getElementById("sliceSettingsDiv");
+
+  if (checkbox.checked){
+    settings.classList.remove("disabled");
+  } else {
+    settings.classList.add("disabled");
   }
 }
 

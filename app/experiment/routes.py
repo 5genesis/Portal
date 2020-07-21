@@ -64,19 +64,20 @@ def create():
             parameters=parameters, application=application,
         )
 
-        maybeSlice = request.form.get('sliceCheckboxedList', None)
-        maybeScenario = request.form.get('scenarioCheckboxedList', None)
+        if "enableSlicing" in request.form.keys():
+            maybeSlice = request.form.get('sliceCheckboxedList', None)
+            maybeScenario = request.form.get('scenarioCheckboxedList', None)
 
-        if maybeSlice is not None:
-            experiment.slice = maybeSlice
-        if maybeScenario is not None:
-            experiment.scenario = maybeScenario
+            if maybeSlice is not None:
+                experiment.slice = maybeSlice
+            if maybeScenario is not None:
+                experiment.scenario = maybeScenario
 
-        count = int(request.form.get('nsCount', '0'))
-        for i in range(count):
-            ns = NetworkService.query.get(request.form[f'NS{i+1}'])
-            if ns is not None:
-                experiment.networkServicesRelation.append(ns)
+            count = int(request.form.get('nsCount', '0'))
+            for i in range(count):
+                ns = NetworkService.query.get(request.form[f'NS{i+1}'])
+                if ns is not None:
+                    experiment.networkServicesRelation.append(ns)
 
         db.session.add(experiment)
         db.session.commit()
