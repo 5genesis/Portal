@@ -44,6 +44,10 @@ function checkInput() {
         errors = true;
         message += " - 'Slice' value must be set when 'Network Slicing' is enabled\n";
       }
+      if (isWhitespace(document.getElementById("scenarioCheckboxedList").value)){
+        errors = true;
+        message += " - 'Scenario' value must be set when 'Network Slicing' is enabled\n";
+      }
     }
 
     if (errors) { alert(message); }
