@@ -31,7 +31,6 @@ def create():
 
         testCases = request.form.getlist(f'{experimentType}_testCases')
         ues_selected = request.form.getlist(f'{experimentType}_ues')
-        scenario = None  # TODO
 
         parameters = {}
         if experimentType == "Custom":
@@ -60,21 +59,25 @@ def create():
         experiment = Experiment(
             name=experimentName, author=current_user,
             type=experimentType, exclusive=exclusive,
-            test_cases=testCases, ues=ues_selected, scenario=scenario,
+            test_cases=testCases, ues=ues_selected,
             automated=automated, reservation_time=reservationTime,
             parameters=parameters, application=application,
         )
 
-        formSlice = request.form.get('slice', None)
+        if "enableSlicing" in request.form.keys():
+            maybeSlice = request.form.get('sliceCheckboxedList', None)
+            maybeScenario = request.form.get('scenarioCheckboxedList', None)
 
-        if formSlice is not None:
-            experiment.slice = formSlice
+            if maybeSlice is not None:
+                experiment.slice = maybeSlice
+            if maybeScenario is not None:
+                experiment.scenario = maybeScenario
 
-        count = int(request.form.get('nsCount', '0'))
-        for i in range(count):
-            ns = NetworkService.query.get(request.form[f'NS{i+1}'])
-            if ns is not None:
-                experiment.networkServicesRelation.append(ns)
+            count = int(request.form.get('nsCount', '0'))
+            for i in range(count):
+                ns = NetworkService.query.get(request.form[f'NS{i+1}'])
+                if ns is not None:
+                    experiment.networkServicesRelation.append(ns)
 
         db.session.add(experiment)
         db.session.commit()
@@ -91,6 +94,8 @@ def create():
 
     customTestCases = Facility.AvailableCustomTestCases(current_user.email)
     parametersPerTestCase = Facility.TestCaseParameters()
+    baseSlices = Facility.BaseSlices()
+    scenarios = Facility.Scenarios()
     parameterNamesPerTestCase: Dict[str, Set[str]] = {}
     testCaseNamesPerParameter: Dict[str, Set[str]] = {}
     parameterInfo: Dict[str, Dict[str, str]] = {}
@@ -113,7 +118,7 @@ def create():
                            customTestCases=customTestCases, parameterInfo=parameterInfo,
                            parameterNamesPerTestCase=parameterNamesPerTestCase,
                            testCaseNamesPerParameter=testCaseNamesPerParameter,
-                           sliceList=Config().Slices, nss=nss, experimentTypes=experimentTypes)
+                           sliceList=baseSlices, scenarioList=scenarios, nss=nss, experimentTypes=experimentTypes)
 
 
 @bp.route('/<experimentId>/reload', methods=['GET', 'POST'])

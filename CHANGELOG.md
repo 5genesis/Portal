@@ -1,3 +1,7 @@
+**31/07/2020** [Version 2.3.4]
+
+ - Added Base Slice and Scenario to experiment creation
+
 **14/07/2020** [Version 2.3.3]
 
  - Added experiment descriptor retrieval

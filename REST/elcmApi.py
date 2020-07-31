@@ -26,13 +26,25 @@ class ElcmApi(RestClient):
         try:
             response = self.HttpGet(url)
             return self.ResponseToJson(response)['UEs']
-        except Exception:
-            return None
+        except: return None
 
     def GetTestCases(self) -> Optional[List[Dict[str, object]]]:
         url = f'{self.api_url}/facility/testcases'
         try:
             response = self.HttpGet(url)
             return self.ResponseToJson(response)['TestCases']
-        except Exception:
-            return None
+        except: return None
+
+    def GetBaseSlices(self) -> List[str]:
+        url = f'{self.api_url}/facility/baseSliceDescriptors'
+        try:
+            response = self.HttpGet(url)
+            return self.ResponseToJson(response)['SliceDescriptors']
+        except: return []
+
+    def GetScenarios(self) -> List[str]:
+        url = f'{self.api_url}/facility/scenarios'
+        try:
+            response = self.HttpGet(url)
+            return self.ResponseToJson(response)['Scenarios']
+        except: return []

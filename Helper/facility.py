@@ -8,6 +8,8 @@ class Facility:
     custom: List[str] = []
     privateCustom: Dict[str, Set[str]] = {}
     parameters: Dict[str, List[Dict[str, str]]] = {}
+    baseSlices: List[str] = []
+    scenarios: List[str] = []
 
     @classmethod
     def Reload(cls):
@@ -17,6 +19,8 @@ class Facility:
             elcm = ElcmApi()
             ues = elcm.GetUEs()
             testcases = elcm.GetTestCases()
+            baseSlices = elcm.GetBaseSlices()
+            scenarios = elcm.GetScenarios()
 
             standard = []
             custom = []
@@ -40,6 +44,8 @@ class Facility:
             cls.custom = sorted(custom)
             cls.privateCustom = privateCustom
             cls.parameters = parameters
+            cls.baseSlices = baseSlices
+            cls.scenarios = scenarios
         except Exception as e:
             Log.E(f"Exception while reloading facility information: {e}")
             Log.W("Facility information not updated.")
@@ -52,6 +58,12 @@ class Facility:
 
     @classmethod
     def PublicCustomTestCases(cls): return cls.custom
+
+    @classmethod
+    def BaseSlices(cls): return cls.baseSlices
+
+    @classmethod
+    def Scenarios(cls): return cls.scenarios
 
     @classmethod
     def PrivateCustomTestCases(cls, email: str):
