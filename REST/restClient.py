@@ -28,6 +28,13 @@ class RestClient:
         self.pool = connection_from_url(self.api_url, **kw)
         self.insecure = insecure
 
+    def Trace(self, url, method, headers=None, body=None, files=None):
+        from Helper import Log
+        Log.D(f"[{method}] {self.api_url}/{url}")
+        for name, param in [('Headers', headers), ('Body', body), ('Files', files)]:
+            if param is not None:
+                Log.D(f'{name}: {param}')
+
     def DownloadFile(self, url, output_folder):
         response = self.HttpGet(url)
         filename = self.GetFilename(response.headers["Content-Disposition"])
@@ -47,6 +54,7 @@ class RestClient:
 
     def HttpGet(self, url, extra_headers=None):
         extra_headers = {} if extra_headers is None else extra_headers
+        self.Trace(url, 'GET', headers=extra_headers)
         return self.pool.request('GET',
                                  url,
                                  headers=extra_headers,
@@ -71,6 +79,8 @@ class RestClient:
                 if not isinstance(body, Dict):
                     raise ValueError("For POST requests with files the body must be a Dict")
 
+        self.Trace(url, 'POST', headers=extra_headers, body=body, files=files)
+
         if files is None:
             return self.pool.request('POST', url, body=body or '', headers={**self.HEADERS, **extra_headers},
                                      retries=self.RETRIES)
@@ -80,6 +90,7 @@ class RestClient:
 
     def HttpPatch(self, url, extra_headers=None, body=''):
         extra_headers = {} if extra_headers is None else extra_headers
+        self.Trace(url, 'PATCH', headers=extra_headers, body=body)
         return self.pool.request('PATCH',
                                  url,
                                  body=body,
@@ -88,6 +99,7 @@ class RestClient:
 
     def HttpDelete(self, url, extra_headers=None):
         extra_headers = {} if extra_headers is None else extra_headers
+        self.Trace(url, 'DELETE', headers=extra_headers)
         return self.pool.request('DELETE', url, headers={**self.HEADERS, **extra_headers}, retries=self.RETRIES)
 
     @staticmethod
