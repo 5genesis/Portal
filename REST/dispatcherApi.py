@@ -202,5 +202,8 @@ class DispatcherApi(RestClient):
         if code == 200:
             return None
         else:
-            data = self.ResponseToJson(response)
-            return data.get('detail', data.get('result', f'Unknown error. Status code: {code}'))
+            try:
+                data = self.ResponseToJson(response)
+                return data.get('detail', data.get('result', f'Unknown error. Status code: {code}'))
+            except Exception as e:
+                raise Exception(f"Unknown exception '{e}'. Status code: {code}")

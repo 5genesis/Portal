@@ -30,10 +30,23 @@ class RestClient:
 
     def Trace(self, url, method, headers=None, body=None, files=None):
         from Helper import Log
-        Log.D(f"[{method}] {self.api_url}/{url}")
+        Log.D(f">> [{method}] {self.api_url}/{url}")
         for name, param in [('Headers', headers), ('Body', body), ('Files', files)]:
             if param is not None:
-                Log.D(f'{name}: {param}')
+                Log.D(f'>> {name}: {param}')
+
+    def DumpResponse(self, response):
+        from Helper import Log
+        code = body = None
+        try:
+            code = self.ResponseStatusCode(response)
+        except RuntimeError: pass
+        try:
+            body = self.ResponseToJson(response)
+        except RuntimeError: pass
+
+        Log.D(f'<< [Code {code}] {body}')
+        return response
 
     def DownloadFile(self, url, output_folder):
         response = self.HttpGet(url)
@@ -55,10 +68,7 @@ class RestClient:
     def HttpGet(self, url, extra_headers=None):
         extra_headers = {} if extra_headers is None else extra_headers
         self.Trace(url, 'GET', headers=extra_headers)
-        return self.pool.request('GET',
-                                 url,
-                                 headers=extra_headers,
-                                 retries=self.RETRIES)
+        return self.DumpResponse(self.pool.request('GET', url, headers=extra_headers, retries=self.RETRIES))
 
     def HttpPost(self, url, extra_headers=None, body: Optional[Union[str, Dict]] = None,
                  files=None, payload: Payload = None):
@@ -82,25 +92,23 @@ class RestClient:
         self.Trace(url, 'POST', headers=extra_headers, body=body, files=files)
 
         if files is None:
-            return self.pool.request('POST', url, body=body or '', headers={**self.HEADERS, **extra_headers},
-                                     retries=self.RETRIES)
+            return self.DumpResponse(self.pool.request('POST', url, body=body or '',
+                                                       headers={**self.HEADERS, **extra_headers}, retries=self.RETRIES))
         else:
-            return post(f"{self.api_url}{url}", data=body, headers={**self.HEADERS, **extra_headers},
-                        files=files, verify=not self.insecure)
+            return self.DumpResponse(post(f"{self.api_url}{url}", data=body, headers={**self.HEADERS, **extra_headers},
+                                          files=files, verify=not self.insecure))
 
     def HttpPatch(self, url, extra_headers=None, body=''):
         extra_headers = {} if extra_headers is None else extra_headers
         self.Trace(url, 'PATCH', headers=extra_headers, body=body)
-        return self.pool.request('PATCH',
-                                 url,
-                                 body=body,
-                                 headers={**self.HEADERS, **extra_headers},
-                                 retries=self.RETRIES)
+        return self.DumpResponse(self.pool.request('PATCH', url, body=body, headers={**self.HEADERS, **extra_headers},
+                                                   retries=self.RETRIES))
 
     def HttpDelete(self, url, extra_headers=None):
         extra_headers = {} if extra_headers is None else extra_headers
         self.Trace(url, 'DELETE', headers=extra_headers)
-        return self.pool.request('DELETE', url, headers={**self.HEADERS, **extra_headers}, retries=self.RETRIES)
+        return self.DumpResponse(self.pool.request('DELETE', url, headers={**self.HEADERS, **extra_headers},
+                                                   retries=self.RETRIES))
 
     @staticmethod
     def ResponseStatusCode(response) -> int:
@@ -110,16 +118,20 @@ class RestClient:
             return response.status_code
 
     @staticmethod
-    def ResponseToJson(response) -> object:
+    def ResponseToRaw(response) -> object:
         try:
-            raw = response.data if hasattr(response, 'data') else response.content
+            return response.data if hasattr(response, 'data') else response.content
         except Exception as e:
             raise RuntimeError(f"Could not extract raw data from response: {e}")
+
+    @staticmethod
+    def ResponseToJson(response) -> object:
+        raw = RestClient.ResponseToRaw(response)
 
         try:
             return json.loads(raw.decode('utf-8'))
         except Exception as e:
-            raise RuntimeError(f'JSON parse exception: {e}. data={response.data}')
+            raise RuntimeError(f'JSON parse exception: {e}. data={raw}')
 
     @staticmethod
     def JsonToUrlEncoded(jsonData: str) -> str:
