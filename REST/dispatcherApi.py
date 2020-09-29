@@ -177,7 +177,7 @@ class DispatcherApi(RestClient):
             data = self.ResponseToJson(response)
             if code == 200:
                 try:
-                    return data[dictId].keys()[0], True
+                    return list(data[dictId].keys())[0], True
                 except (KeyError, IndexError, AttributeError):
                     return split(path)[1], True
             elif code == 400:
