@@ -177,7 +177,7 @@ class DispatcherApi(RestClient):
             data = self.ResponseToJson(response)
             if code == 200:
                 try:
-                    return data[dictId].keys()[0], True
+                    return list(data[dictId].keys())[0], True
                 except (KeyError, IndexError, AttributeError):
                     return split(path)[1], True
             elif code == 400:
@@ -202,5 +202,8 @@ class DispatcherApi(RestClient):
         if code == 200:
             return None
         else:
-            data = self.ResponseToJson(response)
-            return data.get('detail', data.get('result', f'Unknown error. Status code: {code}'))
+            try:
+                data = self.ResponseToJson(response)
+                return data.get('detail', data.get('result', f'Unknown error. Status code: {code}'))
+            except Exception as e:
+                raise Exception(f"Unknown exception '{e}'. Status code: {code}")
