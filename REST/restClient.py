@@ -16,7 +16,7 @@ class Payload(Enum):
 
 class RestClient:
     HEADERS = {'Accept-Language': 'en-US;q=0.5,en;q=0.3'}
-    RETRIES = 10
+    RETRIES = 3
     FILENAME_PATTERN = re.compile(r".*filename=\"(.*)\"")
 
     def __init__(self, api_host, api_port, suffix, https=False, insecure=False):
@@ -69,15 +69,16 @@ class RestClient:
             return result.group(1)
         return "unknown_filename"
 
-    def HttpGet(self, url, extra_headers=None):
+    def HttpGet(self, url, extra_headers=None, timeout=10):
         traceId = self.GetTraceId()
         extra_headers = {} if extra_headers is None else extra_headers
 
         self.Trace(traceId, url, 'GET', headers=extra_headers)
-        return self.DumpResponse(traceId, self.pool.request('GET', url, headers=extra_headers, retries=self.RETRIES))
+        return self.DumpResponse(traceId, self.pool.request('GET', url, headers=extra_headers,
+                                                            retries=self.RETRIES, timeout=timeout))
 
     def HttpPost(self, url, extra_headers=None, body: Optional[Union[str, Dict]] = None,
-                 files=None, payload: Payload = None):
+                 files=None, payload: Payload = None, timeout=10):
         traceId = self.GetTraceId()
         extra_headers = {} if extra_headers is None else extra_headers
 
@@ -101,26 +102,27 @@ class RestClient:
         if files is None:
             return self.DumpResponse(traceId,
                                      self.pool.request('POST', url, body=body or '',
-                                                       headers={**self.HEADERS, **extra_headers}, retries=self.RETRIES))
+                                                       headers={**self.HEADERS, **extra_headers},
+                                                       retries=self.RETRIES, timeout=timeout))
         else:
             return self.DumpResponse(traceId,
                                      post(f"{self.api_url}{url}", data=body, headers={**self.HEADERS, **extra_headers},
                                           files=files, verify=not self.insecure))
 
-    def HttpPatch(self, url, extra_headers=None, body=''):
+    def HttpPatch(self, url, extra_headers=None, body='', timeout=10):
         traceId = self.GetTraceId()
         extra_headers = {} if extra_headers is None else extra_headers
         self.Trace(traceId, url, 'PATCH', headers=extra_headers, body=body)
         return self.DumpResponse(traceId, self.pool.request('PATCH', url, body=body,
                                                             headers={**self.HEADERS, **extra_headers},
-                                                            retries=self.RETRIES))
+                                                            retries=self.RETRIES, timeout=timeout))
 
-    def HttpDelete(self, url, extra_headers=None):
+    def HttpDelete(self, url, extra_headers=None, timeout=10):
         traceId = self.GetTraceId()
         extra_headers = {} if extra_headers is None else extra_headers
         self.Trace(traceId, url, 'DELETE', headers=extra_headers)
         return self.DumpResponse(traceId, self.pool.request('DELETE', url, headers={**self.HEADERS, **extra_headers},
-                                                   retries=self.RETRIES))
+                                                            retries=self.RETRIES, timeout=timeout))
 
     @staticmethod
     def ResponseStatusCode(response) -> int:
