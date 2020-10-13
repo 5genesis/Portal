@@ -6,7 +6,7 @@ from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask_moment import Moment
 from config import Config
-from Helper import Log, Facility
+from Helper import Log, Facility, Config as AppConfig
 
 
 db = SQLAlchemy()
@@ -55,6 +55,13 @@ def create_app(config_class=Config):
 
     Log.I("Requesting facility information to ELCM...")
     Facility.Reload()
+
+    eastWest = AppConfig().EastWest
+    if eastWest.Enabled:
+        from app.east_west import bp as eastWest_bp
+        app.register_blueprint(eastWest_bp, url_prefix='/distributed')
+    Log.I(f'Optional East/West interface is {Log.State(eastWest.Enabled)}')
+
     Log.I('5Genesis startup')
     return app
 
