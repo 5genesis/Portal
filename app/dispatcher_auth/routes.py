@@ -28,7 +28,7 @@ def register():
 
         if _exist():
             return render_template('dispatcher_auth/register.html', title='Register', form=form,
-                                   description=Config().Description)
+                                   description=Config().Description, ewEnabled=Config().EastWest.Enabled)
 
         user: User = User(username=form.username.data, email=form.email.data, organization=form.organization.data)
         user.setPassword(form.password.data)
@@ -48,7 +48,7 @@ def register():
             flash(result, 'error')
 
     return render_template('dispatcher_auth/register.html', title='Register', form=form,
-                           description=Config().Description)
+                           description=Config().Description, ewEnabled=Config().EastWest.Enabled)
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -81,7 +81,7 @@ def login():
         return redirect(nextPage)
 
     return render_template('dispatcher_auth/login.html', title='Sign In', form=form,
-                           description=Config().Description)
+                           description=Config().Description, ewEnabled=Config().EastWest.Enabled)
 
 
 @bp.route('/logout')

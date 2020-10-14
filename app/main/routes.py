@@ -23,9 +23,10 @@ def index():
         return redirect(f"{request.url}/reload") if success else redirect(request.url)
 
     return render_template('index.html', formRun=formRun, experiments=experiments, notices=notices,
-                           actions=actions)
+                           actions=actions, ewEnabled=Config().EastWest.Enabled)
 
 
 @bp.route('/info')
 def info():
-    return render_template('info.html', title="Testbed Info", html=Config().PlatformDescriptionHtml)
+    return render_template('info.html', title="Testbed Info", html=Config().PlatformDescriptionHtml,
+                           ewEnabled=Config().EastWest.Enabled)

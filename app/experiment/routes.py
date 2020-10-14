@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from typing import Dict, List, Tuple, Set
-from flask import render_template, flash, redirect, url_for, request, jsonify
+from flask import render_template, flash, redirect, url_for, request, jsonify, abort
 from flask.json import loads as jsonParse
 from flask_login import current_user, login_required
 from REST import ElcmApi, DispatcherApi
@@ -118,7 +118,20 @@ def create():
                            customTestCases=customTestCases, parameterInfo=parameterInfo,
                            parameterNamesPerTestCase=parameterNamesPerTestCase,
                            testCaseNamesPerParameter=testCaseNamesPerParameter,
-                           sliceList=baseSlices, scenarioList=scenarios, nss=nss, experimentTypes=experimentTypes)
+                           sliceList=baseSlices, scenarioList=scenarios, nss=nss, experimentTypes=experimentTypes,
+                           ewEnabled=Config().EastWest.Enabled)
+
+
+@bp.route('/create_dist', methods=['GET', 'POST'])
+@login_required
+def createDist():
+    eastWest = Config().EastWest
+    if not eastWest.Enabled:
+        return abort(404)
+
+    return render_template('experiment/create_dist.html', title='New Distributed Experiment',
+                           ewEnabled=Config().EastWest.Enabled)
+
 
 
 @bp.route('/<experimentId>/reload', methods=['GET', 'POST'])
@@ -149,7 +162,8 @@ def experiment(experimentId: int):
                 return render_template('experiment/experiment.html', title=f'Experiment: {exp.name}', experiment=exp,
                                        executions=executions, formRun=formRun, grafanaUrl=config.GrafanaUrl,
                                        executionId=getLastExecution() + 1,
-                                       dispatcherUrl=config.ELCM.Url)  # TODO: Use dispatcher
+                                       dispatcherUrl=config.ELCM.Url,  # TODO: Use dispatcher
+                                       ewEnabled=Config().EastWest.Enabled)
         else:
             Log.I(f'Forbidden - User {current_user.name} don\'t have permission to access experiment {experimentId}')
             flash(f'Forbidden - You don\'t have permission to access this experiment', 'error')

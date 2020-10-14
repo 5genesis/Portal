@@ -35,7 +35,8 @@ def execution(executionId: int):
                                            execution=execution, executor=executor, postRun=postRun, preRun=preRun,
                                            experiment=experiment, grafanaUrl=config.GrafanaUrl,
                                            executionId=getLastExecution() + 1,
-                                           dispatcherUrl=config.ELCM.Url)  # TODO: Use dispatcher
+                                           dispatcherUrl=config.ELCM.Url,  # TODO: Use dispatcher
+                                           ewEnabled=Config().EastWest.Enabled)
                 else:
                     if status == 'Not Found':
                         message = "Execution not found"

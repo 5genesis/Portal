@@ -76,6 +76,9 @@
                 <ul class="nav navbar-nav">
                     <li><a class="navbar-item" id="navbar-home" href="{{ url_for('main.index') }}">Home</a></li>
                     <li><a class="navbar-item" id="navbar-createExperiment" href="{{ url_for('experiment.create') }}">Create Experiment</a></li>
+                    {% if ewEnabled %}
+                        <li><a class="navbar-item" id="navbar-createDistExperiment" href="{{ url_for('experiment.createDist') }}">Create Distributed Experiment</a></li>
+                    {% endif %}
                     <li><a class="navbar-item" id="navbar-networkServices" href="{{ url_for('NetworkServices.repository') }}">Network Services</a></li>
                     <li><a class="navbar-item" id="navbar-info" href="{{ url_for('main.info') }}">Info</a></li>
                 </ul>
