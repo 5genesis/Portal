@@ -34,15 +34,24 @@ class DispatcherApi(RestClient):
     def bearerAuthHeader(token: str) -> Dict:
         return {'Authorization': f'Bearer {token}'}
 
-    def Register(self, user: User) -> Dict:
+    def Register(self, user: User) -> Tuple[str, bool]:
+        """ Returns (<message>, <success>). """
         url = '/auth/register'
         data = {
             'username': user.username,
             'email': user.email,
             'password': user.password_hash
         }
-        response = self.HttpPost(url, body=data, payload=Payload.Form)
-        return self.ResponseToJson(response)
+        try:
+            response = self.HttpPost(url, body=data, payload=Payload.Form)
+            status = self.ResponseStatusCode(response)
+            if status in [400, 200]:
+                message = self.ResponseToJson(response)['result']
+                return message, (status == 200)
+            else:
+                raise Exception(f"Status {status} ({response.reason})")
+        except Exception as e:
+            return f"Exception while accessing authentication: {e}", False
 
     def GetToken(self, user: User) -> Tuple[str, bool]:
         """
@@ -52,12 +61,12 @@ class DispatcherApi(RestClient):
         url = '/auth/get_token'
         try:
             response = self.HttpGet(url, extra_headers=self.basicAuthHeader(user.username, user.password_hash))
-            if response.status is not 200:
-                raise Exception(f"Status {response.status} ({response.reason})")
-            maybeToken = self.ResponseToJson(response)['result']
-            if "No user" in maybeToken or "not activated" in maybeToken:
-                raise Exception(maybeToken)
-            return maybeToken, True
+            status = self.ResponseStatusCode(response)
+            if status in [400, 200]:
+                result = self.ResponseToJson(response)['result']
+                return result, (status == 200)
+            else:
+                raise Exception(f"Status {status} ({response.reason})")
         except Exception as e:
             message = f"Error while retrieving token: {e}"
             Log.E(message)

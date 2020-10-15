@@ -33,19 +33,15 @@ def register():
         user: User = User(username=form.username.data, email=form.email.data, organization=form.organization.data)
         user.setPassword(form.password.data)
 
-        try:
-            response = DispatcherApi().Register(user)
-            result = response["result"]
-        except Exception as e:
-            result = f"Exception while accessing authentication: {e}"
+        message, success = DispatcherApi().Register(user)
 
-        if "User registered" in result:
+        if success:
             db.session.add(user)
             db.session.commit()
-            flash(result, 'info')
+            flash(message, 'info')
             return redirect(url_for('auth.login'))
         else:
-            flash(result, 'error')
+            flash(message, 'error')
 
     return render_template('dispatcher_auth/register.html', title='Register', form=form,
                            description=Config().Description, ewEnabled=Config().EastWest.Enabled)
@@ -67,9 +63,9 @@ def login():
             return redirect(url_for('auth.login'))
 
         # Check that the user exist in the dispatcher DB and has been activated
-        DispatcherApi().RenewUserToken(user)
-        if user.token is None:
-            flash(f"Could not retrieve authentication token", "error")
+        maybeError = DispatcherApi().RenewUserToken(user)
+        if maybeError is not None:
+            flash(f"Could not retrieve authentication token: {maybeError}", "error")
             return redirect(url_for('auth.login'))
 
         login_user(user, remember=form.rememberMe.data)
