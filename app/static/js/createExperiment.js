@@ -39,6 +39,14 @@ function checkInput() {
       }
     }
 
+    if (type === "Distributed") {
+      let remote = $("#remoteSelectorCheckboxedList").val();
+      if (remote === undefined || isWhitespace(remote)){
+        errors = true;
+        message += " - Must select a remote platform\n";
+      }
+    }
+
     if (document.getElementById("enableSlicing").checked) {
       if (isWhitespace(document.getElementById("sliceCheckboxedList").value)){
         errors = true;

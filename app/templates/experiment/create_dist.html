@@ -38,8 +38,11 @@
 
         <div class="col-sm-12 nopadding">
             <div class="col-sm-8">
-                <h4><label for="expNname">Name</label></h4>
+                <h4><label for="expName">Name</label></h4>
                 <input class="form-control" type="text" name="name" id="expName"/>
+                <div style="visibility: hidden"> <!-- Hidden value for validation-->
+                    <input class="form-control" type="text" name="name" id="expType" value="Distributed" />
+                </div>
             </div>
             <div class="col-sm-4">
                 <br><br>

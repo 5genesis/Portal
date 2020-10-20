@@ -12,6 +12,22 @@ from app.execution.routes import getLastExecution
 from Helper import Config, Log, Facility
 
 
+def _addSliceInfo(form, experiment):
+    maybeSlice = form.get('sliceCheckboxedList', None)
+    maybeScenario = form.get('scenarioCheckboxedList', None)
+
+    if maybeSlice is not None:
+        experiment.slice = maybeSlice
+    if maybeScenario is not None:
+        experiment.scenario = maybeScenario
+
+    count = int(form.get('nsCount', '0'))
+    for i in range(count):
+        ns = NetworkService.query.get(form[f'NS{i + 1}'])
+        if ns is not None:
+            experiment.networkServicesRelation.append(ns)
+
+
 @bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def create():
@@ -65,19 +81,7 @@ def create():
         )
 
         if "enableSlicing" in request.form.keys():
-            maybeSlice = request.form.get('sliceCheckboxedList', None)
-            maybeScenario = request.form.get('scenarioCheckboxedList', None)
-
-            if maybeSlice is not None:
-                experiment.slice = maybeSlice
-            if maybeScenario is not None:
-                experiment.scenario = maybeScenario
-
-            count = int(request.form.get('nsCount', '0'))
-            for i in range(count):
-                ns = NetworkService.query.get(request.form[f'NS{i+1}'])
-                if ns is not None:
-                    experiment.networkServicesRelation.append(ns)
+            _addSliceInfo(request.form, experiment)
 
         db.session.add(experiment)
         db.session.commit()
@@ -131,7 +135,31 @@ def createDist():
 
     form = DistributedStep1Form()
     if form.validate_on_submit():
-        pass
+        try:
+            experimentName = request.form.get('name')
+            exclusive = (len(request.form.getlist('exclusive')) != 0)
+            testCases = request.form.getlist('Distributed_testCases')
+            ues_selected = request.form.getlist('Distributed_ues')
+            remotePlatform = request.form.get('remoteSelectorCheckboxedList')
+
+            experiment = Experiment(
+                name=experimentName, author=current_user,
+                type="Distributed", exclusive=exclusive,
+                test_cases=testCases, ues=ues_selected,
+                automated=True, reservation_time=None,
+                parameters={}, application=None,
+                remotePlatform=remotePlatform, remoteDescriptor=None
+            )
+
+            if "enableSlicing" in request.form.keys():
+                _addSliceInfo(request.form, experiment)
+
+            db.session.add(experiment)
+            db.session.commit()
+
+            Log.I(f'Added experiment {experiment.id}')
+        except Exception as e:
+            flash(f'Exception creating distributed experiment (local): {e}', 'error')
 
     remotes = eastWest.RemoteNames
     nss: List[Tuple[str, int]] = []
