@@ -158,6 +158,7 @@ def createDist():
             db.session.commit()
 
             Log.I(f'Added experiment {experiment.id}')
+            return redirect(url_for('experiment.configureRemote', experimentId=experiment.id))
         except Exception as e:
             flash(f'Exception creating distributed experiment (local): {e}', 'error')
 
@@ -168,8 +169,32 @@ def createDist():
 
     return render_template('experiment/create_dist.html', title='New Distributed Experiment', form=form, nss=nss,
                            sliceList=Facility.BaseSlices(), scenarioList=Facility.Scenarios(), ues=Facility.UEs(),
-                           ewEnabled=Config().EastWest.Enabled, remotes=remotes,
+                           ewEnabled=Config().EastWest.Enabled, remotes=['Here', 'There'],
                            distributedTestCases=Facility.DistributedTestCases())
+
+
+@bp.route('/configure_remote/<experimentId>', methods=['GET', 'POST'])
+@login_required
+def configureRemote(experimentId: int):
+    eastWest = Config().EastWest
+    if not eastWest.Enabled:
+        return abort(404)
+
+    localExperiment = Experiment.query.get(experimentId)
+    if localExperiment is None:
+        flash(f'Experiment not found', 'error')
+        return redirect(url_for('main.index'))
+
+    if localExperiment.user_id is not current_user.id:
+        flash(f'Forbidden - You don\'t have permission to access this experiment', 'error')
+        return redirect(url_for('main.index'))
+
+    form = DistributedStep2Form()
+    if form.validate_on_submit():
+        pass
+
+    return render_template('experiment/configure_dist.html', title='New Distributed Experiment',
+                           form=form, remote=localExperiment.remotePlatform)
 
 
 @bp.route('/<experimentId>/reload', methods=['GET', 'POST'])
@@ -187,7 +212,6 @@ def experiment(experimentId: int):
         Log.I(f'Experiment not found')
         flash(f'Experiment not found', 'error')
         return redirect(url_for('main.index'))
-
     else:
         if exp.user_id is current_user.id:
 

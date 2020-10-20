@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% import "experiment/create_base.html" as base %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/browseFiles.css') }}">
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="{{url_for('static', filename='js/createExperiment.js')}}"></script>
+    <script src="{{url_for('static', filename='js/browseFiles.js')}}"></script>
+    <script>setTab('navbar-createDistExperiment')</script>
+    <script>
+        // Build the list of NSs before binding the function to the counter
+        $("#nsCount").bind('change', function() {
+            nss = []; nsIds = [];
+            {% for ns in nss %}
+              nss.push("{{ ns[0] }}");
+              nsIds.push("{{ ns[1] }}");
+            {% endfor %}
+            changeNsRows(nss, nsIds);
+          });
+    </script>
+{% endblock %}
+
+{% block app_content %}
+<div style="text-align: center">
+    <h2>CREATE DISTRIBUTED EXPERIMENT</h2>
+    <h3>Remote configuration ({{ remote }})</h3>
+</div>
+
+<div class="col-sm-8 col-sm-offset-2">
+    <form id="form" method="post" enctype="multipart/form-data" onsubmit="return checkInput()">
+        {{ form.hidden_tag() }}
+
+        <div class="col-sm-12">
+            <button type="submit" id="checkBtn" name="submit" class="btn btn-darkBlue">Add Experiment</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
