@@ -7,7 +7,7 @@ from REST import ElcmApi, DispatcherApi
 from app import db
 from app.experiment import bp
 from app.models import Experiment, Execution, Action, NetworkService
-from app.experiment.forms import ExperimentForm, RunExperimentForm
+from app.experiment.forms import ExperimentForm, RunExperimentForm, DistributedStep1Form, DistributedStep2Form
 from app.execution.routes import getLastExecution
 from Helper import Config, Log, Facility
 
@@ -129,9 +129,19 @@ def createDist():
     if not eastWest.Enabled:
         return abort(404)
 
-    return render_template('experiment/create_dist.html', title='New Distributed Experiment',
-                           ewEnabled=Config().EastWest.Enabled)
+    form = DistributedStep1Form()
+    if form.validate_on_submit():
+        pass
 
+    remotes = eastWest.RemoteNames
+    nss: List[Tuple[str, int]] = []
+    for ns in current_user.UsableNetworkServices:
+         nss.append((ns.name, ns.id))
+
+    return render_template('experiment/create_dist.html', title='New Distributed Experiment', form=form, nss=nss,
+                           sliceList=Facility.BaseSlices(), scenarioList=Facility.Scenarios(), ues=Facility.UEs(),
+                           ewEnabled=Config().EastWest.Enabled, remotes=remotes,
+                           distributedTestCases=Facility.DistributedTestCases())
 
 
 @bp.route('/<experimentId>/reload', methods=['GET', 'POST'])

@@ -1,0 +1,105 @@
+{% macro csv(values, separator = ', ') %}
+    {% for value in values %}{{ value }}{{ separator if not loop.last }}{% endfor %}
+{% endmacro %}
+
+{% macro dropdownList(id, name, values, hasCheckbox) %}
+    {% set checkbox = id + 'CheckboxedCheckbox' %}
+    {% set list = id + 'CheckboxedList' %}
+
+    <h4><label for="{{ list }}">{{ name }}</label></h4>
+    {% if hasCheckbox %}
+    <div class="custom-control custom-checkbox col-sm-1 nopadding">
+        <label>
+            <input type="checkbox" class="custom-control-input" id={{ checkbox }} name={{ checkbox }}
+                   onclick="disableCheckboxedList('{{ checkbox }}', '{{ list }}')">
+        </label>
+    </div>
+    {% endif %}
+    <div class="{{ "col-sm-11" if hasCheckbox else "col-sm-12" }}">
+        <select id="{{ list }}" class="form-control" name="{{ list }}" {{ "disabled" if hasCheckbox else "enabled" }}>
+            {% for value in values %}
+                <option value="{{ value }}">{{ value }}</option>
+            {% endfor %}
+        </select>
+    </div>
+{% endmacro %}
+
+{% macro testCasesField(id, list, parameterNamesPerTestCase = None) %}
+    <div class="col-sm-6">
+        <h4>Test Cases</h4>
+        {% if list %}
+            {% for test_case in list %}
+            <div class="custom-control custom-checkbox">
+                <label>
+                    <input type="checkbox" name="{{ id }}_testCases"
+                           class="custom-control-input testCaseCheckbox {{ test_case }}_testCaseCheckbox"
+                           {% if parameterNamesPerTestCase %}
+                               data-test-case-name="{{ test_case}}"
+                               data-test-case-parameters="{{ csv(parameterNamesPerTestCase[test_case], ',') }}"
+                               onchange="displayParameters();"
+                           {% endif %}
+                           value="{{ test_case }}"> {{test_case}}
+                </label>
+            </div>
+        {% endfor %}
+        {% else %}
+            <p>No available Test Cases of {{ id }} type.</p>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro uesField(id, list) %}
+    <div class="col-sm-6">
+        {% if list %}
+            <h4>UEs</h4>
+            {% for ue in list %}
+                <div class="custom-control custom-checkbox">
+                    <label>
+                        <input type="checkbox" class="custom-control-input" name="{{ id }}_ues" value="{{ue}}"> {{ue}}
+                    </label>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro sliceSettings(sliceList, scenarioList, nss) %}
+    <div class="col-sm-1 custom-control custom-checkbox" style="padding: 10px 0 !important; margin-right: -48px;">
+        <input type="checkbox" class="custom-control-input" id = "enableSlicing" name="enableSlicing"
+               value="enableSlicing" onchange="changeSliceSettingsDiv(this)">
+    </div>
+    <div class="col-sm-11"><h4><label for="enableSlicing">Network slicing</label></h4></div>
+
+    <div class="col-sm-12 nopadding disabled" id="sliceSettingsDiv">
+        <div class="col-sm-12 " style="margin-bottom: 20px">
+            <div class="col-sm-6 nopadding">{{ dropdownList("slice", "Slice", sliceList, False) }}</div>
+            <div class="col-sm-6 nopadding">{{ dropdownList("scenario", "Scenario", scenarioList, False) }}</div>
+        </div>
+
+        <div class="col-sm-12 " style="margin-bottom: 20px">
+            <h4>Network Services</h4>
+            {% if nss %}
+                <div class="col-sm-2">
+                    <label>
+                        <input type="number" id="nsCount" name="nsCount" class="InputBox form-control"
+                               value="0" min="0" max="{{ nss | count }}" style="margin-top: 1em">
+                    </label>
+                </div>
+                <div class="col-sm-10">
+                    <table id="ns" class="table table-header">
+                        <tr id="headtable" style="visibility: collapse">
+                            <th class="table-cell-divisor-right col-sm-1">
+                            </th>
+                            <th class="table-cell-divisor-right col-sm-11 text-center">
+                                Select VNF
+                            </th>
+                        </tr>
+                    </table>
+                </div>
+            {% else %}
+                <h5>No network services available.</h5>
+                <a class="btn btn-blue" href="{{ url_for('NetworkServices.repository') }}" role="button">New Network Service</a>
+            {% endif %}
+        </div>
+    </div>
+{% endmacro %}

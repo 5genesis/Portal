@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
+{% import "experiment/create_base.html" as base %}
 
 {% block styles %}
 {{ super() }}
@@ -11,19 +12,12 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script src="{{url_for('static', filename='js/createExperiment.js')}}"></script>
     <script src="{{url_for('static', filename='js/browseFiles.js')}}"></script>
-    <script>setTab('navbar-createExperiment')</script>
+    <script>setTab('navbar-createDistExperiment')</script>
     <script>
-        // Force a change of div so that only one group of settings is visible, and hide parameters
-        $(document).ready( function () {
-            changeSettingsDiv();
-            changeSliceSettingsDiv(document.getElementById("enableSlicing"))
-            displayParameters();
-        } );
-
         // Build the list of NSs before binding the function to the counter
         $("#nsCount").bind('change', function() {
             nss = []; nsIds = [];
-            {% for ns in nss%}
+            {% for ns in nss %}
               nss.push("{{ ns[0] }}");
               nsIds.push("{{ ns[1] }}");
             {% endfor %}
@@ -35,7 +29,44 @@
 {% block app_content %}
 <div style="text-align: center">
     <h2>CREATE DISTRIBUTED EXPERIMENT</h2>
+    <h3>Local configuration</h3>
 </div>
 
-    <div class="col-sm-2"></div>
+<div class="col-sm-8 col-sm-offset-2">
+    <form id="form" method="post" enctype="multipart/form-data" onsubmit="return checkInput()">
+        {{ form.hidden_tag() }}
+
+        <div class="col-sm-12 nopadding">
+            <div class="col-sm-8">
+                <h4><label for="expNname">Name</label></h4>
+                <input class="form-control" type="text" name="name" id="expName"/>
+            </div>
+            <div class="col-sm-4">
+                <br><br>
+                <div class="custom-control custom-checkbox">
+                <label>
+                    <input type="checkbox" class="custom-control-input" name="exclusive" value="exclusive">
+                    Avoid running other experiments at the same time
+                </label>
+            </div>
+            </div>
+        </div>
+
+        <div class="col-sm-12 settingsDiv nopadding" id="StandardSettings" style="margin-bottom: 20px">
+            {{ base.testCasesField('Distributed', distributedTestCases) }}
+            {{ base.uesField('Distributed', ues) }}
+        </div>
+
+        {{ base.sliceSettings(sliceList, scenarioList, nss) }}
+
+        <div class="col-sm-12" style="padding-bottom: 1em;">
+            {{ base.dropdownList( "remoteSelector", "Remote Platform", remotes, False) }}
+        </div>
+
+        <div class="col-sm-12">
+            <button type="submit" id="checkBtn" name="submit" class="btn btn-darkBlue">Continue</button>
+        </div>
+    </form>
+</div>
+
 {% endblock %}
