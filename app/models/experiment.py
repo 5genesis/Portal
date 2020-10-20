@@ -26,6 +26,9 @@ class Experiment(db.Model):
     parameters = db.Column(JSONEncodedDict)
     executions = db.relationship('Execution', backref='experiment', lazy='dynamic')
     networkServicesRelation = db.relationship('NetworkService', secondary=experiment_ns)
+    remotePlatform = db.Column(db.String(128))
+    remoteDescriptor_id = db.Column(db.Integer, db.ForeignKey('experiment.id'))
+    remoteDescriptor = db.relationship('Experiment', remote_side=[id], backref='parentDescriptor')
 
     def __repr__(self):
         return f'<Id: {self.id}, Name: {self.name}, User_id: {self.user_id}, Type: {self.type}, ' \
