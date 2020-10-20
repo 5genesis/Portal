@@ -40,9 +40,7 @@
             <div class="col-sm-8">
                 <h4><label for="expName">Name</label></h4>
                 <input class="form-control" type="text" name="name" id="expName"/>
-                <div style="visibility: hidden"> <!-- Hidden value for validation-->
-                    <input class="form-control" type="text" name="name" id="expType" value="Distributed" />
-                </div>
+                <input type="hidden" name="type" id="expType" value="Distributed" /> {# Hidden value for validation #}
             </div>
             <div class="col-sm-4">
                 <br><br>

@@ -169,7 +169,7 @@ def createDist():
 
     return render_template('experiment/create_dist.html', title='New Distributed Experiment', form=form, nss=nss,
                            sliceList=Facility.BaseSlices(), scenarioList=Facility.Scenarios(), ues=Facility.UEs(),
-                           ewEnabled=Config().EastWest.Enabled, remotes=['Here', 'There'],
+                           ewEnabled=Config().EastWest.Enabled, remotes=remotes,
                            distributedTestCases=Facility.DistributedTestCases())
 
 
