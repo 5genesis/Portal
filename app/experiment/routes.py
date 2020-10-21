@@ -194,12 +194,25 @@ def configureRemote(experimentId: int):
         flash(f"Unknown remote platform '{localExperiment.remotePlatform}'", 'error')
         return redirect(url_for('main.index'))
 
+    testCases = remoteApi.GetTestCases()
+    ues = remoteApi.GetUEs()
+    baseSlices = remoteApi.GetBaseSlices()
+    scenarios = remoteApi.GetScenarios()
+    networkServices = remoteApi.GetNetworkServices()
+
+    nss: List[Tuple[str, int]] = []
+    for index, ns in enumerate(networkServices):
+        name, nsd, vim = ns
+        nss.append((f'{name} ({vim})', index))
+
     form = DistributedStep2Form()
     if form.validate_on_submit():
         pass
 
     return render_template('experiment/configure_dist.html', title='New Distributed Experiment',
-                           form=form, localExperiment=localExperiment)
+                           form=form, localExperiment=localExperiment,
+                           testCases=testCases, ues=ues, baseSlices=baseSlices, scenarios=scenarios,
+                           nss=nss)
 
 
 @bp.route('/<experimentId>/reload', methods=['GET', 'POST'])

@@ -46,6 +46,13 @@
             </p>
         </div>
 
+        <div class="col-sm-12 settingsDiv nopadding" id="StandardSettings" style="margin-bottom: 20px">
+            {{ base.testCasesField('Distributed', testCases) }}
+            {{ base.uesField('Distributed', ues) }}
+        </div>
+
+        {{ base.sliceSettings(baseSlices, scenarios, nss, canCreateNss=False) }}
+
         <div class="col-sm-12">
             <button type="submit" id="checkBtn" name="submit" class="btn btn-darkBlue">Add Experiment</button>
         </div>

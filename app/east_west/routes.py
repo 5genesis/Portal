@@ -24,7 +24,7 @@ def scenarios():
     return jsonify({'Scenarios': Facility.Scenarios()})
 
 
-@bp.route('networkServices', method=['GET'])
+@bp.route('/networkServices', methods=['GET'])
 def networkServices():
     return jsonify({
         'NetworkServices': [(ns.name, ns.nsd_id, ns.vim_location) for ns in NetworkService.PublicServices() if ns.Ready]

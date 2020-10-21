@@ -63,7 +63,7 @@
     </div>
 {% endmacro %}
 
-{% macro sliceSettings(sliceList, scenarioList, nss) %}
+{% macro sliceSettings(sliceList, scenarioList, nss, canCreateNss = True) %}
     <div class="col-sm-1 custom-control custom-checkbox" style="padding: 10px 0 !important; margin-right: -48px;">
         <input type="checkbox" class="custom-control-input" id = "enableSlicing" name="enableSlicing"
                value="enableSlicing" onchange="changeSliceSettingsDiv(this)">
@@ -98,7 +98,9 @@
                 </div>
             {% else %}
                 <h5>No network services available.</h5>
-                <a class="btn btn-blue" href="{{ url_for('NetworkServices.repository') }}" role="button">New Network Service</a>
+                {% if canCreateNss %}
+                    <a class="btn btn-blue" href="{{ url_for('NetworkServices.repository') }}" role="button">New Network Service</a>
+                {% endif %}
             {% endif %}
         </div>
     </div>
