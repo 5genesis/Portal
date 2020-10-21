@@ -5,7 +5,6 @@ from Helper import Facility
 
 @bp.route('/testcases', methods=['GET'])
 def testcases():
-    Facility.UEs()
     return jsonify({'TestCases': Facility.DistributedTestCases()})
 
 

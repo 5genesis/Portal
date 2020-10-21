@@ -74,12 +74,19 @@ class EastWest:
     def RemoteNames(self) -> List[str]:
         return list(self.Remotes.keys())
 
-    def RemoteData(self, name: str) -> Optional[Tuple[str, int]]:
+    def RemoteData(self, name: str) -> Tuple[Optional[str], Optional[int]]:
         try:
             remote = self.Remotes[name]
             return remote['Host'], remote['Port']
         except Exception:
-            return None
+            return None, None
+
+    def RemoteApi(self, name: str):
+        host, port = self.RemoteData(name)
+        if host is not None and port is not None:
+            from REST import RemoteApi
+            return RemoteApi(host, port)
+        return None
 
 
 class Config:

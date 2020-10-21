@@ -29,12 +29,22 @@
 {% block app_content %}
 <div style="text-align: center">
     <h2>CREATE DISTRIBUTED EXPERIMENT</h2>
-    <h3>Remote configuration ({{ remote }})</h3>
+    <h3>Remote configuration ({{ localExperiment.remotePlatform }})</h3>
 </div>
 
 <div class="col-sm-8 col-sm-offset-2">
     <form id="form" method="post" enctype="multipart/form-data" onsubmit="return checkInput()">
         {{ form.hidden_tag() }}
+
+        <div class="col-sm-12" style="padding-bottom: 1em;">
+            <p style="text-align: center">
+                <b>Name: </b>{{ localExperiment.name }}
+                <b> - Test Cases: </b>{{ base.csv(localExperiment.test_cases) }}
+            {% if localExperiment.ues %}
+                <b> - UEs: </b>{{ base.csv(localExperiment.ues) }}
+            {% endif %}
+            </p>
+        </div>
 
         <div class="col-sm-12">
             <button type="submit" id="checkBtn" name="submit" class="btn btn-darkBlue">Add Experiment</button>

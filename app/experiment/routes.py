@@ -180,7 +180,7 @@ def configureRemote(experimentId: int):
     if not eastWest.Enabled:
         return abort(404)
 
-    localExperiment = Experiment.query.get(experimentId)
+    localExperiment: Experiment = Experiment.query.get(experimentId)
     if localExperiment is None:
         flash(f'Experiment not found', 'error')
         return redirect(url_for('main.index'))
@@ -189,12 +189,17 @@ def configureRemote(experimentId: int):
         flash(f'Forbidden - You don\'t have permission to access this experiment', 'error')
         return redirect(url_for('main.index'))
 
+    remoteApi = eastWest.RemoteApi(localExperiment.remotePlatform)
+    if remoteApi is None:
+        flash(f"Unknown remote platform '{localExperiment.remotePlatform}'", 'error')
+        return redirect(url_for('main.index'))
+
     form = DistributedStep2Form()
     if form.validate_on_submit():
         pass
 
     return render_template('experiment/configure_dist.html', title='New Distributed Experiment',
-                           form=form, remote=localExperiment.remotePlatform)
+                           form=form, localExperiment=localExperiment)
 
 
 @bp.route('/<experimentId>/reload', methods=['GET', 'POST'])
