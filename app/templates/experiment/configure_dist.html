@@ -35,6 +35,7 @@
 <div class="col-sm-8 col-sm-offset-2">
     <form id="form" method="post" enctype="multipart/form-data" onsubmit="return checkInput()">
         {{ form.hidden_tag() }}
+        <input type="hidden" name="type" id="expType" value="RemoteSide" /> {# Hidden value for validation #}
 
         <div class="col-sm-12" style="padding-bottom: 1em;">
             <p style="text-align: center">
@@ -47,8 +48,8 @@
         </div>
 
         <div class="col-sm-12 settingsDiv nopadding" id="StandardSettings" style="margin-bottom: 20px">
-            {{ base.testCasesField('Distributed', testCases) }}
-            {{ base.uesField('Distributed', ues) }}
+            {{ base.testCasesField('RemoteSide', testCases) }}
+            {{ base.uesField('RemoteSide', ues) }}
         </div>
 
         {{ base.sliceSettings(baseSlices, scenarios, nss, canCreateNss=False) }}

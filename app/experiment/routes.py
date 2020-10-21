@@ -185,7 +185,7 @@ def configureRemote(experimentId: int):
         flash(f'Experiment not found', 'error')
         return redirect(url_for('main.index'))
 
-    if localExperiment.user_id is not current_user.id:
+    if localExperiment.user_id is None or localExperiment.user_id is not current_user.id:
         flash(f'Forbidden - You don\'t have permission to access this experiment', 'error')
         return redirect(url_for('main.index'))
 
@@ -207,7 +207,34 @@ def configureRemote(experimentId: int):
 
     form = DistributedStep2Form()
     if form.validate_on_submit():
-        pass
+        try:
+            experimentName = f'{localExperiment.name}__remote'
+            exclusive = localExperiment.exclusive
+            testCases = request.form.getlist('RemoteSide_testCases')
+            ues_selected = request.form.getlist('RemoteSide_ues')
+
+            experiment = Experiment(
+                name=experimentName, author=None,
+                type="RemoteSide", exclusive=exclusive,
+                test_cases=testCases, ues=ues_selected,
+                automated=True, reservation_time=None,
+                parameters={}, application=None,
+                remotePlatform=None, remoteDescriptor=None,
+                parentDescriptor=[localExperiment]
+            )
+
+            db.session.add(experiment)
+            db.session.commit()
+
+            localExperiment.remoteDescriptor = experiment
+            db.session.add(localExperiment)
+            db.session.commit()
+
+            Log.I(f'Added experiment {experiment.id}')
+            flash('Your experiment has been successfully created', 'info')
+            return redirect(url_for('experiment.configureRemote', experimentId=experiment.id))
+        except Exception as e:
+            flash(f'Exception creating distributed experiment (local): {e}', 'error')
 
     return render_template('experiment/configure_dist.html', title='New Distributed Experiment',
                            form=form, localExperiment=localExperiment,
@@ -231,7 +258,7 @@ def experiment(experimentId: int):
         flash(f'Experiment not found', 'error')
         return redirect(url_for('main.index'))
     else:
-        if exp.user_id is current_user.id:
+        if exp.user_id is not None and exp.user_id is current_user.id:
 
             # Get Experiment's executions
             executions: List[Experiment] = exp.experimentExecutions()
@@ -245,7 +272,7 @@ def experiment(experimentId: int):
                                        dispatcherUrl=config.ELCM.Url,  # TODO: Use dispatcher
                                        ewEnabled=Config().EastWest.Enabled)
         else:
-            Log.I(f'Forbidden - User {current_user.name} don\'t have permission to access experiment {experimentId}')
+            Log.I(f'Forbidden - User {current_user.username} don\'t have permission to access experiment {experimentId}')
             flash(f'Forbidden - You don\'t have permission to access this experiment', 'error')
             return redirect(url_for('main.index'))
 
@@ -289,7 +316,7 @@ def descriptor(experimentId: int):
     if experiment is None:
         flash('Experiment not found', 'error')
         return redirect(url_for('main.index'))
-    elif experiment.user_id != current_user.id:
+    elif experiment.user_id is None or experiment.user_id != current_user.id:
         flash("Forbidden - You don't have permission to access this experiment", 'error')
         return redirect(url_for('main.index'))
     else:

@@ -8,10 +8,12 @@ function checkInput() {
     let message = "The following issues have been found:\n";
     let type = $('#expType').val();
 
-    let name = $("input[name=name]").val();
-    if (isWhitespace(name)) {
-      errors = true;
-      message += " - Name must not be empty\n";
+    if (type !== "RemoteSide"){
+      let name = $("input[name=name]").val();
+      if (isWhitespace(name)) {
+        errors = true;
+        message += " - Name must not be empty\n";
+      }
     }
 
     let testcases = $("input[name=" + type + "_testCases]:checked").length;
@@ -21,13 +23,13 @@ function checkInput() {
       message += " - Select at least one TestCase\n";
     }
 
-    let application = $('#expApplication').val();
-    if (type === "MONROE" && isWhitespace(application)) {
-      errors = true;
-      message += " - Application must not be empty\n";
-    }
-
     if (type === "MONROE") {
+      let application = $('#expApplication').val();
+      if (isWhitespace(application)) {
+        errors = true;
+        message += " - Application must not be empty\n";
+      }
+
       let parameters = $("#monroeParameters").val();
       if (!isWhitespace(parameters)) {
         try {
