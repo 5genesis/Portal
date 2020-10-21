@@ -7,6 +7,7 @@ class Facility:
     standard: List[str] = []
     custom: List[str] = []
     privateCustom: Dict[str, Set[str]] = {}
+    distributed: List[str] = []
     parameters: Dict[str, List[Dict[str, str]]] = {}
     baseSlices: List[str] = []
     scenarios: List[str] = []
@@ -17,13 +18,18 @@ class Facility:
             from REST import ElcmApi
 
             elcm = ElcmApi()
+            Log.I('  Retrieving UEs...')
             ues = elcm.GetUEs()
+            Log.I('  Retrieving TestCases...')
             testcases = elcm.GetTestCases()
-            baseSlices = elcm.GetBaseSlices()
+            Log.I('  Retrieving Scenarios...')
             scenarios = elcm.GetScenarios()
+            Log.I('  Retrieving Base Slice Descriptors (Slice Manager)...')
+            baseSlices = elcm.GetBaseSlices()
 
             standard = []
             custom = []
+            distributed = []
             privateCustom = {}
             parameters = {}
 
@@ -34,15 +40,21 @@ class Facility:
                     standard.append(name)
                 if testcase['PublicCustom']:
                     custom.append(name)
+                if testcase['Distributed']:
+                    distributed.append(name)
                 for email in sorted(testcase['PrivateCustom']):
                     if email not in privateCustom.keys():
                         privateCustom[email] = set()
                     privateCustom[email].add(name)
 
+            Log.I(f'  {len(ues)} UEs, {len(scenarios)} Scenarios, {len(baseSlices)} Slice Descriptors')
+            Log.I(f'  TestCases: {len(standard)} standard, {len(custom)} public custom, {len(distributed)} distributed')
+
             cls.ues = sorted(ues)
             cls.standard = sorted(standard)
             cls.custom = sorted(custom)
             cls.privateCustom = privateCustom
+            cls.distributed = distributed
             cls.parameters = parameters
             cls.baseSlices = baseSlices
             cls.scenarios = scenarios
@@ -58,6 +70,9 @@ class Facility:
 
     @classmethod
     def PublicCustomTestCases(cls): return cls.custom
+
+    @classmethod
+    def DistributedTestCases(cls): return cls.distributed
 
     @classmethod
     def BaseSlices(cls): return cls.baseSlices
