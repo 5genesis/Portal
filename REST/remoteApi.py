@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union, Tuple
 from .restClient import RestClient
 
 
@@ -6,7 +6,7 @@ class RemoteApi(RestClient):
     def __init__(self, host, port):
         super().__init__(host, port, "/distributed")
 
-    def getData(self, url, key) -> List[str]:
+    def getData(self, url, key) -> Union[List[str], List[Tuple[str, str, str]]]:
         try:
             response = self.HttpGet(url)
             return RestClient.ResponseToJson(response)[key]
@@ -24,3 +24,6 @@ class RemoteApi(RestClient):
 
     def GetScenarios(self) -> List[str]:
         return self.getData(f'{self.api_url}/scenarios', 'Scenarios')
+
+    def GetNetworkServices(self) -> List[Tuple[str, str, str]]:
+        return self.getData(f'{self.api_url}/networkServices', 'NetworkServices')
