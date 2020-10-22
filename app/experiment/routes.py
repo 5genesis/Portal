@@ -21,6 +21,8 @@ def _addSliceInfo(form, experiment):
     if maybeScenario is not None:
         experiment.scenario = maybeScenario
 
+
+def _addNetworkServices(form, experiment):
     count = int(form.get('nsCount', '0'))
     for i in range(count):
         ns = NetworkService.query.get(form[f'NS{i + 1}'])
@@ -82,6 +84,7 @@ def create():
 
         if "enableSlicing" in request.form.keys():
             _addSliceInfo(request.form, experiment)
+            _addNetworkServices(request.form, experiment)
 
         db.session.add(experiment)
         db.session.commit()
@@ -153,6 +156,7 @@ def createDist():
 
             if "enableSlicing" in request.form.keys():
                 _addSliceInfo(request.form, experiment)
+                _addNetworkServices(request.form, experiment)
 
             db.session.add(experiment)
             db.session.commit()
@@ -201,7 +205,9 @@ def configureRemote(experimentId: int):
     networkServices = remoteApi.GetNetworkServices()
 
     nss: List[Tuple[str, int]] = []
+    indexToNs: Dict[int, Tuple[str, str, str]] = {}
     for index, ns in enumerate(networkServices):
+        indexToNs[index] = ns
         name, nsd, vim = ns
         nss.append((f'{name} ({vim})', index))
 
@@ -223,6 +229,18 @@ def configureRemote(experimentId: int):
                 parentDescriptor=[localExperiment]
             )
 
+            if "enableSlicing" in request.form.keys():
+                _addSliceInfo(request.form, experiment)
+
+                # Since we don't have references to the NSs, add the info directly in descriptor format
+                count = int(request.form.get('nsCount', '0'))
+                descriptorNsInfo: List[Tuple[str, str]] = []
+                for i in range(count):
+                    name, nsd, vim = indexToNs[int(request.form[f'NS{i + 1}'])]
+                    descriptorNsInfo.append((nsd, vim))
+
+                experiment.remoteNetworkServices = descriptorNsInfo
+
             db.session.add(experiment)
             db.session.commit()
 
@@ -232,7 +250,7 @@ def configureRemote(experimentId: int):
 
             Log.I(f'Added experiment {experiment.id}')
             flash('Your experiment has been successfully created', 'info')
-            return redirect(url_for('experiment.configureRemote', experimentId=experiment.id))
+            return redirect(url_for('main.index'))
         except Exception as e:
             flash(f'Exception creating distributed experiment (local): {e}', 'error')
 
