@@ -41,6 +41,18 @@
         {% if nss > 0 %}
             {{ '- ' if experiment.slice }}{{ nss }} Network service{{ 's' if nss > 1 }}
         {% endif %}
+        {% if experiment.remotePlatform is not none %}
+            {% set remoteSide = experiment.remoteDescriptor %}
+            <hr style="margin: 2px 0px">
+            <b>Remote: </b>{{ experiment.remotePlatform }}
+            {% if remoteSide is not none %}
+                <br>
+                <b>TestCases</b>: {{ csv(remoteSide.test_cases) }}
+                {% if experiment.ues %}
+                    <br><b>UEs</b>: {{ csv(remoteSide.ues) }}
+                {% endif %}
+            {% endif %}
+        {% endif %}
     </td>
     <td class="col-md-4">
         <form id="formRun" method="post" novalidate>
