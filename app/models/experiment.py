@@ -2,6 +2,7 @@ from typing import Dict, List
 from app import db
 from .json_encoded_dict import JSONEncodedDict
 from .execution import Execution
+from Helper import Config
 
 
 experiment_ns = db.Table('experiments_ns',
@@ -41,7 +42,7 @@ class Experiment(db.Model):
 
     def _remoteInfo(self):
         if self.type == 'RemoteSide':
-            return {}
+            return {'Remote': Config().Platform}
         else:
             return {
                 'Remote': self.remotePlatform,
