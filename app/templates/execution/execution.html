@@ -120,8 +120,27 @@ update{{ execution.id }}(nanobar);
 <hr>
 </br>
 
-{{ accordionCard('logAccordion', 'Pre-Run', preRun) }}
-{{ accordionCard('logAccordion', 'Run', executor) }}
-{{ accordionCard('logAccordion', 'Post-Run', postRun) }}
+    {% if remoteLogs %}
+        <div class="col-sm-12 nopadding text-center">
+            <div class="col-sm-6"><h3>Local:</h3></div>
+            <div class="col-sm-6"><h3>Remote ({{ experiment.remotePlatform }}):</h3></div>
+        </div>
+        <div class="col-sm-12 nopadding">
+            <div class="col-sm-6">{{ accordionCard('logAccordion', 'Pre-Run', localLogs[0]) }}</div>
+            <div class="col-sm-6">{{ accordionCard('logAccordion', 'Pre-Run', remoteLogs[0]) }}</div>
+        </div>
+        <div class="col-sm-12 nopadding">
+            <div class="col-sm-6">{{ accordionCard('logAccordion', 'Run', localLogs[1]) }}</div>
+            <div class="col-sm-6">{{ accordionCard('logAccordion', 'Run', remoteLogs[1]) }}</div>
+        </div>
+        <div class="col-sm-12 nopadding">
+            <div class="col-sm-6">{{ accordionCard('logAccordion', 'Post-Run', localLogs[2]) }}</div>
+            <div class="col-sm-6">{{ accordionCard('logAccordion', 'Post-Run', remoteLogs[2]) }}</div>
+        </div>
+    {% else %}
+        {{ accordionCard('logAccordion', 'Pre-Run', localLogs[0]) }}
+        {{ accordionCard('logAccordion', 'Run', localLogs[1]) }}
+        {{ accordionCard('logAccordion', 'Post-Run', localLogs[2]) }}
+    {% endif %}
 
 {% endblock %}
