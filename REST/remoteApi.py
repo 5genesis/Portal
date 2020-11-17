@@ -27,3 +27,8 @@ class RemoteApi(RestClient):
 
     def GetNetworkServices(self) -> List[Tuple[str, str, str]]:
         return self.getData(f'{self.api_url}/networkServices', 'NetworkServices')
+
+    def GetExecutionLogs(self, executionId):
+        url = f'{self.api_url}/executionLogs/{executionId}'
+        response = self.HttpGet(url)
+        return RestClient.ResponseToJson(response)

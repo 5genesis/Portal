@@ -21,6 +21,11 @@ class ElcmApi(RestClient):
         response = self.HttpGet(url)
         return RestClient.ResponseToJson(response)
 
+    def GetPeerId(self, executionId: int) -> Optional[int]:
+        url = f'{self.api_url}/execution/{executionId}/peerId'
+        response = self.HttpGet(url)
+        return RestClient.ResponseToJson(response)
+
     def GetUEs(self) -> Optional[List[str]]:
         url = f'{self.api_url}/facility/ues'
         try:
