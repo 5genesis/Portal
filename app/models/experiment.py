@@ -50,12 +50,15 @@ class Experiment(db.Model):
             }
 
     def _nsInfo(self):
+        if self.type == 'RemoteSide':
+            nss = self.remoteNetworkServices or []
+        else:
+            nss = [(ns.nsd_id, ns.vim_location) for ns in self.networkServicesRelation]
+
         return {
             'Slice': self.slice,
             'Scenario': self.scenario,
-            'NSs':
-                self.remoteNetworkServices if self.type == 'RemoteSide'
-                else [(ns.nsd_id, ns.vim_location) for ns in self.networkServicesRelation]
+            'NSs': nss
         }
 
     def serialization(self) -> Dict[str, object]:
