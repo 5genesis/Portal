@@ -1,3 +1,8 @@
+**22/12/2020** [Version 2.4.0]
+
+ - Added East/West interface
+ - Added support for distributed experiment creation/visualization
+
 **31/07/2020** [Version 2.3.4]
 
  - Added Base Slice and Scenario to experiment creation
