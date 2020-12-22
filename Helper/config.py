@@ -1,6 +1,6 @@
 import yaml
 import logging
-from typing import Dict, List
+from typing import Dict, List, Optional, Tuple, Union
 from shutil import copy
 from os.path import exists, abspath
 
@@ -56,6 +56,37 @@ class Logging:
     @property
     def LogLevel(self):
         return self.toLogLevel(self.data['LogLevel'])
+
+
+class EastWest:
+    def __init__(self, data: Dict):
+        self.data = data.get('EastWest', {})
+
+    @property
+    def Enabled(self) -> bool:
+        return self.data.get('Enabled', False)
+
+    @property
+    def Remotes(self) -> Dict[str, Dict[str, Union[int, str]]]:
+        return self.data.get('Remotes', {})
+
+    @property
+    def RemoteNames(self) -> List[str]:
+        return list(self.Remotes.keys())
+
+    def RemoteData(self, name: str) -> Tuple[Optional[str], Optional[int]]:
+        try:
+            remote = self.Remotes[name]
+            return remote['Host'], remote['Port']
+        except Exception:
+            return None, None
+
+    def RemoteApi(self, name: str):
+        host, port = self.RemoteData(name)
+        if host is not None and port is not None:
+            from REST import RemoteApi
+            return RemoteApi(host, port)
+        return None
 
 
 class Config:
@@ -120,3 +151,7 @@ class Config:
     @property
     def Logging(self) -> Logging:
         return Logging(self.data)
+
+    @property
+    def EastWest(self) -> EastWest:
+        return EastWest(self.data)

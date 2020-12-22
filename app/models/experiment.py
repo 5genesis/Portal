@@ -2,6 +2,7 @@ from typing import Dict, List
 from app import db
 from .json_encoded_dict import JSONEncodedDict
 from .execution import Execution
+from Helper import Config
 
 
 experiment_ns = db.Table('experiments_ns',
@@ -26,6 +27,10 @@ class Experiment(db.Model):
     parameters = db.Column(JSONEncodedDict)
     executions = db.relationship('Execution', backref='experiment', lazy='dynamic')
     networkServicesRelation = db.relationship('NetworkService', secondary=experiment_ns)
+    remotePlatform = db.Column(db.String(128))
+    remoteDescriptor_id = db.Column(db.Integer, db.ForeignKey('experiment.id'))
+    remoteDescriptor = db.relationship('Experiment', remote_side=[id], backref='parentDescriptor')
+    remoteNetworkServices = db.Column(JSONEncodedDict)
 
     def __repr__(self):
         return f'<Id: {self.id}, Name: {self.name}, User_id: {self.user_id}, Type: {self.type}, ' \
@@ -35,26 +40,45 @@ class Experiment(db.Model):
         exp: db.BaseQuery = Execution.query.filter_by(experiment_id=self.id)
         return list(exp.order_by(Execution.id.desc()))
 
-    def serialization(self) -> Dict[str, object]:
+    def _remoteInfo(self):
+        if self.type == 'RemoteSide':
+            return {'Remote': Config().Platform}
+        else:
+            return {
+                'Remote': self.remotePlatform,
+                'RemoteDescriptor': self.remoteDescriptor.serialization() if self.remoteDescriptor is not None else None
+            }
+
+    def _nsInfo(self):
+        if self.type == 'RemoteSide':
+            nss = self.remoteNetworkServices or []
+        else:
+            nss = [(ns.nsd_id, ns.vim_location) for ns in self.networkServicesRelation]
+
         return {
-            'Version': '2.0.0',
-            'ExperimentType': self.type,
+            'Slice': self.slice,
+            'Scenario': self.scenario,
+            'NSs': nss
+        }
+
+    def serialization(self) -> Dict[str, object]:
+        descriptor = {
+            'ExperimentType': 'Distributed' if self.type == 'RemoteSide' else self.type,
+            'Automated': self.automated,
             'TestCases': self.test_cases,
             'UEs': self.ues,
-            'Slice': self.slice,
-            'NSs': [(ns.nsd_id, ns.vim_location) for ns in self.networkServicesRelation],
+
             'ExclusiveExecution': self.exclusive,
-            'Scenario': self.scenario,
-            'Automated': self.automated,
             'ReservationTime': self.reservation_time,
 
             'Application': self.application,
             'Parameters': self.parameters,
 
-            'Distributed': False,
-            'Role': 'Master',
-            'SlavePlatform': None,
-            'SlaveExperiment': None,
-
+            'Version': '2.1.0',
             'Extra': {}
         }
+
+        descriptor.update(self._remoteInfo())
+        descriptor.update(self._nsInfo())
+
+        return descriptor

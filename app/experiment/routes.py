@@ -1,15 +1,33 @@
 from datetime import datetime, timezone
 from typing import Dict, List, Tuple, Set
-from flask import render_template, flash, redirect, url_for, request, jsonify
+from flask import render_template, flash, redirect, url_for, request, jsonify, abort
 from flask.json import loads as jsonParse
 from flask_login import current_user, login_required
 from REST import ElcmApi, DispatcherApi
 from app import db
 from app.experiment import bp
 from app.models import Experiment, Execution, Action, NetworkService
-from app.experiment.forms import ExperimentForm, RunExperimentForm
+from app.experiment.forms import ExperimentForm, RunExperimentForm, DistributedStep1Form, DistributedStep2Form
 from app.execution.routes import getLastExecution
 from Helper import Config, Log, Facility
+
+
+def _addSliceInfo(form, experiment):
+    maybeSlice = form.get('sliceCheckboxedList', None)
+    maybeScenario = form.get('scenarioCheckboxedList', None)
+
+    if maybeSlice is not None:
+        experiment.slice = maybeSlice
+    if maybeScenario is not None:
+        experiment.scenario = maybeScenario
+
+
+def _addNetworkServices(form, experiment):
+    count = int(form.get('nsCount', '0'))
+    for i in range(count):
+        ns = NetworkService.query.get(form[f'NS{i + 1}'])
+        if ns is not None:
+            experiment.networkServicesRelation.append(ns)
 
 
 @bp.route('/create', methods=['GET', 'POST'])
@@ -65,19 +83,8 @@ def create():
         )
 
         if "enableSlicing" in request.form.keys():
-            maybeSlice = request.form.get('sliceCheckboxedList', None)
-            maybeScenario = request.form.get('scenarioCheckboxedList', None)
-
-            if maybeSlice is not None:
-                experiment.slice = maybeSlice
-            if maybeScenario is not None:
-                experiment.scenario = maybeScenario
-
-            count = int(request.form.get('nsCount', '0'))
-            for i in range(count):
-                ns = NetworkService.query.get(request.form[f'NS{i+1}'])
-                if ns is not None:
-                    experiment.networkServicesRelation.append(ns)
+            _addSliceInfo(request.form, experiment)
+            _addNetworkServices(request.form, experiment)
 
         db.session.add(experiment)
         db.session.commit()
@@ -118,7 +125,139 @@ def create():
                            customTestCases=customTestCases, parameterInfo=parameterInfo,
                            parameterNamesPerTestCase=parameterNamesPerTestCase,
                            testCaseNamesPerParameter=testCaseNamesPerParameter,
-                           sliceList=baseSlices, scenarioList=scenarios, nss=nss, experimentTypes=experimentTypes)
+                           sliceList=baseSlices, scenarioList=scenarios, nss=nss, experimentTypes=experimentTypes,
+                           ewEnabled=Config().EastWest.Enabled)
+
+
+@bp.route('/create_dist', methods=['GET', 'POST'])
+@login_required
+def createDist():
+    eastWest = Config().EastWest
+    if not eastWest.Enabled:
+        return abort(404)
+
+    form = DistributedStep1Form()
+    if form.validate_on_submit():
+        try:
+            experimentName = request.form.get('name')
+            exclusive = (len(request.form.getlist('exclusive')) != 0)
+            testCases = request.form.getlist('Distributed_testCases')
+            ues_selected = request.form.getlist('Distributed_ues')
+            remotePlatform = request.form.get('remoteSelectorCheckboxedList')
+
+            experiment = Experiment(
+                name=experimentName, author=current_user,
+                type="Distributed", exclusive=exclusive,
+                test_cases=testCases, ues=ues_selected,
+                automated=True, reservation_time=None,
+                parameters={}, application=None,
+                remotePlatform=remotePlatform, remoteDescriptor=None
+            )
+
+            if "enableSlicing" in request.form.keys():
+                _addSliceInfo(request.form, experiment)
+                _addNetworkServices(request.form, experiment)
+
+            db.session.add(experiment)
+            db.session.commit()
+
+            Log.I(f'Added experiment {experiment.id}')
+            return redirect(url_for('experiment.configureRemote', experimentId=experiment.id))
+        except Exception as e:
+            flash(f'Exception creating distributed experiment (local): {e}', 'error')
+
+    remotes = eastWest.RemoteNames
+    nss: List[Tuple[str, int]] = []
+    for ns in current_user.UsableNetworkServices:
+         nss.append((ns.name, ns.id))
+
+    return render_template('experiment/create_dist.html', title='New Distributed Experiment', form=form, nss=nss,
+                           sliceList=Facility.BaseSlices(), scenarioList=Facility.Scenarios(), ues=Facility.UEs(),
+                           ewEnabled=Config().EastWest.Enabled, remotes=remotes,
+                           distributedTestCases=Facility.DistributedTestCases())
+
+
+@bp.route('/configure_remote/<experimentId>', methods=['GET', 'POST'])
+@login_required
+def configureRemote(experimentId: int):
+    eastWest = Config().EastWest
+    if not eastWest.Enabled:
+        return abort(404)
+
+    localExperiment: Experiment = Experiment.query.get(experimentId)
+    if localExperiment is None:
+        flash(f'Experiment not found', 'error')
+        return redirect(url_for('main.index'))
+
+    if localExperiment.user_id is None or localExperiment.user_id is not current_user.id:
+        flash(f'Forbidden - You don\'t have permission to access this experiment', 'error')
+        return redirect(url_for('main.index'))
+
+    remoteApi = eastWest.RemoteApi(localExperiment.remotePlatform)
+    if remoteApi is None:
+        flash(f"Unknown remote platform '{localExperiment.remotePlatform}'", 'error')
+        return redirect(url_for('main.index'))
+
+    testCases = remoteApi.GetTestCases()
+    ues = remoteApi.GetUEs()
+    baseSlices = remoteApi.GetBaseSlices()
+    scenarios = remoteApi.GetScenarios()
+    networkServices = remoteApi.GetNetworkServices()
+
+    nss: List[Tuple[str, int]] = []
+    indexToNs: Dict[int, Tuple[str, str, str]] = {}
+    for index, ns in enumerate(networkServices):
+        indexToNs[index] = ns
+        name, nsd, vim = ns
+        nss.append((f'{name} ({vim})', index))
+
+    form = DistributedStep2Form()
+    if form.validate_on_submit():
+        try:
+            experimentName = f'{localExperiment.name}__remote'
+            exclusive = localExperiment.exclusive
+            testCases = request.form.getlist('RemoteSide_testCases')
+            ues_selected = request.form.getlist('RemoteSide_ues')
+
+            experiment = Experiment(
+                name=experimentName, author=None,
+                type="RemoteSide", exclusive=exclusive,
+                test_cases=testCases, ues=ues_selected,
+                automated=True, reservation_time=None,
+                parameters={}, application=None,
+                remotePlatform=None, remoteDescriptor=None,
+                parentDescriptor=[localExperiment]
+            )
+
+            if "enableSlicing" in request.form.keys():
+                _addSliceInfo(request.form, experiment)
+
+                # Since we don't have references to the NSs, add the info directly in descriptor format
+                count = int(request.form.get('nsCount', '0'))
+                descriptorNsInfo: List[Tuple[str, str]] = []
+                for i in range(count):
+                    name, nsd, vim = indexToNs[int(request.form[f'NS{i + 1}'])]
+                    descriptorNsInfo.append((nsd, vim))
+
+                experiment.remoteNetworkServices = descriptorNsInfo
+
+            db.session.add(experiment)
+            db.session.commit()
+
+            localExperiment.remoteDescriptor = experiment
+            db.session.add(localExperiment)
+            db.session.commit()
+
+            Log.I(f'Added experiment {experiment.id}')
+            flash('Your experiment has been successfully created', 'info')
+            return redirect(url_for('main.index'))
+        except Exception as e:
+            flash(f'Exception creating distributed experiment (local): {e}', 'error')
+
+    return render_template('experiment/configure_dist.html', title='New Distributed Experiment',
+                           form=form, localExperiment=localExperiment,
+                           testCases=testCases, ues=ues, baseSlices=baseSlices, scenarios=scenarios,
+                           nss=nss)
 
 
 @bp.route('/<experimentId>/reload', methods=['GET', 'POST'])
@@ -136,9 +275,8 @@ def experiment(experimentId: int):
         Log.I(f'Experiment not found')
         flash(f'Experiment not found', 'error')
         return redirect(url_for('main.index'))
-
     else:
-        if exp.user_id is current_user.id:
+        if exp.user_id is not None and exp.user_id is current_user.id:
 
             # Get Experiment's executions
             executions: List[Experiment] = exp.experimentExecutions()
@@ -149,9 +287,10 @@ def experiment(experimentId: int):
                 return render_template('experiment/experiment.html', title=f'Experiment: {exp.name}', experiment=exp,
                                        executions=executions, formRun=formRun, grafanaUrl=config.GrafanaUrl,
                                        executionId=getLastExecution() + 1,
-                                       dispatcherUrl=config.ELCM.Url)  # TODO: Use dispatcher
+                                       dispatcherUrl=config.ELCM.Url,  # TODO: Use dispatcher
+                                       ewEnabled=Config().EastWest.Enabled)
         else:
-            Log.I(f'Forbidden - User {current_user.name} don\'t have permission to access experiment {experimentId}')
+            Log.I(f'Forbidden - User {current_user.username} don\'t have permission to access experiment {experimentId}')
             flash(f'Forbidden - You don\'t have permission to access this experiment', 'error')
             return redirect(url_for('main.index'))
 
@@ -195,7 +334,7 @@ def descriptor(experimentId: int):
     if experiment is None:
         flash('Experiment not found', 'error')
         return redirect(url_for('main.index'))
-    elif experiment.user_id != current_user.id:
+    elif experiment.user_id is None or experiment.user_id != current_user.id:
         flash("Forbidden - You don't have permission to access this experiment", 'error')
         return redirect(url_for('main.index'))
     else:

@@ -4,7 +4,7 @@ from app.network_services import bp
 from .forms import NewNsForm, EditNsForm
 from app.models import NetworkService
 from app import db
-from Helper import ActionHandler
+from Helper import ActionHandler, Config
 from .edit_handler import EditHandler
 from REST import DispatcherApi, VimInfo
 from typing import List
@@ -15,7 +15,7 @@ from typing import List
 @login_required
 def repository():
     return render_template('network_services/repository.html', title='Network Services',
-                           nss=current_user.NetworkServices)
+                           nss=current_user.NetworkServices, ewEnabled=Config().EastWest.Enabled)
 
 
 @bp.route('/create', methods=['GET', 'POST'])
@@ -32,7 +32,8 @@ def create():
     if error is not None:
         flash(error, 'error')
 
-    return render_template('network_services/create.html', title='New Network Service', form=form, locations=locations)
+    return render_template('network_services/create.html', title='New Network Service', form=form, locations=locations,
+                           ewEnabled=Config().EastWest.Enabled)
 
 
 @bp.route('/edit/<int:nsid>', methods=['GET', 'POST'])
@@ -73,6 +74,6 @@ def edit(nsid: int):
 
     return render_template('network_services/edit.html', Title=f'Network Service: {service.name}',
                            form=form, service=service, action=action, images=images, vnfds=vnfds,
-                           nsds=nsds)
+                           nsds=nsds, ewEnabled=Config().EastWest.Enabled)
 
 

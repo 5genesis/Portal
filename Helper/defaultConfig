@@ -13,3 +13,6 @@ Grafana URL: None
 Platform: 5GenesisPlatform
 PlatformDescriptionPage: platform.html
 Description: 5th Generation End-to-end Network, Experimentation, System Integration, and Showcasing
+EastWest:
+  Enabled: False
+  Remotes: {}  # One key for each remote Portal, each key containing 'Host' and 'Port' values

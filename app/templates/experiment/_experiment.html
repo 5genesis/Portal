@@ -41,12 +41,28 @@
         {% if nss > 0 %}
             {{ '- ' if experiment.slice }}{{ nss }} Network service{{ 's' if nss > 1 }}
         {% endif %}
+        {% if experiment.remotePlatform is not none %}
+            {% set remoteSide = experiment.remoteDescriptor %}
+            <hr style="margin: 2px 0px">
+            <b>Remote: </b>{{ experiment.remotePlatform }}
+            {% if remoteSide is not none %}
+                <br>
+                <b>TestCases</b>: {{ csv(remoteSide.test_cases) }}
+                {% if experiment.ues %}
+                    <br><b>UEs</b>: {{ csv(remoteSide.ues) }}
+                {% endif %}
+            {% endif %}
+        {% endif %}
     </td>
     <td class="col-md-4">
         <form id="formRun" method="post" novalidate>
             {{ formRun.hidden_tag() }}
             <input type="hidden" name="id" value="{{ experiment.id }}"/>
-            <button type="submit" name="submit" class="btn btn-darkBlue btn-sm">Run</button>
+            {% if experiment.remotePlatform is not none and experiment.remoteDescriptor is none %}
+                <a class="btn btn-danger btn-sm" href="{{ url_for('experiment.configureRemote', experimentId=experiment.id) }}" role="button">Configure</a>
+            {% else %}
+                <button type="submit" name="submit" class="btn btn-darkBlue btn-sm">Run</button>
+            {% endif %}
             <a class="btn btn-blue btn-sm" href="/experiment/{{ experiment.id }}" role="button">History</a>
             <a class="btn btn-blue btn-sm" href="{{ url_for('experiment.descriptor', experimentId=experiment.id) }}" role="button">Descriptor</a>
         </form>

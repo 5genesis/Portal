@@ -5,13 +5,15 @@ from app import db
 from app.execution import bp
 from app.models import Experiment, Execution
 from Helper import Config, LogInfo, Log
-from REST import DispatcherApi
+from REST import DispatcherApi, ElcmApi
 
 
-@bp.route('/<executionId>/reloadLog', methods=['GET'])
 @bp.route('/<executionId>', methods=['GET'])
 @login_required
 def execution(executionId: int):
+    def _responseToLogList(response):
+        return [LogInfo(response["PreRun"]), LogInfo(response["Executor"]), LogInfo(response["PostRun"])]
+
     execution: Execution = Execution.query.get(executionId)
     if execution is None:
         Log.I(f'Execution not found')
@@ -24,18 +26,34 @@ def execution(executionId: int):
             try:
                 # Get Execution logs information
                 config = Config()
-                jsonResponse: Dict = DispatcherApi().GetExecutionLogs(executionId, current_user)
-                Log.D(f'Access execution logs response {jsonResponse}')
-                status = jsonResponse["Status"]
+                localResponse: Dict = DispatcherApi().GetExecutionLogs(executionId, current_user)
+                Log.D(f'Access execution logs response {localResponse}')
+                status = localResponse["Status"]
                 if status == 'Success':
-                    executor = LogInfo(jsonResponse["Executor"])
-                    postRun = LogInfo(jsonResponse["PostRun"])
-                    preRun = LogInfo(jsonResponse["PreRun"])
+                    localLogs = _responseToLogList(localResponse)
+                    remoteLogs = None
+
+                    if experiment.remoteDescriptor is not None:
+                        success = False
+                        peerId = ElcmApi().GetPeerId(executionId)
+                        if peerId is not None:
+                            remote = Config().EastWest.RemoteApi(experiment.remotePlatform)
+                            if remote is not None:
+                                try:
+                                    remoteResponse = remote.GetExecutionLogs(peerId)
+                                    if remoteResponse['Status'] == 'Success':
+                                        remoteLogs = _responseToLogList(remoteResponse)
+                                        success = True
+                                except Exception: pass
+                        if not success:
+                            flash('Could not retrieve remote execution logs', 'warning')
+
                     return render_template('execution/execution.html', title=f'Execution {execution.id}',
-                                           execution=execution, executor=executor, postRun=postRun, preRun=preRun,
+                                           execution=execution, localLogs=localLogs, remoteLogs=remoteLogs,
                                            experiment=experiment, grafanaUrl=config.GrafanaUrl,
                                            executionId=getLastExecution() + 1,
-                                           dispatcherUrl=config.ELCM.Url)  # TODO: Use dispatcher
+                                           dispatcherUrl=config.ELCM.Url,  # TODO: Use dispatcher
+                                           ewEnabled=Config().EastWest.Enabled)
                 else:
                     if status == 'Not Found':
                         message = "Execution not found"
