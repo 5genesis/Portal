@@ -8,7 +8,6 @@ from Helper import Config, LogInfo, Log
 from REST import DispatcherApi, ElcmApi
 
 
-@bp.route('/<executionId>/reloadLog', methods=['GET'])
 @bp.route('/<executionId>', methods=['GET'])
 @login_required
 def execution(executionId: int):

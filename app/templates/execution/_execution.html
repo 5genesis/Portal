@@ -33,7 +33,7 @@
         {% set hasDashboard = (grafanaUrl != None and execution.dashboard_url) %}
 
         <a class="btn btn-darkBlue btn-sm" role="button"
-                href="/execution/{{ execution.id }}{{ "" if finished else "/reloadLog" }}">📄</a>
+                href="/execution/{{ execution.id }}">📄</a>
 
         <a class="btn btn-blue btn-sm {{ "" if hasDashboard else "disabled"}}"
            href="{{ grafanaUrl }}{{ execution.dashboard_url }}" role="button" target="_blank">📊</a>
