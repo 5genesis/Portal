@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from os.path import split
 
 
+
 class VimInfo:
     def __init__(self, data):
         self.Name = data['name']
@@ -98,9 +99,16 @@ class DispatcherApi(RestClient):
 
         token = user.CurrentDispatcherToken
         descriptor = json.dumps(Experiment.query.get(experimentId).serialization())
-        url = f'/elcmapi/v0/run'  # TODO: Can be improved, but validation must be updated first
+        url = f'/elcm/api/v0/run'
         response = self.HttpPost(url, {'Content-Type': 'application/json', **self.bearerAuthHeader(token)}, descriptor)
-        return RestClient.ResponseToJson(response)
+        status = RestClient.ResponseStatusCode(response)
+        if status != 200:
+            return {"ExecutionId": None, "Success": False,
+                    "Message": f"Execution request failed with status {status}"}
+        else:
+            response = RestClient.ResponseToJson(response)
+            response.update({"Success": True, "Message": "No error"})
+            return response
 
     def GetExecutionLogs(self, executionId: int, user: User) -> Dict:
         maybeError = self.RenewUserTokenIfExpired(user)
