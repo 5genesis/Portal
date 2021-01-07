@@ -2,122 +2,112 @@
 
 ## Requirements
 
- - [Python 3.7.x](https://www.python.org)
- - [Optional] [Grafana](https://grafana.com/) (tested on version 5.4)
- - [Optional] [Grafana reporter](https://github.com/IzakMarais/reporter) 
- (tested on version 2.1.0, commit 41b38a0, see ELCM readme for more information)
- 
-## Interoperability with other components
+ - [Python 3.7.x](https://www.python.org) (see requirements.txt for a detailed view of required packages)
+ - [ELCM](https://github.com/5genesis/ELCM) Version 2.4.0 (22/12/2020)
+ - [Dispatcher](https://github.com/5genesis/Dispatcher) Commit 2c05c28e812fb712f73b51ab78c1d190c0f50d0e (04/01/2021)
 
-The following information specifies the version that most closely match the expected behavior when this package interacts
-with others developed internally in 5 Genesis (i.e. the version that was available during the development and that was 
-used while testing this component). It's possible that most (or all) features work with some previous versions, and most
-probably there will be no issues when using more recent versions.
+### Optional integrations:
 
- - [ELCM](https://gitlab.fokus.fraunhofer.de/5genesis/elcm) Version 1.1.0 (02/10/2019)
+ - [Grafana](https://grafana.com/) (tested with version 5.4)
 
-## Installing (development)
-> A video detailing the deployment procedure of the Portal (and ELCM) can be seen [in BSCW](https://bscw.fokus.fraunhofer.de/bscw/bscw.cgi/d3208170/Coordinationlayer_call20190422.mp4)
+## Deployment
 
-> It is recommended, but not required, to run the Portal in a [Python virtual environment](https://virtualenv.pypa.io/en/stable/).
-> If you are not using virtual environments, skip steps 3 and 4.
+### Pre-requisites
 
-1. Clone the repository to a known folder, e.g. in `c:\5gPortal` 
-2. Enter the folder
-```bash
-cd c:/5gPortal
-```
-3. Create a new Python virtualenv:
-```bash
-pip install virtualenv
-virtualenv venv
-```
-4. Activate the virtual environment:
-- For Windows:
-```powershell
-venv\Scripts\Activate.bat
-```
-- For Linux:
-```bash
-source venv/bin/activate
-```
-5. Install Python dependencies:
-```bash
-pip install -r requirements.txt
-```
+The Portal requires connectivity with running instances of the Dispatcher (user authentication and NS onboarding)
+and ELCM (facility registry and experiment execution).
 
-6. Upgrade (initialize) the database to the latest version:
-> The portal is configured for creating an SQLite database automatically (`app.db`) if no other database backend is configured.
-> If the deployment will use a different backend it might be wise to set it before running this command. See the Configuration section for more information. 
+> Additional dependencies may be needed depending on your environment. For example, older Windows version may require
+certain Visual C++ redistributables to be installed, and the following packages are known to be required on many Ubuntu
+distributions: `gcc python3.7 python3.7-venv python3.7-dev`. Fixes for specific issues are usually easy to find on 
+Internet.
 
-```bash
-flask db upgrade
-```
+### Installation procedure
 
-7. Start the development server:
-```bash
-flask run
-```
-The app will generate a default configuration file (`config.yml`) and start listening for requests on port 5000.
-Refer to the Configuration section for information about customizing the default values.
-Press `Control+C` to stop the development server.
+This repository includes two sets of scripts for use on Linux (`.sh`) and Windows (`.ps1`) machines. In general
+these scripts should be able to perform most of the actions required for instantiating the Portal, however, depending
+on the deployment environment some actions may fail or require additional tweaking. The contents of the scripts can
+be used as a guide for manual installation, and a description of the actions performed by the scripts is included below
+for use as reference.
 
-## Deployment (production)
+1. Ensure that Python 3.7.x is installed. For environments with multiple Python versions note the correct alias.
+   > For example, older Ubuntu distributions refer to Python 2.x by default when invoking `python`, and reference 
+   > Python 3.7 as `python3` or `python3.7`. Use the `--version` parameter to check the version number.
+2. Clone the repository to a known folder
+3. Run `install.sh <python_alias>` or `install.ps1 <python_alias>` (depending on your OS). The script will:
+  - Display the Python version in use (ensure that this is 3.7.x)
+  - Create a [Python virtual environment](https://virtualenv.pypa.io/en/stable/) for exclusive use of the Portal.
+  - Install the required Python packages (using [pip](https://pypi.org/project/pip/))
+  > Most issues occur during this step, since it is highly dependent on the environment. In case of error, note the 
+  > name of the package that could not be installed, the error message and your OS distribution. Performing an Internet 
+  > search with this information usually yields a solution. Once solved you may re-run the script (delete the `venv` 
+  > folder that was created by the script if necessary) until all packages are correctly installed.
+  - Initialize the Portal database
+4. Run `start.sh` or `start.ps1` (depending on your OS). This will create an empty configuration file (`config.yml`).
+   If necessary, press ctrl+c (or your OS equivalent) in order to close the server.
+5. Ensure that the `config.yml` is available in the Portal folder and customize its contents. The Portal needs
+   information about how to connect with the Dispatcher and ELCM components (more information about all the possible 
+   configuration values can be found below).
+6. Customize the `.flaskenv` file. Replace the `__REPLACEWITHSECRETKEY__` label with a random string (for more info 
+   see [this answer](https://stackoverflow.com/a/22463969).)
 
-This repository includes a `Vagrantfile` that can be used to automatically deploy a virtual machine
-that includes the Portal instance (running under `Gunicorn`) and an `nginx`. This file can also be 
-used as an example of how to deploy the Portal on an existing Linux machine or using Docker containers,
-since most of the commands executed are valid in many other environments.
+### Starting the Portal
 
-In order to deploy using `Vagrant`:
+Once configured, the Portal can be started by running `start.sh <port_number>` or `start.ps1 <port_number>`. If not
+specified, the server will listen on port 5000. In order to stop the server, press ctrl+c (or your OS equivalent) in
+the terminal where the server is running.
 
-1. Install [Vagrant](https://www.vagrantup.com/downloads.html) and [Virtualbox](https://www.virtualbox.org/wiki/Downloads).
-2. Navigate to the Portal folder.
-3. Create the virtual machine:
-```bash
-vagrant up
-```  
+### Minimal integration tests
 
-This will create and start a virtual machine named `5genesis-portal` and bind port 80 of the host machine to the Portal instance.
-> If you cannot bind the Portal to port 80 you can use a different port by setting other value in the Vagrantfile (`config.vm.network "forwarded_port"`).
+In order to test that the connections with the Dispatcher and ELCM are working properly, perform the following actions:
 
-The default deployment does not use https. In order to enable it you will need to provide the necessary certificates and customize the nginx configuration. This repository includes an example configuration file (`Vagrant/nginx_ssl.conf`) that can be used as a base.
+1. Check the log messages (in the log file or console output) that appear when starting the Portal. The Portal tries to
+   retrieve the facility configuration from the ELCM when starting, and displays the number of registered test cases,
+   UEs, scenarios and slice descriptors. If these correspond to the ones configured in the ELCM, then the connection
+   is working properly.
+   > If you do not see any messages, check the `Logging` section of the configuration file (`config.yml`). Ensure that
+   > the levels are set to `DEBUG` or `INFO`
+1. Open the Portal using a web browser. 
+2. Register a new user (top right, `Register` tab). If no errors are reported after pressing the `Register` button at 
+   the bottom then the connection with the Dispatcher is working properly.
+   > Note that newly registered users are not "active", and cannot log in to the Portal until their registration has 
+   > been validated by the platform administrator(s). For information about the user activation procedure refer to the 
+   > Dispatcher (Authenticator) documentation.
 
 ## Configuration
 
-The Portal instance can be configured by setting environment variables and by editing the `config.yml` file. The Portal uses `python-dotenv`, so it's possible to save the environment variables in the `.flaskenv` file.
+The Portal instance can be configured by editing the `config.yml` file.
 
-The environment variables that can be set are:
-* SECRET_KEY: **Set this value to a RANDOM string** (the default value is not random enough). See [this answer](https://stackoverflow.com/a/22463969).
-* FLASK_RUN_PORT: Port where the portal will listen (5000 by default)
-* SQLALCHEMY_DATABASE_URI: Database instance that will be used by the Portal. Depending on the backend it's possible that additional Python packages will need to be installed, for example, MySQL requires `pymysql`. See [Dialects](https://docs.sqlalchemy.org/en/latest/dialects/index.html)
-* UPLOAD_FOLDER: Folder path where the uploaded files will be stored.
+- Logging:
+    - Folder: Folder where the log files will be saved. Defaults to `./Logs`.
+    - AppLevel: Minimum message level to display in the terminal output (one of `CRITICAL`, `ERROR`, `WARNING`,
+      `INFO`, `DEBUG`). Defaults to `INFO`.
+    - LogLevel: Minimum message level to write in the log files. Defaults to `DEBUG`.
+- Dispatcher:
+    - Host: Location of the machine where the Dispatcher is running (localhost by default).
+    - Port: Port where the Dispatcher is listening for connections (5001 by default).
+    - TokenExpiry: Time (in seconds) to consider that an authentication token has expired, should be slightly shorter
+    (30/60 seconds) than the real expiration time configured on the Dispatcher.
+- ELCM:
+    - Host: Location of the machine where the ELCM is running (localhost by default).
+    - Port: Port where the ELCM is listening for connections (5001 by default).
+- Grafana URL: Base URL of Grafana Dashboard to display Execution results.
+- Platform: Platform name. Will be displayed in the Portal and will identify the platform during distributed
+  experiments.
+- Description: Short textual description of the platform. Will be displayed in the Portal.
+- PlatformDescriptionPage: HTML file that contains a more detailed description of the platform. The HTML written in
+  this file will be inserted in the 'Info' page of the Portal. Defaults to `platform.html`. This file is included in
+  this repository, and can be customized or used as reference.
+- EastWest: Configuration for distributed experiments.
+    - Enabled: Boolean value indicating if the East/West interfaces are available. Defaults to `False`.
+    - Remotes: Dictionary containing the connection configuration for each remote platform's Portal, with each key
+      containing 'Host' and 'Port' values in the same format as in the `ELCM` section. Defaults to an empty
+      dictionary (`{}`).
 
-> Currently unused:
-> * MAIL_SERVER: Mail server location (localhost by default)
-> * MAIL_PORT: Mail server port (8025 by default)
+#### Portal notices
 
-The values that can be configured on `config.yml` are:
-* Dispatcher:
-    * Host: Location of the machine where the Dispatcher is running (localhost by default).
-    * Port: Port where the Dispatcher is listening for connections (5001 by default).
-    * TokenExpiry: Time (in seconds) to consider that an authentication token has expired, should be slightly shorter
-    (30/60 seconds) than the real expiration time on the Dispatcher.
-* ELCM:
-    * Host: Location of the machine where the ELCM is running (localhost by default).
-    * Port: Port where the ELCM is listening for connections (5001 by default).
-> Direct communication with the ELCM is still needed
-* Platform: Platform name/location.
-* Grafana URL: Base URL of Grafana Dashboard to display Execution results.
-* Description: Description of the platform.
-* PlatformDescriptionPage: HTML file that contains the description of the platform. The HTML written in this file 
-will be inserted in the 'Info' page of the Portal 
-* Logging: Parameters for storing application logs.
-
-### Portal Notices
-
-It's possible to display system-wide notices in the Portal by including a file named `notices.yml` in the root folder.
-The format of this file is as follows:
+It's possible to display system-wide notices in the Portal by creating a file named `notices.yml` in the root folder
+of the Portal. The format of this file shall be as follows:
 
 ```yaml
 Notices:
@@ -126,14 +116,10 @@ Notices:
 ```
 The list may include as many notices as necessary.
 
-### REST API
-
-Information about the current REST API of the Portal (and ELCM) can be seen [in BSCW](https://bscw.fokus.fraunhofer.de/bscw/bscw.cgi/d3228781/OpenAPIv1.docx).
-
 ## Authors
 
 * **Gonzalo Chica Morales**
-* **Bruno Garcia Garcia**
+* **[Bruno Garcia Garcia](https://github.com/NaniteBased)**
 
 ## License
 
@@ -148,5 +134,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-
