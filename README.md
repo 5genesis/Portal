@@ -3,8 +3,8 @@
 ## Requirements
 
  - [Python 3.7.x](https://www.python.org) (see requirements.txt for a detailed view of required packages)
- - [ELCM](https://github.com/5genesis/ELCM) Version 2.4.0 (22/12/2020)
- - [Dispatcher](https://github.com/5genesis/Dispatcher) Commit 2c05c28e812fb712f73b51ab78c1d190c0f50d0e (04/01/2021)
+ - [ELCM](https://github.com/5genesis/ELCM) Version 2.4.0 (22/12/2020) or later
+ - [Dispatcher](https://github.com/5genesis/Dispatcher) Commit 2c05c28e812fb712f73b51ab78c1d190c0f50d0e (04/01/2021) or later
 
 ### Optional integrations:
 
@@ -15,7 +15,7 @@
 ### Pre-requisites
 
 The Portal requires connectivity with running instances of the Dispatcher (user authentication and NS onboarding)
-and ELCM (facility registry and experiment execution).
+and ELCM (platform registry and experiment execution).
 
 > Additional dependencies may be needed depending on your environment. For example, older Windows version may require
 certain Visual C++ redistributables to be installed, and the following packages are known to be required on many Ubuntu

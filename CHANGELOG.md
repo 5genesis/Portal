@@ -1,3 +1,7 @@
+**12/01/2021** [Version 2.4.1]
+
+ - Updated documentation
+
 **22/12/2020** [Version 2.4.0]
 
  - Added East/West interface
