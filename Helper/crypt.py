@@ -17,5 +17,5 @@ class Crypt:
 
     def Decode(self, token: str) -> Tuple[int, List[int]]:
         """Returns a tuple (<landing execution>, <list of executions>)"""
-        payload = jwt.decode(token, self.secret, algorithm="HS256")
+        payload = jwt.decode(token, self.secret, algorithms=["HS256"])
         return payload["t"], payload["l"]

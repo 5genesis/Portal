@@ -16,3 +16,7 @@ Description: 5th Generation End-to-end Network, Experimentation, System Integrat
 EastWest:
   Enabled: False
   Remotes: {}  # One key for each remote Portal, each key containing 'Host' and 'Port' values
+Analytics:
+  Enabled: False
+  URL: # External (Internet) URL of the Analytics
+  Secret: # Secret key shared with the Analytics Portal, in order to secure the created URLs

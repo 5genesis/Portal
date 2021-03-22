@@ -7,7 +7,7 @@ from os.path import exists, abspath
 
 class hostPort:
     def __init__(self, data: Dict, key: str):
-        self.data = data[key]
+        self.data = data.get(key, {})
 
     @property
     def Host(self):
@@ -20,6 +20,15 @@ class hostPort:
     @property
     def Url(self):
         return f"{self.Host}:{self.Port}/"
+
+
+class possiblyEnabled:
+    def __init__(self, data: Dict, key: str):
+        self.data = data[key]
+
+    @property
+    def Enabled(self) -> bool:
+        return self.data.get("Enabled", False)
 
 
 class Dispatcher(hostPort):
@@ -58,13 +67,9 @@ class Logging:
         return self.toLogLevel(self.data['LogLevel'])
 
 
-class EastWest:
+class EastWest(possiblyEnabled):
     def __init__(self, data: Dict):
-        self.data = data.get('EastWest', {})
-
-    @property
-    def Enabled(self) -> bool:
-        return self.data.get('Enabled', False)
+        super().__init__(data, 'EastWest')
 
     @property
     def Remotes(self) -> Dict[str, Dict[str, Union[int, str]]]:
@@ -87,6 +92,19 @@ class EastWest:
             from REST import RemoteApi
             return RemoteApi(host, port)
         return None
+
+
+class Analytics(possiblyEnabled):
+    def __init__(self, data: Dict):
+        super().__init__(data, 'Analytics')
+
+    @property
+    def Url(self) -> Optional[str]:
+        return self.data.get("URL", None)
+
+    @property
+    def Secret(self) -> Optional[str]:
+        return self.data.get("Secret", None)
 
 
 class Config:
@@ -155,3 +173,7 @@ class Config:
     @property
     def EastWest(self) -> EastWest:
         return EastWest(self.data)
+
+    @property
+    def Analytics(self) -> Analytics:
+        return Analytics(self.data)
