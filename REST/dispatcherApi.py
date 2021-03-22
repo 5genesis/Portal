@@ -9,7 +9,6 @@ from datetime import datetime, timezone
 from os.path import split
 
 
-
 class VimInfo:
     def __init__(self, data):
         self.Name = data['name']
@@ -146,7 +145,7 @@ class DispatcherApi(RestClient):
         return data if error is None else [], error
 
     def GetAvailableNsds(self, user: User) -> Tuple[List[str], Optional[str]]:
-        data, error = self.basicGet(user, '/mano/nsd', f"list of VNFDs")  # type: Dict, Optional[str]
+        data, error = self.basicGet(user, '/mano/nsd', f"list of NSDs")  # type: Dict, Optional[str]
         return data if error is None else [], error
 
     def handleErrorcodes(self, code: int, data: Dict, overrides: Dict[int, str] = None) -> str:

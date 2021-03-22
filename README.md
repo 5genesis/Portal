@@ -67,8 +67,8 @@ In order to test that the connections with the Dispatcher and ELCM are working p
    is working properly.
    > If you do not see any messages, check the `Logging` section of the configuration file (`config.yml`). Ensure that
    > the levels are set to `DEBUG` or `INFO`
-1. Open the Portal using a web browser. 
-2. Register a new user (top right, `Register` tab). If no errors are reported after pressing the `Register` button at 
+2. Open the Portal using a web browser. 
+3. Register a new user (top right, `Register` tab). If no errors are reported after pressing the `Register` button at 
    the bottom then the connection with the Dispatcher is working properly.
    > Note that newly registered users are not "active", and cannot log in to the Portal until their registration has 
    > been validated by the platform administrator(s). For information about the user activation procedure refer to the 
