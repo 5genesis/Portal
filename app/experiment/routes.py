@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple, Set
 from flask import render_template, flash, redirect, url_for, request, jsonify, abort
 from flask.json import loads as jsonParse
 from flask_login import current_user, login_required
-from REST import ElcmApi, DispatcherApi
+from REST import ElcmApi, DispatcherApi, AnalyticsApi
 from app import db
 from app.experiment import bp
 from app.models import Experiment, Execution, Action, NetworkService
@@ -284,10 +284,15 @@ def experiment(experimentId: int):
                 flash(f'The experiment {exp.name} doesn\'t have any executions yet', 'info')
                 return redirect(url_for('main.index'))
             else:
+                analyticsApi = AnalyticsApi()
+                analyticsUrls = {}
+                for execution in executions:
+                    analyticsUrls[execution.id] = analyticsApi.GetToken(execution.id, current_user)
+
                 return render_template('experiment/experiment.html', title=f'Experiment: {exp.name}', experiment=exp,
                                        executions=executions, formRun=formRun, grafanaUrl=config.GrafanaUrl,
                                        executionId=getLastExecution() + 1,
-                                       dispatcherUrl=config.ELCM.Url,  # TODO: Use dispatcher
+                                       dispatcherUrl=config.ELCM.Url,  analyticsUrls=analyticsUrls,
                                        ewEnabled=Config().EastWest.Enabled)
         else:
             Log.I(f'Forbidden - User {current_user.username} don\'t have permission to access experiment {experimentId}')

@@ -38,6 +38,9 @@
         <a class="btn btn-blue btn-sm {{ "" if hasDashboard else "disabled"}}"
            href="{{ grafanaUrl }}{{ execution.dashboard_url }}" role="button" target="_blank">📊</a>
 
+        <a class="btn btn-blue btn-sm {{ "" if hasDashboard else "disabled"}}"
+           href="{{ analyticsUrls[execution.id] }}" role="button" target="_blank">📈</a>
+
         <a class="btn btn-blue btn-sm {{ "" if finished else "disabled"}}"
            href="http://{{ dispatcherUrl }}execution/{{ execution.id }}/results" role="button">💾</a>
     </td>

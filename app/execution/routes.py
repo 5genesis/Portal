@@ -5,7 +5,7 @@ from app import db
 from app.execution import bp
 from app.models import Experiment, Execution
 from Helper import Config, LogInfo, Log
-from REST import DispatcherApi, ElcmApi
+from REST import DispatcherApi, ElcmApi, AnalyticsApi
 
 
 @bp.route('/<executionId>', methods=['GET'])
@@ -32,6 +32,7 @@ def execution(executionId: int):
                 if status == 'Success':
                     localLogs = _responseToLogList(localResponse)
                     remoteLogs = None
+                    analyticsUrl = AnalyticsApi().GetUrl(experiment.id, current_user)
 
                     if experiment.remoteDescriptor is not None:
                         success = False
@@ -52,7 +53,7 @@ def execution(executionId: int):
                                            execution=execution, localLogs=localLogs, remoteLogs=remoteLogs,
                                            experiment=experiment, grafanaUrl=config.GrafanaUrl,
                                            executionId=getLastExecution() + 1,
-                                           dispatcherUrl=config.ELCM.Url,  # TODO: Use dispatcher
+                                           dispatcherUrl=config.ELCM.Url, analyticsUrl=analyticsUrl,
                                            ewEnabled=Config().EastWest.Enabled)
                 else:
                     if status == 'Not Found':

@@ -58,6 +58,7 @@ update{{ execution.id }}(nanobar);
 {% endmacro %}
 
 {% block app_content %}
+
 <div style="text-align: center">
     <h2>Execution {{ execution.id }}</h2>
 </div>
@@ -110,6 +111,9 @@ update{{ execution.id }}(nanobar);
 
             <a class="btn btn-blue btn-sm {{ "" if hasDashboard else "disabled"}}"
                href="{{ grafanaUrl }}{{ execution.dashboard_url }}" role="button" target="_blank">📊</a>
+
+            <a class="btn btn-blue btn-sm {{ "" if hasDashboard else "disabled"}}"
+                href="{{ analyticsUrl }}" role="button" target="_blank">📈</a>
 
             <a class="btn btn-blue btn-sm {{ "" if finished else "disabled"}}"
                href="http://{{ dispatcherUrl }}execution/{{ execution.id }}/results" role="button">💾</a>
