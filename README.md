@@ -9,6 +9,7 @@
 ### Optional integrations:
 
  - [Grafana](https://grafana.com/) (tested with version 5.4)
+ - [Analytics Dashboard](https://github.com/5genesis/Analytics) (Release B)
 
 ## Deployment
 
@@ -67,8 +68,8 @@ In order to test that the connections with the Dispatcher and ELCM are working p
    is working properly.
    > If you do not see any messages, check the `Logging` section of the configuration file (`config.yml`). Ensure that
    > the levels are set to `DEBUG` or `INFO`
-1. Open the Portal using a web browser. 
-2. Register a new user (top right, `Register` tab). If no errors are reported after pressing the `Register` button at 
+2. Open the Portal using a web browser. 
+3. Register a new user (top right, `Register` tab). If no errors are reported after pressing the `Register` button at 
    the bottom then the connection with the Dispatcher is working properly.
    > Note that newly registered users are not "active", and cannot log in to the Portal until their registration has 
    > been validated by the platform administrator(s). For information about the user activation procedure refer to the 
@@ -103,6 +104,10 @@ The Portal instance can be configured by editing the `config.yml` file.
     - Remotes: Dictionary containing the connection configuration for each remote platform's Portal, with each key
       containing 'Host' and 'Port' values in the same format as in the `ELCM` section. Defaults to an empty
       dictionary (`{}`).
+- Analytics:
+    - Enabled: Boolean value indicating if the Analytics Dashboard is available. Defaults to `False`.
+    - URL: External URL of the Analytics Dashboard
+    - Secret: Secret key shared with the Analytics Dashboard, used in order to create secure URLs
 
 #### Portal notices
 

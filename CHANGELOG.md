@@ -1,3 +1,7 @@
+**22/04/2021** [Version 2.4.2]
+
+ - Analytics Dashboard integration
+
 **12/01/2021** [Version 2.4.1]
 
  - Updated documentation
