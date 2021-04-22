@@ -112,7 +112,7 @@ update{{ execution.id }}(nanobar);
             <a class="btn btn-blue btn-sm {{ "" if hasDashboard else "disabled"}}"
                href="{{ grafanaUrl }}{{ execution.dashboard_url }}" role="button" target="_blank">📊</a>
 
-            <a class="btn btn-blue btn-sm {{ "" if hasDashboard else "disabled"}}"
+            <a class="btn btn-blue btn-sm {{ "" if finished else "disabled"}}"
                 href="{{ analyticsUrl }}" role="button" target="_blank">📈</a>
 
             <a class="btn btn-blue btn-sm {{ "" if finished else "disabled"}}"

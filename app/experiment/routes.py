@@ -287,7 +287,7 @@ def experiment(experimentId: int):
                 analyticsApi = AnalyticsApi()
                 analyticsUrls = {}
                 for execution in executions:
-                    analyticsUrls[execution.id] = analyticsApi.GetToken(execution.id, current_user)
+                    analyticsUrls[execution.id] = analyticsApi.GetUrl(execution.id, current_user)
 
                 return render_template('experiment/experiment.html', title=f'Experiment: {exp.name}', experiment=exp,
                                        executions=executions, formRun=formRun, grafanaUrl=config.GrafanaUrl,

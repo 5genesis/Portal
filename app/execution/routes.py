@@ -8,7 +8,7 @@ from Helper import Config, LogInfo, Log
 from REST import DispatcherApi, ElcmApi, AnalyticsApi
 
 
-@bp.route('/<executionId>', methods=['GET'])
+@bp.route('/<int:executionId>', methods=['GET'])
 @login_required
 def execution(executionId: int):
     def _responseToLogList(response):
@@ -32,7 +32,7 @@ def execution(executionId: int):
                 if status == 'Success':
                     localLogs = _responseToLogList(localResponse)
                     remoteLogs = None
-                    analyticsUrl = AnalyticsApi().GetUrl(experiment.id, current_user)
+                    analyticsUrl = AnalyticsApi().GetUrl(executionId, current_user)
 
                     if experiment.remoteDescriptor is not None:
                         success = False
