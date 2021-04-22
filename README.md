@@ -9,6 +9,7 @@
 ### Optional integrations:
 
  - [Grafana](https://grafana.com/) (tested with version 5.4)
+ - [Analytics Dashboard](https://github.com/5genesis/Analytics) (Release B)
 
 ## Deployment
 
@@ -103,6 +104,10 @@ The Portal instance can be configured by editing the `config.yml` file.
     - Remotes: Dictionary containing the connection configuration for each remote platform's Portal, with each key
       containing 'Host' and 'Port' values in the same format as in the `ELCM` section. Defaults to an empty
       dictionary (`{}`).
+- Analytics:
+    - Enabled: Boolean value indicating if the Analytics Dashboard is available. Defaults to `False`.
+    - URL: External URL of the Analytics Dashboard
+    - Secret: Secret key shared with the Analytics Dashboard, used in order to create secure URLs
 
 #### Portal notices
 
