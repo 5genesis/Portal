@@ -14,11 +14,11 @@ from Helper import Config, Log, Facility
 
 def _addSliceInfo(form, experiment):
     maybeSlice = form.get('sliceCheckboxedList', None)
-    maybeScenario = form.get('scenarioCheckboxedList', None)
+    maybeScenario = form.get('scenarioCheckboxedList', "[None]")
 
     if maybeSlice is not None:
         experiment.slice = maybeSlice
-    if maybeScenario is not None:
+    if maybeScenario != "[None]":
         experiment.scenario = maybeScenario
 
 
@@ -102,7 +102,7 @@ def create():
     customTestCases = Facility.AvailableCustomTestCases(current_user.email)
     parametersPerTestCase = Facility.TestCaseParameters()
     baseSlices = Facility.BaseSlices()
-    scenarios = Facility.Scenarios()
+    scenarios = ["[None]", *Facility.Scenarios()]
     parameterNamesPerTestCase: Dict[str, Set[str]] = {}
     testCaseNamesPerParameter: Dict[str, Set[str]] = {}
     parameterInfo: Dict[str, Dict[str, str]] = {}
@@ -172,8 +172,8 @@ def createDist():
          nss.append((ns.name, ns.id))
 
     return render_template('experiment/create_dist.html', title='New Distributed Experiment', form=form, nss=nss,
-                           sliceList=Facility.BaseSlices(), scenarioList=Facility.Scenarios(), ues=Facility.UEs(),
-                           ewEnabled=Config().EastWest.Enabled, remotes=remotes,
+                           sliceList=Facility.BaseSlices(), scenarioList=["[None]", *Facility.Scenarios()],
+                           ues=Facility.UEs(), ewEnabled=Config().EastWest.Enabled, remotes=remotes,
                            distributedTestCases=Facility.DistributedTestCases())
 
 
@@ -201,7 +201,7 @@ def configureRemote(experimentId: int):
     testCases = remoteApi.GetTestCases()
     ues = remoteApi.GetUEs()
     baseSlices = remoteApi.GetBaseSlices()
-    scenarios = remoteApi.GetScenarios()
+    scenarios = ["[None]", *remoteApi.GetScenarios()]
     networkServices = remoteApi.GetNetworkServices()
 
     nss: List[Tuple[str, int]] = []

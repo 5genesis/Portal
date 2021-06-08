@@ -1,3 +1,7 @@
+**08/06/2021** [Version 2.4.3]
+
+ - Add 'None' as selectable scenario
+
 **22/04/2021** [Version 2.4.2]
 
  - Analytics Dashboard integration
