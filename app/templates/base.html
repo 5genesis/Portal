@@ -6,7 +6,6 @@
 
 {% block scripts %}
     {{ super() }}
-    {{ moment.include_jquery() }}
     {{ moment.include_moment() }}
     <script src="{{ url_for('static', filename='js/nanobar.min.js') }}"></script>
     <script>
