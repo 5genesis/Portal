@@ -1,3 +1,13 @@
+**24/06/2021** [Version 2.4.4]
+
+ - Add generic 'Core' location
+ - Update Flask-moment dependency
+
+*Update notes*:
+
+- In case of issues with the rendering of dates or exceptions related to `moment` or `Flask-moment`,
+re-run `pip install -r requirements.txt` over the activated Portal virtualenv.
+
 **08/06/2021** [Version 2.4.3]
 
  - Add 'None' as selectable scenario
