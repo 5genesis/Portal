@@ -32,6 +32,9 @@ def create():
     if error is not None:
         flash(error, 'error')
 
+    if 'Core' not in locations:
+        locations.insert(0, 'Core')
+
     return render_template('network_services/create.html', title='New Network Service', form=form, locations=locations,
                            ewEnabled=Config().EastWest.Enabled)
 
