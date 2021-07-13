@@ -21,16 +21,28 @@ def repository():
 @bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def create():
-    form = NewNsForm()
-    if form.validate_on_submit():
-        newNs = NetworkService(author=current_user)
-        newNs.vim_location = request.form['location']
-        EditHandler.AssignBaseFormData(db, form, newNs)
-        return redirect(url_for('NetworkServices.edit', nsid=newNs.id))
-
     locations, error = DispatcherApi().GetVimLocations(current_user)
     if error is not None:
         flash(error, 'error')
+    else:
+        form = NewNsForm()
+        if form.validate_on_submit():
+            # Need to record both the location and the name of the VIM
+            location = request.form['location']
+            name = None
+            for vim in locations:
+                if vim.Location == location:
+                    name = vim.Name
+                    break
+
+            if name is None:
+                flash(f"Error creating NS: Could not find VIM with location '{location}'", 'error')
+            else:
+                newNs = NetworkService(author=current_user)
+                newNs.vim_location = location
+                newNs.vim_name = name
+                EditHandler.AssignBaseFormData(db, form, newNs)
+                return redirect(url_for('NetworkServices.edit', nsid=newNs.id))
 
     return render_template('network_services/create.html', title='New Network Service', form=form, locations=locations,
                            ewEnabled=Config().EastWest.Enabled)

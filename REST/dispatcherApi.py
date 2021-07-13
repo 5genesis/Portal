@@ -120,7 +120,7 @@ class DispatcherApi(RestClient):
         response = self.HttpGet(url, extra_headers=self.bearerAuthHeader(token))
         return RestClient.ResponseToJson(response)
 
-    def basicGet(self, user: User, url: str, action: str) -> Tuple[object, Optional[str]]:
+    def basicGet(self, user: User, url: str, kind: str) -> Tuple[object, Optional[str]]:
         try:
             maybeError = self.RenewUserTokenIfExpired(user)
             if maybeError is not None:
@@ -130,22 +130,22 @@ class DispatcherApi(RestClient):
             response = self.HttpGet(url, extra_headers=self.bearerAuthHeader(token))
             return self.ResponseToJson(response), None
         except Exception as e:
-            return {}, f"Exception while {action}: {e}"
+            return {}, f"Exception while retrieving list of {kind}: {e}"
 
     def GetVimLocations(self, user: User) -> Tuple[List[VimInfo], Optional[str]]:
-        data, error = self.basicGet(user, '/mano/vims', 'retrieving list of VIMs')  # type: List, Optional[str]
+        data, error = self.basicGet(user, '/mano/vims', 'VIMs')  # type: List, Optional[str]
         return [VimInfo(vim) for vim in data] if error is None else [], error
 
     def GetVimLocationImages(self, user: User, location: str) -> Tuple[List[VimInfo], Optional[str]]:
-        data, error = self.basicGet(user, '/mano/image', f"list of images for VIM '{location}'")  # type: Dict, Optional[str]
+        data, error = self.basicGet(user, '/mano/image', f"images for VIM '{location}'")  # type: Dict, Optional[str]
         return data.get(location, []) if error is None else [], error
 
     def GetAvailableVnfds(self, user: User) -> Tuple[List[str], Optional[str]]:
-        data, error = self.basicGet(user, '/mano/vnfd', f"list of VNFDs")  # type: Dict, Optional[str]
+        data, error = self.basicGet(user, '/mano/vnfd', f"VNFDs")  # type: Dict, Optional[str]
         return data if error is None else [], error
 
     def GetAvailableNsds(self, user: User) -> Tuple[List[str], Optional[str]]:
-        data, error = self.basicGet(user, '/mano/nsd', f"list of NSDs")  # type: Dict, Optional[str]
+        data, error = self.basicGet(user, '/mano/nsd', f"NSDs")  # type: Dict, Optional[str]
         return data if error is None else [], error
 
     def handleErrorcodes(self, code: int, data: Dict, overrides: Dict[int, str] = None) -> str:
@@ -204,12 +204,12 @@ class DispatcherApi(RestClient):
             else:
                 return self.handleErrorcodes(code, data, overrides), False
 
-    def OnboardVim(self, path: str, location: str, token: str, visibility: str) -> Optional[str]:
+    def OnboardVim(self, path: str, vimName: str, token: str, visibility: str) -> Optional[str]:
         """Returns an error message, or None on success"""
 
         with open(path, "br") as file:
             containerFormat = "bare"
-            data = {'vim_id': location, 'container_format': containerFormat,
+            data = {'vim_id': vimName, 'container_format': containerFormat,
                     'visibility': str(visibility).lower()}
             response = self.HttpPost('/mano/image', extra_headers=self.bearerAuthHeader(token),
                                      body=data, files={'file': file}, payload=Payload.Form)
