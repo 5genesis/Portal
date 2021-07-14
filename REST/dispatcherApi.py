@@ -136,9 +136,9 @@ class DispatcherApi(RestClient):
         data, error = self.basicGet(user, '/mano/vims', 'VIMs')  # type: List, Optional[str]
         return [VimInfo(vim) for vim in data] if error is None else [], error
 
-    def GetVimLocationImages(self, user: User, location: str) -> Tuple[List[VimInfo], Optional[str]]:
-        data, error = self.basicGet(user, '/mano/image', f"images for VIM '{location}'")  # type: Dict, Optional[str]
-        return data.get(location, []) if error is None else [], error
+    def GetVimLocationImages(self, user: User, vim_name: str) -> Tuple[List[VimInfo], Optional[str]]:
+        data, error = self.basicGet(user, '/mano/image', f"images for VIM '{vim_name}'")  # type: Dict, Optional[str]
+        return data.get(vim_name, []) if error is None else [], error
 
     def GetAvailableVnfds(self, user: User) -> Tuple[List[str], Optional[str]]:
         data, error = self.basicGet(user, '/mano/vnfd', f"VNFDs")  # type: Dict, Optional[str]
@@ -215,7 +215,7 @@ class DispatcherApi(RestClient):
                                      body=data, files={'file': file}, payload=Payload.Form)
             code = self.ResponseStatusCode(response)
 
-        if code == 200:
+        if 200 <= code <= 299:
             return None
         else:
             try:

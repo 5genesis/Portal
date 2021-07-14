@@ -75,7 +75,7 @@ def edit(nsid: int):
 
     action = ActionHandler.Get(service.id)
 
-    images, error = DispatcherApi().GetVimLocationImages(current_user, service.vim_location)
+    images, error = DispatcherApi().GetVimLocationImages(current_user, service.vim_name)
     if error is not None: flash(error, 'error')
 
     vnfds, error = DispatcherApi().GetAvailableVnfds(current_user)
