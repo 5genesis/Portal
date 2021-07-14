@@ -22,10 +22,11 @@ def repository():
 @login_required
 def create():
     locations, error = DispatcherApi().GetVimLocations(current_user)
+    form = NewNsForm()
+
     if error is not None:
         flash(error, 'error')
     else:
-        form = NewNsForm()
         if form.validate_on_submit():
             # Need to record both the location and the name of the VIM
             location = request.form['location']
