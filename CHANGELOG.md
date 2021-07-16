@@ -1,10 +1,18 @@
+**16/07/2021** [Version 2.4.5]
+
+ - Fix network services onboarding
+ - Remove 'Core' location
+
+*Update notes*:
+- This release includes database changes. When updating from a previous version ensure that you
+run the `flask db upgrade` command over the activated Portal virtualenv
+
 **24/06/2021** [Version 2.4.4]
 
  - Add generic 'Core' location
  - Update Flask-moment dependency
 
 *Update notes*:
-
 - In case of issues with the rendering of dates or exceptions related to `moment` or `Flask-moment`,
 re-run `pip install -r requirements.txt` over the activated Portal virtualenv.
 
