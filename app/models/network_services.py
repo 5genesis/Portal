@@ -10,6 +10,7 @@ class NetworkService(db.Model):
     is_public = db.Column(db.Boolean)
     vim_image = db.Column(db.String(256))
     vim_location = db.Column(db.String(64))
+    vim_name = db.Column(db.String(64))
     vim_id = db.Column(db.String(256))  # Probably not an ID, but a value to signal it has been onboarded
     nsd_file = db.Column(db.String(256))
     nsd_id = db.Column(db.String(256))

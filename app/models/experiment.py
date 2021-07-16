@@ -53,7 +53,7 @@ class Experiment(db.Model):
         if self.type == 'RemoteSide':
             nss = self.remoteNetworkServices or []
         else:
-            nss = [(ns.nsd_id, ns.vim_location) for ns in self.networkServicesRelation]
+            nss = [(ns.nsd_id, ns.vim_name) for ns in self.networkServicesRelation]
 
         return {
             'Slice': self.slice,

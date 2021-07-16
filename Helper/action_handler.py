@@ -27,9 +27,9 @@ class Action(Child):
         from REST import DispatcherApi
 
         filePath = abspath(join(Config.UPLOAD_FOLDER, *self.service.VimLocalPath, self.service.vim_image))
-        location = self.service.vim_location
+        vimName = self.service.vim_name
         self.message = f"VIM Image onboarding in progress"
-        maybeError = DispatcherApi().OnboardVim(filePath, location, self.token, self.service.is_public)
+        maybeError = DispatcherApi().OnboardVim(filePath, vimName, self.token, self.service.is_public)
 
         if maybeError is None:
             self.result = "<onboarded>"  # Not a known ID but a value to signal it's been onboarded
